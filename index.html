@@ -1,6 +1,10 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<meta name="theme-color" content="#05070d">
+<title>Digital Style</title>
 <div id="errBox" style="position:fixed;top:0;left:0;right:0;background:#ff2e8a;color:#fff;font:12px monospace;padding:8px;z-index:99999;display:none;white-space:pre-wrap;max-height:50vh;overflow:auto"></div>
 <script>
 window.onerror = function(msg, src, line, col){
@@ -10,16 +14,11 @@ window.onerror = function(msg, src, line, col){
   box.textContent += '[ERROR] ' + msg + '\n  at line ' + line + ':' + col + '\n';
 };
 </script>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
-<meta name="theme-color" content="#05070d">
-<title>Digital Style</title>
 <style>
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;user-select:none}
 html,body{width:100%;height:100%;overflow:hidden;background:#000;font-family:-apple-system,'Segoe UI',Arial,sans-serif;color:#fff;touch-action:none;position:fixed;inset:0}
-#game{display:block;width:100%;height:100%;position:fixed;inset:0;z-index:1;touch-action:none;cursor:crosshair}
+#game{display:block;width:100%;height:100%;position:fixed;inset:0;z-index:1;touch-action:none}
 #ui{position:fixed;inset:0;pointer-events:none;z-index:10}
-
 #menu{position:fixed;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;background:radial-gradient(circle at 50% 40%,#0d1a2b 0%,#05070d 80%);z-index:90;padding:12px;pointer-events:auto;overflow-y:auto;gap:8px}
 #profile{width:100%;max-width:440px;display:flex;justify-content:space-between;align-items:center;padding:6px 10px;background:rgba(0,0,0,.4);border:2px solid #2cff5e;border-radius:10px}
 #profile .kk{color:#ffb300;font-weight:800;font-size:clamp(11px,3vw,14px)}
@@ -40,7 +39,6 @@ html,body{width:100%;height:100%;overflow:hidden;background:#000;font-family:-ap
 .pick-card .name,.col-card .name{font-size:clamp(7px,2.1vw,9px);font-weight:800;text-align:center;color:#eaffea;white-space:nowrap;overflow:hidden;width:100%}
 .col-card .lvl,.pick-card .lvl{position:absolute;top:2px;left:2px;background:rgba(0,0,0,.6);color:#ffd54f;font-size:9px;font-weight:900;padding:1px 4px;border-radius:4px}
 .col-card .lock{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:24px;background:rgba(0,0,0,.4)}
-
 .boxes-row{display:flex;gap:8px;flex-wrap:wrap;justify-content:center}
 .box-card{width:100px;aspect-ratio:.8;background:linear-gradient(180deg,#2a1a3a,#1a0f25);border:2px solid #a855f7;border-radius:14px;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:8px}
 .box-card.common{border-color:#7cf86b}
@@ -60,11 +58,9 @@ html,body{width:100%;height:100%;overflow:hidden;background:#000;font-family:-ap
 #boxOpening .result-card .rname{font-weight:900;font-size:16px;color:#eaffea;margin-top:6px}
 #boxOpening .result-card .rtype{font-size:11px;color:#9fd7ff}
 #boxOpening .tap-hint{color:#9fd7ff;font-size:13px;margin-top:20px}
-
 #playBtn{width:100%;max-width:440px;padding:14px;font-size:clamp(13px,3.6vw,17px);font-weight:900;letter-spacing:2px;color:#05070d;background:linear-gradient(180deg,#7cf86b,#2cff5e);border:2px solid #a8ffa0;border-radius:12px;text-align:center;cursor:pointer;opacity:.55;display:none}
 #playBtn.ready{opacity:1}
 #playBtn.show{display:block}
-
 #onlineLobby{position:fixed;inset:0;z-index:190;background:rgba(5,7,13,.98);display:none;flex-direction:column;align-items:center;padding:20px;gap:14px;overflow-y:auto;pointer-events:auto}
 #onlineLobby.show{display:flex}
 #onlineLobby h2{font-size:clamp(20px,6vw,30px);font-weight:900;color:#00e5ff;text-align:center}
@@ -82,7 +78,6 @@ html,body{width:100%;height:100%;overflow:hidden;background:#000;font-family:-ap
 #onlineLobby .mini-fighter.enemy{border-color:#00e5ff;background:#0a1a2a}
 #onlineLobby .mini-fighter.selected{border-width:3px;box-shadow:0 0 12px #ffd54f;border-color:#ffd54f}
 #onlineLobby .mini-fighter canvas{width:100%;height:100%;border-radius:50%}
-
 #teamsBar{position:absolute;top:10px;left:50%;transform:translateX(-50%);display:none;gap:6px;padding:5px 8px;background:rgba(0,0,0,.55);border:2px solid #2cff5e;border-radius:12px;z-index:16}
 .mini-avatar{width:32px;height:32px;border-radius:50%;position:relative;background:#0a1f10;border:2px solid #7cf86b;overflow:hidden}
 .mini-avatar.enemy{border-color:#00e5ff;background:#0a1a2a}
@@ -92,26 +87,21 @@ html,body{width:100%;height:100%;overflow:hidden;background:#000;font-family:-ap
 .mini-avatar .hp-mini .fill{height:100%;background:#7cf86b;width:100%}
 .mini-avatar.enemy .hp-mini .fill{background:#00e5ff}
 .mini-avatar.is-player{border-width:3px;border-color:#ffd54f}
-
 #deadPanel{position:absolute;top:48px;left:50%;transform:translateX(-50%);display:none;gap:4px;padding:4px 8px;background:rgba(0,0,0,.55);border:2px solid #ff2e8a;border-radius:10px;z-index:15;align-items:center}
 #deadPanel .dead-label{font-size:10px;font-weight:900;color:#ff2e8a;padding:0 4px}
 #deadPanel .dead-mini{width:24px;height:24px;border-radius:50%;background:#1a0f0f;border:2px solid #ff2e8a;overflow:hidden;opacity:.6}
 #deadPanel .dead-mini.enemy{border-color:#00e5ff;background:#0f1a1a}
 #deadPanel .dead-mini canvas{width:100%;height:100%}
-
 #hud{display:none;position:absolute;top:84px;left:50%;transform:translateX(-50%);gap:8px;align-items:center;padding:5px 10px;background:rgba(0,0,0,.5);border:2px solid #2cff5e;border-radius:10px;font-weight:800;font-size:13px}
 #hud .p{color:#7cf86b}#hud .e{color:#00e5ff}#hud .vs{color:#ff2e8a}
-
 #ammoBox{position:absolute;left:50%;transform:translateX(-50%);bottom:10px;display:none;gap:5px;padding:6px 10px;background:rgba(0,0,0,.55);border:2px solid #ffb300;border-radius:10px;z-index:15}
 #ammoBox .ammo{width:20px;height:20px;border-radius:5px;background:#3a2200;border:2px solid #7a4a00;position:relative;overflow:hidden}
 #ammoBox .ammo.full{background:#ffb300;border-color:#ffe680}
 #ammoBox .ammo .fill{position:absolute;left:0;right:0;bottom:0;background:#ffb300;height:0%}
-
 #leftZone,#attackZone,#superZone{position:absolute;pointer-events:auto;touch-action:none;display:none}
 #leftZone{left:0;bottom:0;width:50%;height:55%}
 #attackZone{right:0;bottom:0;width:50%;height:55%}
 #superZone{right:0;top:0;width:50%;height:45%}
-
 .joy-fixed{position:absolute;width:110px;height:110px;border-radius:50%;pointer-events:none;display:none;z-index:5}
 .joy-fixed .knob{position:absolute;top:50%;left:50%;width:44px;height:44px;border-radius:50%;transform:translate(-50%,-50%)}
 #joyL{left:25%;top:77.5%;transform:translate(-50%,-50%);background:radial-gradient(circle,rgba(124,248,107,.18) 0%,transparent 70%);border:2px solid rgba(124,248,107,.7)}
@@ -123,27 +113,16 @@ html,body{width:100%;height:100%;overflow:hidden;background:#000;font-family:-ap
 .joy-fixed .label{position:absolute;top:-22px;left:50%;transform:translateX(-50%);font-size:10px;font-weight:800;color:#9fd7ff;white-space:nowrap}
 #joySuper .superFillWrap{position:absolute;bottom:-12px;left:0;right:0;height:6px;background:rgba(0,0,0,.5);border-radius:3px;overflow:hidden}
 #joySuper .superFillWrap .superFillBar{height:100%;width:0%;background:linear-gradient(90deg,#ffb300,#ffe680)}
-
 #playerAimRay{position:absolute;height:8px;border-radius:4px;transform-origin:0 50%;pointer-events:none;display:none;z-index:8;background:linear-gradient(90deg,rgba(0,229,255,.95) 0%,rgba(0,229,255,.05) 100%)}
 #playerAimDot{position:absolute;width:18px;height:18px;border-radius:50%;pointer-events:none;display:none;z-index:9;background:radial-gradient(circle,#a8f5ff,#00e5ff);transform:translate(-50%,-50%)}
-
-#pcCrosshair{position:absolute;width:26px;height:26px;pointer-events:none;display:none;z-index:12;transform:translate(-50%,-50%)}
-#pcCrosshair::before,#pcCrosshair::after{content:'';position:absolute;background:#00e5ff;box-shadow:0 0 6px #00e5ff}
-#pcCrosshair::before{left:50%;top:0;width:2px;height:100%;transform:translateX(-50%)}
-#pcCrosshair::after{top:50%;left:0;height:2px;width:100%;transform:translateY(-50%)}
-
 #respawnOverlay{position:absolute;inset:0;display:none;flex-direction:column;align-items:center;justify-content:center;background:rgba(0,0,0,.55);z-index:25;text-align:center}
 #respawnOverlay .big{font-size:clamp(26px,8vw,52px);font-weight:900;color:#ff2e8a}
 #respawnOverlay .timer{font-size:clamp(36px,12vw,80px);font-weight:900;color:#fff}
 #respawnOverlay .info{font-size:13px;color:#9fd7ff;margin-top:10px}
-
 #msg{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-size:clamp(28px,9vw,60px);font-weight:900;color:#fff;display:none;z-index:30;text-align:center}
 #trophyToast{position:absolute;top:32%;left:50%;transform:translateX(-50%);font-size:clamp(20px,6vw,36px);font-weight:900;color:#ffd54f;display:none;z-index:31;text-align:center}
-
 #leave{position:absolute;top:10px;right:8px;width:32px;height:32px;border-radius:50%;background:rgba(255,46,138,.25);border:2px solid #ff2e8a;color:#ff2e8a;font-size:15px;font-weight:900;line-height:28px;text-align:center;display:none;pointer-events:auto;cursor:pointer;z-index:20}
-
-#pcHint{position:absolute;bottom:12px;left:12px;display:none;font-size:11px;color:#9fd7ff;background:rgba(0,0,0,.5);padding:6px 10px;border-radius:8px;border:1px solid rgba(0,229,255,.4);z-index:14;line-height:1.5}
-#pcHint b{color:#00e5ff}
+#debugPanel{position:absolute;top:120px;left:8px;background:rgba(0,0,0,.85);color:#0ff;font:11px monospace;padding:8px;border-radius:6px;z-index:999;display:none;max-width:320px;white-space:pre-wrap;pointer-events:none}
 </style>
 </head>
 <body>
@@ -163,7 +142,6 @@ html,body{width:100%;height:100%;overflow:hidden;background:#000;font-family:-ap
       <div class="mainTab" id="mtUpgrade">⬆ Прокачка</div>
       <div class="mainTab" id="mtOnline">🌐 Онлайн</div>
     </div>
-
     <div class="screen active" id="scPlay">
       <div style="width:100%;max-width:440px;display:flex;gap:6px">
         <div id="tabPlant" style="flex:1;padding:10px;text-align:center;font-weight:800;border-radius:10px;cursor:pointer;border:2px solid #7cf86b;background:linear-gradient(180deg,#1c3d1f,#0e2410)">🌿 Растения</div>
@@ -171,58 +149,47 @@ html,body{width:100%;height:100%;overflow:hidden;background:#000;font-family:-ap
       </div>
       <div id="pickGrid" class="pick-grid"></div>
     </div>
-
     <div class="screen" id="scBoxes">
       <h2 style="color:#a855f7">📦 Открывай боксы</h2>
       <div class="boxes-row" id="boxesRow"></div>
     </div>
-
     <div class="screen" id="scCollection">
       <h2 style="color:#7cf86b">👥 Коллекция</h2>
       <div class="collection-grid" id="collectionGrid"></div>
     </div>
-
     <div class="screen" id="scUpgrade">
       <h2 style="color:#ffd54f">⬆ Прокачка</h2>
       <div class="collection-grid" id="upgradeGrid"></div>
     </div>
-
     <div id="playBtn">ВЫБЕРИ БОЙЦА</div>
   </div>
-
   <div id="onlineLobby">
     <h2>🌐 ОНЛАЙН</h2>
     <div class="status-big" id="lobbyStatus">Выбери действие</div>
-
     <div class="lobby-step" id="lobbyHost1">
       <div class="step-num">ТЫ — ХОСТ</div>
       <div class="step-text">Создай комнату и дай другу код</div>
       <button id="lobbyBtnCreate">СОЗДАТЬ КОМНАТУ</button>
     </div>
-
     <div class="lobby-step" id="lobbyHost2" style="display:none">
       <div class="step-num">ШАГ 1</div>
       <div class="step-text">Код для друга:</div>
       <div id="lobbyHostCode" style="padding:14px;background:#05070d;border:2px solid #00e5ff;border-radius:8px;font-size:32px;font-weight:900;text-align:center;letter-spacing:6px;color:#a8f5ff">—</div>
     </div>
-
     <div class="lobby-step" id="lobbyJoin1">
       <div class="step-num">ТЫ — ГОСТЬ</div>
       <div class="step-text">Введи код от друга:</div>
       <textarea id="lobbyJoinOfferIn" rows="2" placeholder="123456"></textarea>
       <button class="sec" id="lobbyBtnJoinAccept">ПОДКЛЮЧИТЬСЯ</button>
     </div>
-
     <div class="lobby-step" id="lobbyPickStep" style="display:none">
       <div class="step-num">ШАГ 2</div>
       <div class="step-text">Выбери бойца:</div>
       <div class="pick-row" id="lobbyPickRow"></div>
       <button class="sec" id="lobbyBtnStartGame">НАЧАТЬ БОЙ</button>
     </div>
-
     <button class="cancel" id="lobbyBtnCancel">ЗАКРЫТЬ</button>
   </div>
-
   <div id="boxOpening">
     <div class="box-anim" id="boxAnim">📦</div>
     <div class="result" id="boxResult">
@@ -234,379 +201,84 @@ html,body{width:100%;height:100%;overflow:hidden;background:#000;font-family:-ap
       <div class="tap-hint">ТАП — ЗАКРЫТЬ</div>
     </div>
   </div>
-
   <div id="teamsBar">
     <div class="team" id="teamLeft"></div>
     <div style="color:#ff2e8a;font-weight:900;padding:0 4px">VS</div>
     <div class="team" id="teamRight"></div>
   </div>
-
   <div id="deadPanel">
     <div class="dead-label">☠ ВЫБЫЛИ:</div>
     <div id="deadPanelList" style="display:flex;gap:4px;align-items:center"></div>
   </div>
-
   <div id="hud">
     <span class="p" id="hpPlayer">🌿 100</span>
     <span class="vs">VS</span>
     <span class="e" id="hpEnemy">💠 500</span>
   </div>
-
   <div id="ammoBox">
     <div class="ammo" id="ammo0"><div class="fill"></div></div>
     <div class="ammo" id="ammo1"><div class="fill"></div></div>
     <div class="ammo" id="ammo2"><div class="fill"></div></div>
   </div>
-
   <div id="leave">✕</div>
   <div id="leftZone"></div>
   <div id="attackZone"></div>
   <div id="superZone"></div>
-
   <div class="joy-fixed" id="joyL"><div class="label">ДВИЖЕНИЕ</div><div class="knob"></div></div>
   <div class="joy-fixed" id="joyAttack"><div class="label">АТАКА</div><div class="knob"></div></div>
   <div class="joy-fixed" id="joySuper"><div class="label">УЛЬТА</div><div class="knob"></div><div class="superFillWrap"><div class="superFillBar" id="superFillBar"></div></div></div>
-
   <div id="playerAimRay"></div>
   <div id="playerAimDot"></div>
-  <div id="pcCrosshair"></div>
-
-  <div id="pcHint">
-    <b>WASD</b> — движение · <b>ЛКМ</b> — атака · <b>ПКМ</b> — ульта
-  </div>
-
-  <div id="debugPanel" style="position:absolute;top:120px;left:8px;background:rgba(0,0,0,.85);color:#0ff;font:11px monospace;padding:8px;border-radius:6px;z-index:999;display:none;max-width:320px;white-space:pre-wrap;pointer-events:none"></div>
-
   <div id="respawnOverlay">
     <div class="big">ТЫ ПАЛ</div>
     <div class="timer" id="respawnTimer">5</div>
     <div class="info">Возрождение если жив союзник</div>
   </div>
-
   <div id="msg"></div>
   <div id="trophyToast"></div>
+  <div id="debugPanel"></div>
 </div>
 <script type="module">
 const $ = id => document.getElementById(id);
-
-/* ================== ПРОФИЛЬ ================== */
 const SAVE_KEY = 'digital_style_v16';
-let profile = {
-  kk: 200, trophies: 0,
-  unlocked: { plant_0: true, plant_1: true, plant_2: true, inv_0: true },
-  levels: {}, selected: { plant: 'plant_0', enemy: 'inv_0' }
-};
+let profile = { kk: 200, trophies: 0, unlocked: { plant_0: true, plant_1: true, plant_2: true, inv_0: true }, levels: {}, selected: { plant: 'plant_0', enemy: 'inv_0' } };
 try { const raw = localStorage.getItem(SAVE_KEY); if (raw) Object.assign(profile, JSON.parse(raw)); } catch(e){}
 function saveProfile(){ try { localStorage.setItem(SAVE_KEY, JSON.stringify(profile)); } catch(e){} }
 function getLevel(id){ return profile.levels[id] || 1; }
 const MAX_LEVEL = 10;
 function getUpgradeCost(level){ return 100 * level * level; }
-
-/* ================== БОЙЦЫ ================== */
 const PLANT_NAMES = ['КУСТ','КАКТУС','ЦВЕТОК','ДЕРЕВО','ГРИБ','ЯГОДА','БАМБУК','ЛИЛИЯ','РОЗА','ПАЛЬМА'];
 const PLANT_COLORS = ['#7cf86b','#4ade80','#f472b6','#166534','#ef4444','#ec4899','#22c55e','#fef3c7','#dc2626','#10b981'];
-const PLANT_SHAPES = ['blob','cactus','flower','tree','mushroom','berry','bamboo','lily','rose','palm'];
 const PLANT_ATTACKS = ['single','triple','shotgun','long','rapid','pierce','grenade','homing','wave','spiral'];
 const PLANT_SUPERS = ['heal','spikes','laser','roots','poison','burst','walls','shield','thorns','wave'];
 const INVADER_NAMES = ['ДРОН','ТАНК','СНАЙПЕР','ЖУК','ПРИЗРАК'];
 const INVADER_COLORS = ['#00e5ff','#0891b2','#6366f1','#a855f7','#e0e7ff'];
-const INVADER_SHAPES = ['drone','tank','sniper','bug','ghost'];
-const INVADER_ATTACKS = ['triple','grenade','long','rapid','homing'];
-const INVADER_SUPERS = ['dash','shield','barrage','swarm','blink'];
-.box-card.epic{border-color:#a855f7}
-.box-card.legend{border-color:#ffd54f}
-.box-card .icon{font-size:36px}
-.box-card .title{font-size:11px;font-weight:900;color:#fff;text-align:center}
-.box-card .price{font-size:11px;font-weight:800;color:#ffb300;margin-top:4px}
-#boxOpening{position:fixed;inset:0;z-index:150;background:rgba(0,0,0,.9);display:none;flex-direction:column;align-items:center;justify-content:center}
-#boxOpening .box-anim{width:160px;height:200px;background:linear-gradient(180deg,#2a1a3a,#1a0f25);border:3px solid #a855f7;border-radius:20px;display:flex;align-items:center;justify-content:center;font-size:80px;animation:shake .6s infinite}
-@keyframes shake{0%,100%{transform:rotate(-3deg)}50%{transform:rotate(3deg)}}
-#boxOpening .result{display:none;flex-direction:column;align-items:center;gap:12px}
-#boxOpening .result.show{display:flex}
-#boxOpening .result-card{width:200px;padding:20px;background:linear-gradient(180deg,#1c3d1f,#0e2410);border:3px solid #7cf86b;border-radius:16px;text-align:center}
-#boxOpening .result-card canvas{width:80px;height:80px}
-#boxOpening .result-card .rname{font-weight:900;font-size:16px;color:#eaffea;margin-top:6px}
-#boxOpening .result-card .rtype{font-size:11px;color:#9fd7ff}
-#boxOpening .tap-hint{color:#9fd7ff;font-size:13px;margin-top:20px}
-
-#playBtn{width:100%;max-width:440px;padding:14px;font-size:clamp(13px,3.6vw,17px);font-weight:900;letter-spacing:2px;color:#05070d;background:linear-gradient(180deg,#7cf86b,#2cff5e);border:2px solid #a8ffa0;border-radius:12px;text-align:center;cursor:pointer;opacity:.55;display:none}
-#playBtn.ready{opacity:1}
-#playBtn.show{display:block}
-
-#onlineLobby{position:fixed;inset:0;z-index:190;background:rgba(5,7,13,.98);display:none;flex-direction:column;align-items:center;padding:20px;gap:14px;overflow-y:auto;pointer-events:auto}
-#onlineLobby.show{display:flex}
-#onlineLobby h2{font-size:clamp(20px,6vw,30px);font-weight:900;color:#00e5ff;text-align:center}
-#onlineLobby .lobby-step{width:100%;max-width:400px;padding:14px;background:rgba(0,0,0,.5);border:2px solid #00e5ff;border-radius:12px;display:flex;flex-direction:column;gap:10px}
-#onlineLobby .step-num{font-size:11px;font-weight:900;color:#ffb300;letter-spacing:2px}
-#onlineLobby .step-text{font-size:13px;color:#eaffea;font-weight:700}
-#onlineLobby button{padding:14px;background:linear-gradient(180deg,#00e5ff,#0891b2);border:none;color:#04141d;font-weight:900;font-size:14px;border-radius:12px;cursor:pointer;width:100%}
-#onlineLobby button.sec{background:linear-gradient(180deg,#2cff5e,#16a34a)}
-#onlineLobby button.cancel{background:linear-gradient(180deg,#ff2e8a,#be185d);color:#fff}
-#onlineLobby textarea{width:100%;padding:10px;background:rgba(255,255,255,.06);border:2px solid #00e5ff;border-radius:10px;color:#fff;font-size:14px;outline:none;resize:none}
-#onlineLobby .status-big{font-size:14px;font-weight:900;text-align:center;padding:10px;color:#7cf86b}
-#onlineLobby .status-big.err{color:#ff2e8a}
-#onlineLobby .pick-row{display:flex;gap:6px;flex-wrap:wrap;justify-content:center}
-#onlineLobby .mini-fighter{width:54px;height:54px;border-radius:50%;background:#0a1f10;border:2px solid #7cf86b;padding:2px;cursor:pointer;display:flex;align-items:center;justify-content:center}
-#onlineLobby .mini-fighter.enemy{border-color:#00e5ff;background:#0a1a2a}
-#onlineLobby .mini-fighter.selected{border-width:3px;box-shadow:0 0 12px #ffd54f;border-color:#ffd54f}
-#onlineLobby .mini-fighter canvas{width:100%;height:100%;border-radius:50%}
-
-#teamsBar{position:absolute;top:10px;left:50%;transform:translateX(-50%);display:none;gap:6px;padding:5px 8px;background:rgba(0,0,0,.55);border:2px solid #2cff5e;border-radius:12px;z-index:16}
-.mini-avatar{width:32px;height:32px;border-radius:50%;position:relative;background:#0a1f10;border:2px solid #7cf86b;overflow:hidden}
-.mini-avatar.enemy{border-color:#00e5ff;background:#0a1a2a}
-.mini-avatar.dead{opacity:.45;filter:grayscale(.8);border-color:#ff2e8a}
-.mini-avatar canvas{width:100%;height:100%}
-.mini-avatar .hp-mini{position:absolute;bottom:0;left:10%;right:10%;height:3px;background:rgba(0,0,0,.6)}
-.mini-avatar .hp-mini .fill{height:100%;background:#7cf86b;width:100%}
-.mini-avatar.enemy .hp-mini .fill{background:#00e5ff}
-.mini-avatar.is-player{border-width:3px;border-color:#ffd54f}
-
-#deadPanel{position:absolute;top:48px;left:50%;transform:translateX(-50%);display:none;gap:4px;padding:4px 8px;background:rgba(0,0,0,.55);border:2px solid #ff2e8a;border-radius:10px;z-index:15;align-items:center}
-#deadPanel .dead-label{font-size:10px;font-weight:900;color:#ff2e8a;padding:0 4px}
-#deadPanel .dead-mini{width:24px;height:24px;border-radius:50%;background:#1a0f0f;border:2px solid #ff2e8a;overflow:hidden;opacity:.6}
-#deadPanel .dead-mini.enemy{border-color:#00e5ff;background:#0f1a1a}
-#deadPanel .dead-mini canvas{width:100%;height:100%}
-
-#hud{display:none;position:absolute;top:84px;left:50%;transform:translateX(-50%);gap:8px;align-items:center;padding:5px 10px;background:rgba(0,0,0,.5);border:2px solid #2cff5e;border-radius:10px;font-weight:800;font-size:13px}
-#hud .p{color:#7cf86b}#hud .e{color:#00e5ff}#hud .vs{color:#ff2e8a}
-
-#ammoBox{position:absolute;left:50%;transform:translateX(-50%);bottom:10px;display:none;gap:5px;padding:6px 10px;background:rgba(0,0,0,.55);border:2px solid #ffb300;border-radius:10px;z-index:15}
-#ammoBox .ammo{width:20px;height:20px;border-radius:5px;background:#3a2200;border:2px solid #7a4a00;position:relative;overflow:hidden}
-#ammoBox .ammo.full{background:#ffb300;border-color:#ffe680}
-#ammoBox .ammo .fill{position:absolute;left:0;right:0;bottom:0;background:#ffb300;height:0%}
-
-#leftZone,#attackZone,#superZone{position:absolute;pointer-events:auto;touch-action:none;display:none}
-#leftZone{left:0;bottom:0;width:50%;height:55%}
-#attackZone{right:0;bottom:0;width:50%;height:55%}
-#superZone{right:0;top:0;width:50%;height:45%}
-
-.joy-fixed{position:absolute;width:110px;height:110px;border-radius:50%;pointer-events:none;display:none;z-index:5}
-.joy-fixed .knob{position:absolute;top:50%;left:50%;width:44px;height:44px;border-radius:50%;transform:translate(-50%,-50%)}
-#joyL{left:25%;top:77.5%;transform:translate(-50%,-50%);background:radial-gradient(circle,rgba(124,248,107,.18) 0%,transparent 70%);border:2px solid rgba(124,248,107,.7)}
-#joyL .knob{background:radial-gradient(circle at 35% 30%,#a8ffa0,#2cff5e 60%,#0f4a1c)}
-#joyAttack{left:75%;top:77.5%;transform:translate(-50%,-50%);background:radial-gradient(circle,rgba(0,229,255,.18) 0%,transparent 70%);border:2px solid rgba(0,229,255,.7)}
-#joyAttack .knob{background:radial-gradient(circle at 35% 30%,#a8f5ff,#00e5ff 60%,#003a4a)}
-#joySuper{left:75%;top:22.5%;transform:translate(-50%,-50%);background:radial-gradient(circle,rgba(255,179,0,.18) 0%,transparent 70%);border:2px solid rgba(255,179,0,.7)}
-#joySuper .knob{background:radial-gradient(circle at 35% 30%,#ffe680,#ffb300 60%,#7a4a00)}
-.joy-fixed .label{position:absolute;top:-22px;left:50%;transform:translateX(-50%);font-size:10px;font-weight:800;color:#9fd7ff;white-space:nowrap}
-#joySuper .superFillWrap{position:absolute;bottom:-12px;left:0;right:0;height:6px;background:rgba(0,0,0,.5);border-radius:3px;overflow:hidden}
-#joySuper .superFillWrap .superFillBar{height:100%;width:0%;background:linear-gradient(90deg,#ffb300,#ffe680)}
-
-#playerAimRay{position:absolute;height:8px;border-radius:4px;transform-origin:0 50%;pointer-events:none;display:none;z-index:8;background:linear-gradient(90deg,rgba(0,229,255,.95) 0%,rgba(0,229,255,.05) 100%)}
-#playerAimDot{position:absolute;width:18px;height:18px;border-radius:50%;pointer-events:none;display:none;z-index:9;background:radial-gradient(circle,#a8f5ff,#00e5ff);transform:translate(-50%,-50%)}
-
-#pcCrosshair{position:absolute;width:26px;height:26px;pointer-events:none;display:none;z-index:12;transform:translate(-50%,-50%)}
-#pcCrosshair::before,#pcCrosshair::after{content:'';position:absolute;background:#00e5ff;box-shadow:0 0 6px #00e5ff}
-#pcCrosshair::before{left:50%;top:0;width:2px;height:100%;transform:translateX(-50%)}
-#pcCrosshair::after{top:50%;left:0;height:2px;width:100%;transform:translateY(-50%)}
-
-#respawnOverlay{position:absolute;inset:0;display:none;flex-direction:column;align-items:center;justify-content:center;background:rgba(0,0,0,.55);z-index:25;text-align:center}
-#respawnOverlay .big{font-size:clamp(26px,8vw,52px);font-weight:900;color:#ff2e8a}
-#respawnOverlay .timer{font-size:clamp(36px,12vw,80px);font-weight:900;color:#fff}
-#respawnOverlay .info{font-size:13px;color:#9fd7ff;margin-top:10px}
-
-#msg{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-size:clamp(28px,9vw,60px);font-weight:900;color:#fff;display:none;z-index:30;text-align:center}
-#trophyToast{position:absolute;top:32%;left:50%;transform:translateX(-50%);font-size:clamp(20px,6vw,36px);font-weight:900;color:#ffd54f;display:none;z-index:31;text-align:center}
-
-#leave{position:absolute;top:10px;right:8px;width:32px;height:32px;border-radius:50%;background:rgba(255,46,138,.25);border:2px solid #ff2e8a;color:#ff2e8a;font-size:15px;font-weight:900;line-height:28px;text-align:center;display:none;pointer-events:auto;cursor:pointer;z-index:20}
-
-#pcHint{position:absolute;bottom:12px;left:12px;display:none;font-size:11px;color:#9fd7ff;background:rgba(0,0,0,.5);padding:6px 10px;border-radius:8px;border:1px solid rgba(0,229,255,.4);z-index:14;line-height:1.5}
-#pcHint b{color:#00e5ff}
-</style>
-</head>
-<body>
-<canvas id="game"></canvas>
-<div id="ui">
-  <div id="menu">
-    <div id="profile">
-      <span class="kk" id="kkCounter">💾 200</span>
-      <span class="trophy" id="trophyCounter">🏆 0</span>
-      <span class="rank" id="rankLabel">Ранг: Дерево I</span>
-    </div>
-    <h1>Digital Style</h1>
-    <div class="mainTabs">
-      <div class="mainTab active" id="mtPlay">🎮 Играть</div>
-      <div class="mainTab" id="mtBoxes">📦 Боксы</div>
-      <div class="mainTab" id="mtCollection">👥 Бойцы</div>
-      <div class="mainTab" id="mtUpgrade">⬆ Прокачка</div>
-      <div class="mainTab" id="mtOnline">🌐 Онлайн</div>
-    </div>
-
-    <div class="screen active" id="scPlay">
-      <div style="width:100%;max-width:440px;display:flex;gap:6px">
-        <div id="tabPlant" style="flex:1;padding:10px;text-align:center;font-weight:800;border-radius:10px;cursor:pointer;border:2px solid #7cf86b;background:linear-gradient(180deg,#1c3d1f,#0e2410)">🌿 Растения</div>
-        <div id="tabEnemy" style="flex:1;padding:10px;text-align:center;font-weight:800;border-radius:10px;cursor:pointer;border:2px solid transparent;background:rgba(255,255,255,.06)">💠 Захватчики</div>
-      </div>
-      <div id="pickGrid" class="pick-grid"></div>
-    </div>
-
-    <div class="screen" id="scBoxes">
-      <h2 style="color:#a855f7">📦 Открывай боксы</h2>
-      <div class="boxes-row" id="boxesRow"></div>
-    </div>
-
-    <div class="screen" id="scCollection">
-      <h2 style="color:#7cf86b">👥 Коллекция</h2>
-      <div class="collection-grid" id="collectionGrid"></div>
-    </div>
-
-    <div class="screen" id="scUpgrade">
-      <h2 style="color:#ffd54f">⬆ Прокачка</h2>
-      <div class="collection-grid" id="upgradeGrid"></div>
-    </div>
-
-    <div id="playBtn">ВЫБЕРИ БОЙЦА</div>
-  </div>
-
-  <div id="onlineLobby">
-    <h2>🌐 ОНЛАЙН</h2>
-    <div class="status-big" id="lobbyStatus">Выбери действие</div>
-
-    <div class="lobby-step" id="lobbyHost1">
-      <div class="step-num">ТЫ — ХОСТ</div>
-      <div class="step-text">Создай комнату и дай другу код</div>
-      <button id="lobbyBtnCreate">СОЗДАТЬ КОМНАТУ</button>
-    </div>
-
-    <div class="lobby-step" id="lobbyHost2" style="display:none">
-      <div class="step-num">ШАГ 1</div>
-      <div class="step-text">Код для друга:</div>
-      <div id="lobbyHostCode" style="padding:14px;background:#05070d;border:2px solid #00e5ff;border-radius:8px;font-size:32px;font-weight:900;text-align:center;letter-spacing:6px;color:#a8f5ff">—</div>
-    </div>
-
-    <div class="lobby-step" id="lobbyJoin1">
-      <div class="step-num">ТЫ — ГОСТЬ</div>
-      <div class="step-text">Введи код от друга:</div>
-      <textarea id="lobbyJoinOfferIn" rows="2" placeholder="123456"></textarea>
-      <button class="sec" id="lobbyBtnJoinAccept">ПОДКЛЮЧИТЬСЯ</button>
-    </div>
-
-    <div class="lobby-step" id="lobbyPickStep" style="display:none">
-      <div class="step-num">ШАГ 2</div>
-      <div class="step-text">Выбери бойца:</div>
-      <div class="pick-row" id="lobbyPickRow"></div>
-      <button class="sec" id="lobbyBtnStartGame">НАЧАТЬ БОЙ</button>
-    </div>
-
-    <button class="cancel" id="lobbyBtnCancel">ЗАКРЫТЬ</button>
-  </div>
-
-  <div id="boxOpening">
-    <div class="box-anim" id="boxAnim">📦</div>
-    <div class="result" id="boxResult">
-      <div class="result-card" id="boxResultCard">
-        <canvas id="boxResultCanvas" width="80" height="80"></canvas>
-        <div class="rname" id="boxResultName">—</div>
-        <div class="rtype" id="boxResultType">—</div>
-      </div>
-      <div class="tap-hint">ТАП — ЗАКРЫТЬ</div>
-    </div>
-  </div>
-
-  <div id="teamsBar">
-    <div class="team" id="teamLeft"></div>
-    <div style="color:#ff2e8a;font-weight:900;padding:0 4px">VS</div>
-    <div class="team" id="teamRight"></div>
-  </div>
-
-  <div id="deadPanel">
-    <div class="dead-label">☠ ВЫБЫЛИ:</div>
-    <div id="deadPanelList" style="display:flex;gap:4px;align-items:center"></div>
-  </div>
-
-  <div id="hud">
-    <span class="p" id="hpPlayer">🌿 100</span>
-    <span class="vs">VS</span>
-    <span class="e" id="hpEnemy">💠 500</span>
-  </div>
-
-  <div id="ammoBox">
-    <div class="ammo" id="ammo0"><div class="fill"></div></div>
-    <div class="ammo" id="ammo1"><div class="fill"></div></div>
-    <div class="ammo" id="ammo2"><div class="fill"></div></div>
-  </div>
-
-  <div id="leave">✕</div>
-  <div id="leftZone"></div>
-  <div id="attackZone"></div>
-  <div id="superZone"></div>
-
-  <div class="joy-fixed" id="joyL"><div class="label">ДВИЖЕНИЕ</div><div class="knob"></div></div>
-  <div class="joy-fixed" id="joyAttack"><div class="label">АТАКА</div><div class="knob"></div></div>
-  <div class="joy-fixed" id="joySuper"><div class="label">УЛЬТА</div><div class="knob"></div><div class="superFillWrap"><div class="superFillBar" id="superFillBar"></div></div></div>
-
-  <div id="playerAimRay"></div>
-  <div id="playerAimDot"></div>
-  <div id="pcCrosshair"></div>
-
-  <div id="pcHint">
-    <b>WASD</b> — движение · <b>ЛКМ</b> — атака · <b>ПКМ</b> — ульта
-  </div>
-
-  <div id="respawnOverlay">
-    <div class="big">ТЫ ПАЛ</div>
-    <div class="timer" id="respawnTimer">5</div>
-    <div class="info">Возрождение если жив союзник</div>
-  </div>
-
-  <div id="msg"></div>
-  <div id="trophyToast"></div>
-</div>
-<script type="module">
-const $ = id => document.getElementById(id);
-
-/* ================== ПРОФИЛЬ ================== */
-const SAVE_KEY = 'digital_style_v16';
-let profile = {
-  kk: 200, trophies: 0,
-  unlocked: { plant_0: true, plant_1: true, plant_2: true, inv_0: true },
-  levels: {}, selected: { plant: 'plant_0', enemy: 'inv_0' }
-};
-try { const raw = localStorage.getItem(SAVE_KEY); if (raw) Object.assign(profile, JSON.parse(raw)); } catch(e){}
-function saveProfile(){ try { localStorage.setItem(SAVE_KEY, JSON.stringify(profile)); } catch(e){} }
-function getLevel(id){ return profile.levels[id] || 1; }
-const MAX_LEVEL = 10;
-function getUpgradeCost(level){ return 100 * level * level; }
-
-/* ================== БОЙЦЫ ================== */
-const PLANT_NAMES = ['КУСТ','КАКТУС','ЦВЕТОК','ДЕРЕВО','ГРИБ','ЯГОДА','БАМБУК','ЛИЛИЯ','РОЗА','ПАЛЬМА'];
-const PLANT_COLORS = ['#7cf86b','#4ade80','#f472b6','#166534','#ef4444','#ec4899','#22c55e','#fef3c7','#dc2626','#10b981'];
-const PLANT_SHAPES = ['blob','cactus','flower','tree','mushroom','berry','bamboo','lily','rose','palm'];
-const PLANT_ATTACKS = ['single','triple','shotgun','long','rapid','pierce','grenade','homing','wave','spiral'];
-const PLANT_SUPERS = ['heal','spikes','laser','roots','poison','burst','walls','shield','thorns','wave'];
-const INVADER_NAMES = ['ДРОН','ТАНК','СНАЙПЕР','ЖУК','ПРИЗРАК'];
-const INVADER_COLORS = ['#00e5ff','#0891b2','#6366f1','#a855f7','#e0e7ff'];
-const INVADER_SHAPES = ['drone','tank','sniper','bug','ghost'];
 const INVADER_ATTACKS = ['triple','grenade','long','rapid','homing'];
 const INVADER_SUPERS = ['dash','shield','barrage','swarm','blink'];
 const FIGHTERS = {};
 for (let i = 0; i < 10; i++){
-  FIGHTERS['plant_'+i] = { id:'plant_'+i, side:'plant', name:PLANT_NAMES[i], hp:100+(i*5)%100, dmg:10+i*2, speed:6+(i%3), fireRate:0.25+i*0.03, color:PLANT_COLORS[i], shape:PLANT_SHAPES[i], attack:PLANT_ATTACKS[i], super:PLANT_SUPERS[i], rarity: i<5?'common':'rare' };
+  FIGHTERS['plant_'+i] = { id:'plant_'+i, side:'plant', name:PLANT_NAMES[i], hp:100+(i*5)%100, dmg:10+i*2, speed:6+(i%3), fireRate:0.25+i*0.03, color:PLANT_COLORS[i], attack:PLANT_ATTACKS[i], super:PLANT_SUPERS[i], rarity: i<5?'common':'rare' };
 }
 for (let i = 0; i < 5; i++){
-  FIGHTERS['inv_'+i] = { id:'inv_'+i, side:'enemy', name:INVADER_NAMES[i], hp:300+i*50, dmg:15+i*3, speed:6.5+i*0.5, fireRate:0.3+i*0.05, color:INVADER_COLORS[i], shape:INVADER_SHAPES[i], attack:INVADER_ATTACKS[i], super:INVADER_SUPERS[i], rarity: i<2?'rare':'epic' };
+  FIGHTERS['inv_'+i] = { id:'inv_'+i, side:'enemy', name:INVADER_NAMES[i], hp:300+i*50, dmg:15+i*3, speed:6.5+i*0.5, fireRate:0.3+i*0.05, color:INVADER_COLORS[i], attack:INVADER_ATTACKS[i], super:INVADER_SUPERS[i], rarity: i<2?'rare':'epic' };
 }
 function getFighterStats(f){ const lvl = getLevel(f.id); const m = 1 + (lvl-1)*0.08; return { hp:Math.round(f.hp*m), dmg:f.dmg*m, speed:f.speed*(1+(lvl-1)*0.02), fireRate:f.fireRate*(1-(lvl-1)*0.015), level:lvl }; }
 const ENEMY_BOSS_BUFF = { hp:1.4, dmg:1.4, speed:1.15, fireRate:0.85 };
 const RESPAWN_TIME = 5.0;
 let chosenFighter = null, pickSide = 'plant';
-
-/* ================== РИСОВАНИЕ ================== */
-function roundRect(ctx,x,y,w,h,r){ ctx.beginPath(); ctx.moveTo(x+r,y); ctx.arcTo(x+w,y,x+w,y+h,r); ctx.arcTo(x+w,y+h,x,y+h,r); ctx.arcTo(x,y+h,x,y,r); ctx.arcTo(x,y,x+w,y,r); ctx.closePath(); }
 function shade(hex,amt){ const n=parseInt(hex.slice(1),16); let r=(n>>16)+amt,g=((n>>8)&0xff)+amt,b=(n&0xff)+amt; r=Math.max(0,Math.min(255,r)); g=Math.max(0,Math.min(255,g)); b=Math.max(0,Math.min(255,b)); return '#'+((r<<16)|(g<<8)|b).toString(16).padStart(6,'0'); }
 function drawFighterShape(ctx, f, x, y, size, angle, isDead){
+  if(!f) return;
   ctx.save(); ctx.translate(x,y);
   ctx.fillStyle='rgba(0,0,0,.45)'; ctx.beginPath(); ctx.ellipse(0,size*0.32,size*0.55,size*0.22,0,0,Math.PI*2); ctx.fill();
   ctx.rotate(angle + Math.PI/2);
   if(isDead) ctx.globalAlpha=0.3;
-  const c = f.color;
-  if(f.side==='enemy'){ ctx.shadowColor=c; ctx.shadowBlur=size*0.3; }
+  const c = f.color || '#7cf86b';
   ctx.lineWidth=size*0.12; ctx.strokeStyle='#05070d'; ctx.lineJoin='round';
   const g = ctx.createRadialGradient(-size*0.2,-size*0.25,0,0,0,size*0.55);
   g.addColorStop(0, shade(c,60)); g.addColorStop(0.5, c); g.addColorStop(1, shade(c,-30));
   ctx.fillStyle = g;
   ctx.beginPath(); ctx.arc(0,0,size*0.5,0,Math.PI*2); ctx.fill(); ctx.stroke();
-  ctx.shadowBlur=0;
   const eyeR = size*0.1, ex=size*0.18, ey=-size*0.32;
   ctx.fillStyle='#fff'; ctx.strokeStyle='#05070d'; ctx.lineWidth=size*0.045;
   ctx.beginPath(); ctx.arc(-ex,ey,eyeR*1.5,0,Math.PI*2); ctx.fill(); ctx.stroke();
@@ -616,9 +288,7 @@ function drawFighterShape(ctx, f, x, y, size, angle, isDead){
   ctx.beginPath(); ctx.arc(ex,ey,eyeR*0.75,0,Math.PI*2); ctx.fill();
   ctx.restore();
 }
-function drawPortrait(canvas, fighter){ const ctx=canvas.getContext('2d'); const dpr=Math.min(devicePixelRatio,2); const size=canvas.clientWidth||100; canvas.width=size*dpr; canvas.height=size*dpr; ctx.scale(dpr,dpr); ctx.clearRect(0,0,size,size); drawFighterShape(ctx,fighter,size/2,size/2,size*0.85,-Math.PI/2,false); }
-
-/* ================== UI ================== */
+function drawPortrait(canvas, fighter){ if(!fighter) return; const c=canvas.getContext('2d'); const dpr=Math.min(devicePixelRatio,2); const size=canvas.clientWidth||100; canvas.width=size*dpr; canvas.height=size*dpr; c.scale(dpr,dpr); c.clearRect(0,0,size,size); drawFighterShape(c,fighter,size/2,size/2,size*0.85,-Math.PI/2,false); }
 function updateProfileUI(){ $('kkCounter').textContent='💾 '+profile.kk; $('trophyCounter').textContent='🏆 '+profile.trophies; }
 function isUnlocked(id){ return !!profile.unlocked[id]; }
 function switchMainTab(id){
@@ -626,7 +296,7 @@ function switchMainTab(id){
   document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
   const t = $('mt'+id.charAt(0).toUpperCase()+id.slice(1)); if(t) t.classList.add('active');
   const s = $('sc'+id.charAt(0).toUpperCase()+id.slice(1)); if(s) s.classList.add('active');
-  if(id==='play'){ $('playBtn').classList.add('show'); refreshPick(); } else $('playBtn').classList.remove('show');
+  if(id==='play'){ $('playBtn').classList.add('show'); if(chosenFighter) $('playBtn').classList.add('ready'); $('playBtn').textContent = chosenFighter ? ('В БОЙ: '+chosenFighter.name) : 'ВЫБЕРИ БОЙЦА'; refreshPick(); } else $('playBtn').classList.remove('show');
   if(id==='boxes') refreshBoxes();
   if(id==='collection') refreshCollection();
   if(id==='upgrade') refreshUpgrade();
@@ -636,7 +306,6 @@ $('mtBoxes').onclick=()=>switchMainTab('boxes');
 $('mtCollection').onclick=()=>switchMainTab('collection');
 $('mtUpgrade').onclick=()=>switchMainTab('upgrade');
 $('mtOnline').onclick=()=>openOnlineRoom();
-
 function refreshPick(){
   const grid=$('pickGrid'); grid.innerHTML='';
   const ids=Object.keys(FIGHTERS).filter(id=>FIGHTERS[id].side===pickSide && isUnlocked(id));
@@ -657,13 +326,10 @@ function pickFighter(f){ chosenFighter=f; profile.selected[f.side]=f.id; savePro
 $('tabPlant').onclick=()=>{ pickSide='plant'; $('tabPlant').style.border='2px solid #7cf86b'; $('tabPlant').style.background='linear-gradient(180deg,#1c3d1f,#0e2410)'; $('tabEnemy').style.border='2px solid transparent'; $('tabEnemy').style.background='rgba(255,255,255,.06)'; refreshPick(); };
 $('tabEnemy').onclick=()=>{ pickSide='enemy'; $('tabEnemy').style.border='2px solid #00e5ff'; $('tabEnemy').style.background='linear-gradient(180deg,#0b2b3d,#04141d)'; $('tabPlant').style.border='2px solid transparent'; $('tabPlant').style.background='rgba(255,255,255,.06)'; refreshPick(); };
 $('playBtn').onclick=()=>{ if(!chosenFighter) return; $('menu').style.display='none'; startGame(chosenFighter); };
-
 function refreshBoxes(){ const row=$('boxesRow'); row.innerHTML=''; const boxes=[{name:'ОБЫЧНЫЙ',icon:'📦',price:50,cls:'common'},{name:'РЕДКИЙ',icon:'🎁',price:150,cls:'rare'},{name:'ЭПИК',icon:'💎',price:400,cls:'epic'},{name:'ЛЕГЕНДА',icon:'👑',price:1000,cls:'legend'}]; boxes.forEach(b=>{ const card=document.createElement('div'); card.className='box-card '+b.cls; card.innerHTML='<div class="icon">'+b.icon+'</div><div class="title">'+b.name+'</div><div class="price">💾 '+b.price+'</div>'; card.onclick=()=>openBox(b); row.appendChild(card); }); }
 function openBox(box){ if(profile.kk<box.price){ alert('Мало КК'); return; } profile.kk-=box.price; const locked=Object.keys(FIGHTERS).filter(id=>!isUnlocked(id)); if(locked.length>0){ const id=locked[Math.floor(Math.random()*locked.length)]; profile.unlocked[id]=true; saveProfile(); updateProfileUI(); showBoxOpening(id, box); } else { profile.kk+=50; saveProfile(); updateProfileUI(); showBoxOpening(null, box); } }
-function showBoxOpening(id, box){ const ov=$('boxOpening'); ov.style.display='flex'; $('boxAnim').textContent=box.icon; $('boxAnim').style.display='flex'; $('boxResult').classList.remove('show'); setTimeout(()=>{ $('boxAnim').style.display='none'; const cv=$('boxResultCanvas'); if(id){ drawPortrait(cv, FIGHTERS[id]); $('boxResultName').textContent=FIGHTERS[id].name; $('boxResultType').textContent='НОВЫЙ!'; } else { const ctx=cv.getContext('2d'); ctx.clearRect(0,0,cv.width,cv.height); ctx.fillStyle='#ffb300'; ctx.font='bold 60px sans-serif'; ctx.textAlign='center'; ctx.fillText('💾', cv.width/2, cv.height/2+20); $('boxResultName').textContent='КК +50'; $('boxResultType').textContent='ДУБЛИКАТ'; } $('boxResult').classList.add('show'); }, 800); ov.onclick=()=>{ ov.style.display='none'; }; }
-
+function showBoxOpening(id, box){ const ov=$('boxOpening'); ov.style.display='flex'; $('boxAnim').textContent=box.icon; $('boxAnim').style.display='flex'; $('boxResult').classList.remove('show'); setTimeout(()=>{ $('boxAnim').style.display='none'; const cv=$('boxResultCanvas'); if(id){ drawPortrait(cv, FIGHTERS[id]); $('boxResultName').textContent=FIGHTERS[id].name; $('boxResultType').textContent='НОВЫЙ!'; } else { const c=cv.getContext('2d'); c.clearRect(0,0,cv.width,cv.height); c.fillStyle='#ffb300'; c.font='bold 60px sans-serif'; c.textAlign='center'; c.fillText('💾', cv.width/2, cv.height/2+20); $('boxResultName').textContent='КК +50'; $('boxResultType').textContent='ДУБЛИКАТ'; } $('boxResult').classList.add('show'); }, 800); ov.onclick=()=>{ ov.style.display='none'; }; }
 function refreshCollection(){ const grid=$('collectionGrid'); grid.innerHTML=''; Object.keys(FIGHTERS).forEach(id=>{ const f=FIGHTERS[id]; const card=document.createElement('div'); card.className='col-card'+(f.side==='enemy'?' enemySide':'')+(isUnlocked(id)?'':' locked'); const lvl=document.createElement('div'); lvl.className='lvl'; lvl.textContent='L'+getLevel(id); card.appendChild(lvl); const cv=document.createElement('canvas'); card.appendChild(cv); const nm=document.createElement('div'); nm.className='name'; nm.textContent=isUnlocked(id)?f.name:'???'; card.appendChild(nm); if(!isUnlocked(id)){ const lock=document.createElement('div'); lock.className='lock'; lock.textContent='🔒'; card.appendChild(lock); } grid.appendChild(card); setTimeout(()=>drawPortrait(cv,f),10); }); }
-
 let upgradeSelectedId=null;
 function refreshUpgrade(){
   const grid=$('upgradeGrid'); grid.innerHTML='';
@@ -685,92 +351,22 @@ function refreshUpgrade(){
   const cost=getUpgradeCost(lvl);
   const canBuy = profile.kk >= cost && lvl < MAX_LEVEL;
   const msg = lvl >= MAX_LEVEL ? f.name + ': МАКСИМУМ' : f.name + ' L' + lvl + '\nПрокачать за 💾 ' + cost + '?\n(У тебя: ' + profile.kk + ')';
-  if (confirm(msg) && canBuy){
-    profile.kk -= cost;
-    profile.levels[f.id] = lvl + 1;
-    saveProfile();
-    updateProfileUI();
-    refreshUpgrade();
-  }
+  if (confirm(msg) && canBuy){ profile.kk -= cost; profile.levels[f.id] = lvl + 1; saveProfile(); updateProfileUI(); refreshUpgrade(); }
 }
-
 function goToMenu(){ $('menu').style.display='flex'; updateProfileUI(); switchMainTab('play'); }
-
-/* ================== ИГРА ================== */
 const canvas=$('game'); const ctx=canvas.getContext('2d');
 let W=0,H=0,dpr=1;
 function resize(){ dpr=Math.min(devicePixelRatio,2); W=innerWidth; H=innerHeight; canvas.width=W*dpr; canvas.height=H*dpr; canvas.style.width=W+'px'; canvas.style.height=H+'px'; ctx.setTransform(dpr,0,0,dpr,0,0); }
 addEventListener('resize',resize); resize();
-
 let gameActive=false, side=null, allies=[], enemies=[], bullets=[], particles=[], floatingTexts=[], zones=[];
-let keys={}, yaw=0, camera2D={x:0,z:0}, shakeAmount=0;
+let keys={}, camera2D={x:0,z:0}, shakeAmount=0;
 const ARENA=40, ZOOM=24;
 let superCharge=0, superActive=false, superTimer=0;
 const MAX_AMMO=3, RELOAD_TIME=2.0;
 let ammo=MAX_AMMO, ammoTimer=0, battleKK=0, battleTrophies=0;
-const touch={ move:{active:false,id:null,dx:0,dy:0,cx:0,cy:0,r:65}, attack:{active:false,id:null,dx:0,dy:0,cx:0,cy:0,r:65}, super:{active:false,id:null,dx:0,dy:0,cx:0,cy:0,r:65}, firing:false };
-const player={ x:0, z:14, hp:100, maxHp:100, fighter:null, walkPhase:0, shield:0, velX:0, velZ:0, respawnTimer:0, dead:false, stats:null, lastShot:0 };
-let aimX=1, aimZ=0;
-
-/* ============ PC-РЕЖИМ ============ */
-let pcMode = false;               // включён ли режим мыши
-let mouseScreenX = 0, mouseScreenY = 0;   // экранные координаты мыши
-let mouseDown = false;            // ЛКМ зажата
-let mouseSuperDown = false;       // ПКМ зажата
-const PC_DETECT_KEY = 'digital_style_pc_mode';
-
-function enablePCMode(){
-  if(pcMode) return;
-  pcMode = true;
-  try{ localStorage.setItem(PC_DETECT_KEY,'1'); }catch(e){}
-  // Скрыть джойстики и тач-зоны
-  $('joyL').style.display='none';
-  $('joyAttack').style.display='none';
-  $('joySuper').style.display='none';
-  $('leftZone').style.pointerEvents='none';
-  $('attackZone').style.pointerEvents='none';
-  $('superZone').style.pointerEvents='none';
-  // Показать подсказку и перекрестие
-  $('pcHint').style.display='block';
-  $('pcCrosshair').style.display='block';
-}
-function disablePCMode(){
-  pcMode=false;
-  try{ localStorage.removeItem(PC_DETECT_KEY); }catch(e){}
-  $('pcHint').style.display='none';
-  $('pcCrosshair').style.display='none';
-  $('playerAimRay').style.display='none';
-  $('playerAimDot').style.display='none';
-}
-// Автодетект: если пользователь двигает мышь — включаем PC-режим
-addEventListener('mousemove', (e)=>{
-  mouseScreenX=e.clientX; mouseScreenY=e.clientY;
-  if(!pcMode && gameActive) enablePCMode();
-}, {passive:true});
-// Если тач — выключаем PC-режим
-addEventListener('touchstart', ()=>{
-  if(pcMode) disablePCMode();
-}, {passive:true});
-// Мышь: стрельба и ульта
-canvas.addEventListener('mousedown', (e)=>{
-  if(!gameActive || !pcMode) return;
-  if(e.button===0){ mouseDown=true; }
-  if(e.button===2){ mouseSuperDown=true; e.preventDefault(); }
-});
-addEventListener('mouseup', (e)=>{
-  if(e.button===0) mouseDown=false;
-  if(e.button===2) mouseSuperDown=false;
-});
-canvas.addEventListener('contextmenu', e=>{ if(pcMode) e.preventDefault(); });
-
-function screenToWorld(sx, sy){
-  // Обратное преобразование worldToScreen
-  return {
-    x: camera2D.x + (sx - W/2) / ZOOM,
-    z: camera2D.z + (sy - H*0.68) / ZOOM
-  };
-}
-
+const touch={ move:{active:false,id:null,dx:0,dy:0,cx:0,cy:0,r:65}, attack:{active:false,id:null,dx:0,dy:0,cx:0,cy:0,r:65}, super:{active:false,id:null,dx:0,dy:0,cx:0,cy:0,r:65} };
+const player={ x:0, z:14, hp:100, maxHp:100, fighter:null, walkPhase:0, shield:0, respawnTimer:0, dead:false, stats:null, lastShot:0 };
+function worldToScreen(wx,wz){ return { x: W/2+(wx-camera2D.x)*ZOOM+(Math.random()-0.5)*shakeAmount, y: H*0.68+(wz-camera2D.z)*ZOOM+(Math.random()-0.5)*shakeAmount }; }
 function spawnCharacters(myFighter){
   const pStats=getFighterStats(myFighter);
   player.fighter=myFighter; player.stats=pStats;
@@ -780,26 +376,23 @@ function spawnCharacters(myFighter){
   const enemyKeys=Object.keys(FIGHTERS).filter(k=>FIGHTERS[k].side==='enemy');
   if(myFighter.side==='plant'){
     const allyGrid=[[-8,16],[8,16],[-4,20],[4,20]];
-    for(let i=0;i<4;i++){ const f=FIGHTERS[plantKeys[Math.floor(Math.random()*plantKeys.length)]]; allies.push({ x:allyGrid[i][0], z:allyGrid[i][1], hp:150, maxHp:150, fighter:f, stats:{hp:150,dmg:12,speed:6,fireRate:0.7,level:1}, ai:{cooldown:1+Math.random()*2,moveTimer:0,mdx:0,mdz:0,focusTimer:0,dodgeTimer:0}, ammo:3, ammoTimer:0, walkPhase:Math.random()*10, target:null, velX:0, velZ:0 }); }
+    for(let i=0;i<4;i++){ const f=FIGHTERS[plantKeys[Math.floor(Math.random()*plantKeys.length)]]; allies.push({ x:allyGrid[i][0], z:allyGrid[i][1], hp:150, maxHp:150, fighter:f, stats:{hp:150,dmg:12,speed:6,fireRate:0.7,level:1}, ai:{cooldown:1+Math.random()*2,moveTimer:0,mdx:0,mdz:0}, ammo:3, ammoTimer:0, walkPhase:Math.random()*10 }); }
     const eFighter=FIGHTERS[enemyKeys[Math.floor(Math.random()*enemyKeys.length)]];
     const eStats=getFighterStats(eFighter);
     const bossHp=Math.round(eStats.hp*ENEMY_BOSS_BUFF.hp);
-    enemies.push({ x:0, z:-16, hp:bossHp, maxHp:bossHp, fighter:eFighter, stats:{hp:bossHp,dmg:eStats.dmg*1.4,speed:eStats.speed*1.15,fireRate:eStats.fireRate*0.85,level:1}, isBoss:true, ai:{cooldown:1.5,moveTimer:0,mdx:0,mdz:0,focusTimer:0,dodgeTimer:0}, ammo:3, ammoTimer:0, walkPhase:0, target:null, velX:0, velZ:0 });
+    enemies.push({ x:0, z:-16, hp:bossHp, maxHp:bossHp, fighter:eFighter, stats:{hp:bossHp,dmg:eStats.dmg*1.4,speed:eStats.speed*1.15,fireRate:eStats.fireRate*0.85,level:1}, isBoss:true, ai:{cooldown:1.5,moveTimer:0,mdx:0,mdz:0}, ammo:3, ammoTimer:0, walkPhase:0 });
   } else {
     const eg=[[0,-16],[-9,-14],[9,-14],[-5,-19],[5,-19]];
-    for(let i=0;i<5;i++){ const f=FIGHTERS[plantKeys[Math.floor(Math.random()*plantKeys.length)]]; enemies.push({ x:eg[i][0], z:eg[i][1], hp:150, maxHp:150, fighter:f, stats:{hp:150,dmg:12,speed:6,fireRate:0.7,level:1}, isBoss:false, ai:{cooldown:1+Math.random()*2,moveTimer:0,mdx:0,mdz:0,focusTimer:0,dodgeTimer:0}, ammo:3, ammoTimer:0, walkPhase:Math.random()*10, target:null, velX:0, velZ:0 }); }
+    for(let i=0;i<5;i++){ const f=FIGHTERS[plantKeys[Math.floor(Math.random()*plantKeys.length)]]; enemies.push({ x:eg[i][0], z:eg[i][1], hp:150, maxHp:150, fighter:f, stats:{hp:150,dmg:12,speed:6,fireRate:0.7,level:1}, isBoss:false, ai:{cooldown:1+Math.random()*2,moveTimer:0,mdx:0,mdz:0}, ammo:3, ammoTimer:0, walkPhase:Math.random()*10 }); }
   }
 }
 function spawnParticles(x,z,color,count,speed){ for(let i=0;i<count;i++){ const a=Math.random()*Math.PI*2,s=speed*(0.5+Math.random()); particles.push({x,z,vx:Math.cos(a)*s,vz:Math.sin(a)*s,life:0.5,maxLife:0.5,color,size:2+Math.random()*3}); } }
-function spawnFloatingText(x,z,text,color){ floatingTexts.push({x,z,text,color,life:1.0,maxLife:1.0}); }
-
 function performAttack(shooter, dirX, dirZ, isEnemy, fromPlayer, fromAlly, baseDmg){
   const color = fromPlayer ? (side==='enemy'?'#00e5ff':'#7cf86b') : (fromAlly?'#7cf86b':(side==='enemy'?'#7cf86b':'#00e5ff'));
   const baseAngle = Math.atan2(dirX, dirZ);
   bullets.push({ x:shooter.x, z:shooter.z, dx:Math.sin(baseAngle), dz:Math.cos(baseAngle), speed:30, fromPlayer, fromAlly, isSuper:false, baseDmg, radius:6, color, life:2.5 });
   spawnParticles(shooter.x+dirX, shooter.z+dirZ, color, 3, 3);
 }
-
 function updateAIUnit(unit, dt, allUnits, isEnemy){
   const ai=unit.ai;
   if(unit.ammo<3){ unit.ammoTimer+=dt; if(unit.ammoTimer>=2.0){ unit.ammoTimer-=2.0; unit.ammo++; } }
@@ -829,7 +422,6 @@ function updateAIUnit(unit, dt, allUnits, isEnemy){
     unit.ammo--; ai.cooldown = (unit.stats ? unit.stats.fireRate : 0.6);
   }
 }
-
 function updateBullets(dt){
   for(let i=bullets.length-1;i>=0;i--){
     const b=bullets[i];
@@ -840,32 +432,17 @@ function updateBullets(dt){
     if(b.fromPlayer||b.fromAlly){
       for(let j=0;j<enemies.length;j++){
         const e=enemies[j]; if(e.hp<=0) continue;
-        if(Math.hypot(e.x-b.x, e.z-b.z)<hitR){
-          e.hp=Math.max(0,e.hp-b.baseDmg);
-          if(b.fromPlayer) addSuperCharge(b.baseDmg);
-          if(e.hp<=0){ battleKK+=10; battleTrophies+=2; }
-          dead=true; break;
-        }
+        if(Math.hypot(e.x-b.x, e.z-b.z)<hitR){ e.hp=Math.max(0,e.hp-b.baseDmg); if(b.fromPlayer) addSuperCharge(b.baseDmg); if(e.hp<=0){ battleKK+=10; battleTrophies+=2; } dead=true; break; }
       }
     } else {
-      if(!player.dead && Math.hypot(player.x-b.x, player.z-b.z)<hitR){
-        const d=b.baseDmg*(player.shield>0?0.3:1);
-        player.hp=Math.max(0,player.hp-d); shakeAmount=6;
-        if(player.hp<=0) killPlayer();
-        dead=true;
-      } else {
-        for(let j=0;j<allies.length;j++){
-          const a=allies[j]; if(a.hp<=0) continue;
-          if(Math.hypot(a.x-b.x, a.z-b.z)<hitR){ a.hp=Math.max(0,a.hp-b.baseDmg); dead=true; break; }
-        }
-      }
+      if(!player.dead && Math.hypot(player.x-b.x, player.z-b.z)<hitR){ const d=b.baseDmg*(player.shield>0?0.3:1); player.hp=Math.max(0,player.hp-d); shakeAmount=6; if(player.hp<=0) killPlayer(); dead=true; }
+      else { for(let j=0;j<allies.length;j++){ const a=allies[j]; if(a.hp<=0) continue; if(Math.hypot(a.x-b.x, a.z-b.z)<hitR){ a.hp=Math.max(0,a.hp-b.baseDmg); dead=true; break; } } }
     }
     if(dead){ spawnParticles(b.x, b.z, b.color, 4, 4); bullets.splice(i,1); }
   }
-  if(gameActive && enemies.every(e=>e.hp<=0)) endGame(true);
+  if(gameActive && enemies.length>0 && enemies.every(e=>e.hp<=0)) endGame(true);
   if(gameActive && player.dead && allies.every(a=>a.hp<=0)) endGame(false);
 }
-
 function killPlayer(){ player.dead=true; player.respawnTimer=RESPAWN_TIME; player.hp=0; spawnParticles(player.x, player.z, '#ff2e8a', 40, 15); shakeAmount=15; $('respawnOverlay').style.display='flex'; }
 function respawnPlayer(){
   let safeX=0, safeZ=12;
@@ -878,505 +455,19 @@ function respawnPlayer(){
   $('respawnOverlay').style.display='none';
   spawnParticles(player.x, player.z, '#7cf86b', 30, 12);
 }
-
 function updateEffects(dt){
   for(let i=particles.length-1;i>=0;i--){ const p=particles[i]; p.x+=p.vx*dt; p.z+=p.vz*dt; p.vx*=0.92; p.vz*=0.92; p.life-=dt; if(p.life<=0) particles.splice(i,1); }
   for(let i=floatingTexts.length-1;i>=0;i--){ const t=floatingTexts[i]; t.z-=dt*3; t.life-=dt; if(t.life<=0) floatingTexts.splice(i,1); }
   for(let i=zones.length-1;i>=0;i--){ const z=zones[i]; z.life-=dt; if(z.life<=0) zones.splice(i,1); }
 }
-
 function updateAmmo(dt){ if(ammo<MAX_AMMO){ ammoTimer+=dt; if(ammoTimer>=RELOAD_TIME){ ammoTimer-=RELOAD_TIME; ammo=Math.min(MAX_AMMO,ammo+1); } } else ammoTimer=0; updateAmmoUI(); }
 function updateAmmoUI(){ for(let i=0;i<MAX_AMMO;i++){ const el=$('ammo'+i); if(!el) continue; if(i<ammo){ el.classList.add('full'); el.querySelector('.fill').style.height='100%'; } else { el.classList.remove('full'); el.querySelector('.fill').style.height = (i===ammo ? (Math.min(1,ammoTimer/RELOAD_TIME)*100) : 0) + '%'; } } }
 function addSuperCharge(amount){ if(superActive) return; superCharge=Math.min(100, superCharge+amount*0.6); updateSuperUI(); }
 function updateSuperUI(){ const el=$('superFillBar'); if(el) el.style.width=superCharge+'%'; }
-
 function fireSuperAimed(dirX, dirZ){
   if(superCharge<100 || superActive) return;
   superActive=true; superCharge=0; superTimer=1.5; updateSuperUI();
   const dmgBase = player.stats.dmg;
   for(let ang=0; ang<Math.PI*2; ang+=Math.PI/8){
     const a = Math.atan2(dirX,dirZ)+ang;
-    bullets.push({ x:player.x, z:player.z, dx:Math.sin(a), dz:Math.cos(a), speed:20, fromPlayer:true, fromAlly:false, isSuper:true, baseDmg:dmgBase*1.5, radius:8, color:'#4ade80', life:1.5 });
-  }
-  shakeAmount=8;
-}
-
-/* ============ ИКОНКИ ============ */
-function createMiniAvatar(fighter, isPlayer, isEnemySide){
-  const wrap=document.createElement('div');
-  wrap.className='mini-avatar'+(isEnemySide?' enemy':'')+(isPlayer?' is-player':'');
-  const cv=document.createElement('canvas'); wrap.appendChild(cv);
-  const hpMini=document.createElement('div'); hpMini.className='hp-mini'; hpMini.innerHTML='<div class="fill"></div>'; wrap.appendChild(hpMini);
-  setTimeout(()=>{ const dpr=Math.min(devicePixelRatio,2); const size=30; cv.width=size*dpr; cv.height=size*dpr; const c=cv.getContext('2d'); c.scale(dpr,dpr); c.clearRect(0,0,size,size); drawFighterShape(c, fighter, size/2, size/2, size*0.9, -Math.PI/2, false); }, 30);
-  return wrap;
-}
-function buildTeamsBar(){
-  const left=$('teamLeft'), right=$('teamRight');
-  left.innerHTML=''; right.innerHTML='';
-  const pWrap = createMiniAvatar(player.fighter, true, side==='enemy');
-  left.appendChild(pWrap);
-  for(let i=0;i<allies.length;i++){ left.appendChild(createMiniAvatar(allies[i].fighter, false, side==='enemy')); }
-  for(let i=0;i<enemies.length;i++){ right.appendChild(createMiniAvatar(enemies[i].fighter, false, side!=='enemy')); }
-  $('teamsBar').style.display='flex';
-}
-
-/* ============ ЦИКЛ ============ */
-let lastT = performance.now();
-function update(dt){
-  if(shakeAmount>0) shakeAmount=Math.max(0, shakeAmount-dt*40);
-  if(!gameActive) return;
-  if(player.shield>0) player.shield=Math.max(0, player.shield-dt);
-  updateAmmo(dt);
-  if(player.dead){
-    player.respawnTimer -= dt;
-    $('respawnTimer').textContent = Math.max(0, Math.ceil(player.respawnTimer));
-    if(player.respawnTimer<=0) respawnPlayer();
-  }
-  if(!player.dead){
-    const spd=player.stats.speed;
-    let mx=0, mz=0;
-    // Тач-джойстик
-    const m=touch.move;
-    if(m.active){ mx=m.dx; mz=m.dy; }
-    // Клавиатура
-    if(keys['w']||keys['arrowup']) mz=-1;
-    if(keys['s']||keys['arrowdown']) mz=1;
-    if(keys['d']||keys['arrowright']) mx=1;
-    if(keys['a']||keys['arrowleft']) mx=-1;
-    const ml=Math.hypot(mx,mz);
-    if(ml>0){
-      mx/=ml; mz/=ml;
-      player.x += mx*spd*dt;
-      player.z += mz*spd*dt;
-      player.walkPhase += dt*10;
-    }
-    const lim=ARENA/2-1;
-    player.x=Math.max(-lim,Math.min(lim,player.x));
-    player.z=Math.max(-lim,Math.min(lim,player.z));
-
-    // ====== АТАКА ======
-    const now = performance.now()/1000;
-    const fireInterval = player.stats.fireRate;
-
-    if(pcMode){
-      // PC: прицел по мыши
-      const w = screenToWorld(mouseScreenX, mouseScreenY);
-      let dx = w.x - player.x, dz = w.z - player.z;
-      const d = Math.hypot(dx,dz)||1;
-      aimX = dx/d; aimZ = dz/d;
-
-      if(mouseDown && ammo>0 && (now - player.lastShot) >= fireInterval){
-        player.lastShot = now;
-        performAttack(player, aimX, aimZ, side==='enemy', true, false, player.stats.dmg);
-        ammo--; updateAmmoUI();
-      }
-      if(mouseSuperDown && superCharge>=100){
-        fireSuperAimed(aimX, aimZ);
-      }
-    } else {
-      // Мобильный: атака по джойстику
-      const a=touch.attack;
-      if(a.active && Math.hypot(a.dx,a.dy)>0.35){
-        const dirX=a.dx, dirZ=a.dy;
-        aimX=dirX; aimZ=dirZ;
-        if(ammo>0 && (now - player.lastShot) >= fireInterval){
-          player.lastShot=now;
-          performAttack(player, dirX, dirZ, side==='enemy', true, false, player.stats.dmg);
-          ammo--; updateAmmoUI();
-        }
-      }
-      const s=touch.super;
-      if(s.active && Math.hypot(s.dx,s.dy)>0.35 && superCharge>=100){
-        fireSuperAimed(s.dx, s.dy);
-      }
-    }
-  }
-  // AI
-  const allAlliesEnemies=[...allies, ...enemies];
-  for(const a of allies){ if(a.hp>0) updateAIUnit(a, dt, allAlliesEnemies, false); }
-  for(const e of enemies){ if(e.hp>0) updateAIUnit(e, dt, allAlliesEnemies, true); }
-  updateBullets(dt);
-  updateEffects(dt);
-  // Камера
-  camera2D.x += (player.x - camera2D.x)*Math.min(1,dt*4);
-  camera2D.z += (player.z - camera2D.z)*Math.min(1,dt*4);
-  // HUD
-  $('hpPlayer').textContent = '🌿 ' + Math.ceil(player.hp);
-  const totalEnemyHp = enemies.reduce((s,e)=>s+Math.max(0,e.hp),0);
-  const totalEnemyMax = enemies.reduce((s,e)=>s+e.maxHp,0);
-  $('hud').style.display = 'flex';
-  $('hud').querySelector('.e').textContent = '💠 ' + Math.ceil(totalEnemyHp) + (enemies.length>1?'':' / '+totalEnemyMax);
-}
-
-function draw(){
-  ctx.clearRect(0,0,W,H);
-  // Фон
-  const bgGrad = ctx.createRadialGradient(W/2, H*0.6, 50, W/2, H*0.6, Math.max(W,H)*0.8);
-  bgGrad.addColorStop(0, '#0d1a2b');
-  bgGrad.addColorStop(1, '#05070d');
-  ctx.fillStyle = bgGrad;
-  ctx.fillRect(0,0,W,H);
-  // Сетка арены
-  const half=ARENA/2;
-  ctx.strokeStyle='rgba(124,248,107,.08)';
-  ctx.lineWidth=1;
-  for(let i=-half; i<=half; i+=2){
-    const p1=worldToScreen(i, -half); const p2=worldToScreen(i, half);
-    ctx.beginPath(); ctx.moveTo(p1.x,p1.y); ctx.lineTo(p2.x,p2.y); ctx.stroke();
-    const p3=worldToScreen(-half, i); const p4=worldToScreen(half, i);
-    ctx.beginPath(); ctx.moveTo(p3.x,p3.y); ctx.lineTo(p4.x,p4.y); ctx.stroke();
-  }
-  // Граница
-  const tl=worldToScreen(-half,-half), br=worldToScreen(half,half);
-  ctx.strokeStyle='rgba(44,255,94,.5)'; ctx.lineWidth=2;
-  ctx.strokeRect(tl.x, tl.y, br.x-tl.x, br.y-tl.y);
-  // Частицы
-  for(const p of particles){
-    const s=worldToScreen(p.x,p.z);
-    ctx.globalAlpha = p.life/p.maxLife;
-    ctx.fillStyle = p.color;
-    ctx.beginPath(); ctx.arc(s.x, s.y, p.size, 0, Math.PI*2); ctx.fill();
-  }
-  ctx.globalAlpha=1;
-  // Бойцы
-  const allUnits=[];
-  if(!player.dead) allUnits.push({ u:player, isPlayer:true });
-  for(const a of allies) if(a.hp>0) allUnits.push({ u:a, isPlayer:false, isEnemy:false });
-  for(const e of enemies) if(e.hp>0) allUnits.push({ u:e, isPlayer:false, isEnemy:true });
-  allUnits.sort((a,b)=>a.u.z-b.u.z);
-  for(const {u, isPlayer, isEnemy} of allUnits){
-    const s=worldToScreen(u.x, u.z);
-    const size = isEnemy && u.isBoss ? 54 : 40;
-    drawFighterShape(ctx, u.fighter, s.x, s.y, size, 0, false);
-    if(!isPlayer){
-      const hpRatio = u.hp/u.maxHp;
-      const bw=36, bh=4;
-      ctx.fillStyle='rgba(0,0,0,.7)'; ctx.fillRect(s.x-bw/2, s.y-size*0.7, bw, bh);
-      ctx.fillStyle = isEnemy?'#00e5ff':'#7cf86b';
-      ctx.fillRect(s.x-bw/2, s.y-size*0.7, bw*hpRatio, bh);
-    }
-  }
-  // Aim ray (для PC)
-  if(pcMode && gameActive && !player.dead){
-    const ps = worldToScreen(player.x, player.z);
-    const w = screenToWorld(mouseScreenX, mouseScreenY);
-    const ws = worldToScreen(w.x, w.z);
-    const ray = $('playerAimRay');
-    const dot = $('playerAimDot');
-    ray.style.display='block'; dot.style.display='block';
-    ray.style.left = ps.x+'px';
-    ray.style.top = (ps.y-4)+'px';
-    const dx = ws.x-ps.x, dy = ws.y-ps.y;
-    const len = Math.hypot(dx,dy);
-    ray.style.width = len+'px';
-    ray.style.transform = 'rotate('+Math.atan2(dy,dx)+'rad)';
-    dot.style.left = ws.x+'px';
-    dot.style.top = ws.y+'px';
-    // Кроссхейр
-    const ch = $('pcCrosshair');
-    ch.style.left = mouseScreenX+'px';
-    ch.style.top = mouseScreenY+'px';
-  } else {
-    $('playerAimRay').style.display='none';
-    $('playerAimDot').style.display='none';
-  }
-  // Пули
-  for(const b of bullets){
-    const s=worldToScreen(b.x, b.z);
-    ctx.fillStyle=b.color;
-    ctx.shadowColor=b.color; ctx.shadowBlur=10;
-    ctx.beginPath(); ctx.arc(s.x, s.y, b.radius, 0, Math.PI*2); ctx.fill();
-    ctx.shadowBlur=0;
-  }
-  // Floating text
-  for(const t of floatingTexts){
-    const s=worldToScreen(t.x, t.z);
-    ctx.globalAlpha = t.life/t.maxLife;
-    ctx.fillStyle=t.color; ctx.font='bold 18px sans-serif'; ctx.textAlign='center';
-    ctx.fillText(t.text, s.x, s.y);
-  }
-  ctx.globalAlpha=1;
-}
-
-function loop(){
-  const now=performance.now();
-  const dt=Math.min(0.05, (now-lastT)/1000);
-  lastT=now;
-  update(dt);
-  draw();
-  requestAnimationFrame(loop);
-}
-
-/* ============ СТАРТ/КОНЕЦ ИГРЫ ============ */
-function startGame(fighter){
-  side=fighter.side;
-  gameActive=true;
-  battleKK=0; battleTrophies=0;
-  superCharge=0; superActive=false;
-  ammo=MAX_AMMO; ammoTimer=0;
-  bullets=[]; particles=[]; floatingTexts=[]; zones=[];
-  spawnCharacters(fighter);
-  buildTeamsBar();
-  $('hud').style.display='flex';
-  $('ammoBox').style.display='flex';
-  $('leave').style.display='block';
-  $('respawnOverlay').style.display='none';
-  $('msg').style.display='none';
-  // Включить PC-режим если пользователь им уже пользовался
-  let wasPC=false;
-  try{ wasPC = localStorage.getItem(PC_DETECT_KEY)==='1'; }catch(e){}
-  if(wasPC) enablePCMode();
-  if(!pcMode){
-    $('leftZone').style.display='block';
-    $('attackZone').style.display='block';
-    $('superZone').style.display='block';
-    $('joyL').style.display='block';
-    $('joyAttack').style.display='block';
-    $('joySuper').style.display='block';
-    $('leftZone').style.pointerEvents='auto';
-    $('attackZone').style.pointerEvents='auto';
-    $('superZone').style.pointerEvents='auto';
-  }
-  camera2D.x=player.x; camera2D.z=player.z;
-  updateAmmoUI(); updateSuperUI();
-  lastT=performance.now();
-  requestAnimationFrame(loop);
-}
-
-function endGame(win){
-  if(!gameActive) return;
-  gameActive=false;
-  profile.kk += battleKK + (win?50:0);
-  profile.trophies += battleTrophies + (win?10:-5);
-  if(profile.trophies<0) profile.trophies=0;
-  saveProfile();
-  updateProfileUI();
-  const m=$('msg');
-  m.textContent = win ? '🏆 ПОБЕДА!' : '💀 ПОРАЖЕНИЕ';
-  m.style.color = win ? '#7cf86b' : '#ff2e8a';
-  m.style.display='block';
-  setTimeout(()=>{
-    m.style.display='none';
-    $('hud').style.display='none';
-    $('ammoBox').style.display='none';
-    $('leftZone').style.display='none';
-    $('attackZone').style.display='none';
-    $('superZone').style.display='none';
-    $('joyL').style.display='none';
-    $('joyAttack').style.display='none';
-    $('joySuper').style.display='none';
-    $('leave').style.display='none';
-    $('teamsBar').style.display='none';
-    $('respawnOverlay').style.display='none';
-    $('playerAimRay').style.display='none';
-    $('playerAimDot').style.display='none';
-    goToMenu();
-  }, 2500);
-}
-
-$('leave').onclick=()=>{ if(!gameActive) return; if(confirm('Выйти из боя?')){ gameActive=false; $('hud').style.display='none'; $('ammoBox').style.display='none'; $('leftZone').style.display='none'; $('attackZone').style.display='none'; $('superZone').style.display='none'; $('joyL').style.display='none'; $('joyAttack').style.display='none'; $('joySuper').style.display='none'; $('leave').style.display='none'; $('teamsBar').style.display='none'; $('playerAimRay').style.display='none'; $('playerAimDot').style.display='none'; goToMenu(); } };
-
-/* ============ УПРАВЛЕНИЕ ============ */
-addEventListener('keydown', e=>{ keys[e.key.toLowerCase()]=true; });
-addEventListener('keyup', e=>{ keys[e.key.toLowerCase()]=false; });
-
-function bindJoystick(zoneEl, joyEl, t){
-  zoneEl.addEventListener('touchstart', e=>{
-    if(pcMode) return;
-    e.preventDefault();
-    const touch = e.changedTouches[0];
-    t.active=true; t.id=touch.identifier;
-    t.cx=touch.clientX; t.cy=touch.clientY;
-    joyEl.style.left = touch.clientX+'px';
-    joyEl.style.top = touch.clientY+'px';
-    joyEl.style.transform='translate(-50%,-50%)';
-    joyEl.style.display='block';
-  }, {passive:false});
-  zoneEl.addEventListener('touchmove', e=>{
-    if(pcMode) return;
-    e.preventDefault();
-    for(const touch of e.changedTouches){
-      if(touch.identifier===t.id){
-        let dx = touch.clientX - t.cx;
-        let dy = touch.clientY - t.cy;
-        const d = Math.hypot(dx,dy);
-        const max = 50;
-        if(d>max){ dx=dx/d*max; dy=dy/d*max; }
-        t.dx = dx/max; t.dy = dy/max;
-        const knob = joyEl.querySelector('.knob');
-        if(knob){ knob.style.left = (50 + (dx/max)*40)+'%'; knob.style.top = (50 + (dy/max)*40)+'%'; knob.style.transform='translate(-50%,-50%)'; }
-      }
-    }
-  }, {passive:false});
-  const end = e=>{
-    for(const touch of e.changedTouches){
-      if(touch.identifier===t.id){
-        t.active=false; t.id=null; t.dx=0; t.dy=0;
-        const knob = joyEl.querySelector('.knob');
-        if(knob){ knob.style.left='50%'; knob.style.top='50%'; }
-        joyEl.style.display='none';
-      }
-    }
-  };
-  zoneEl.addEventListener('touchend', end, {passive:false});
-  zoneEl.addEventListener('touchcancel', end, {passive:false});
-}
-bindJoystick($('leftZone'), $('joyL'), touch.move);
-bindJoystick($('attackZone'), $('joyAttack'), touch.attack);
-bindJoystick($('superZone'), $('joySuper'), touch.super);
-
-/* ============ ОНЛАЙН (WebSocket) ============ */
-let ws=null, myRole=null, myRoomId=null, opponentFighter=null, myFighter=null;
-
-function openOnlineRoom(){ $('onlineLobby').classList.add('show'); resetLobby(); }
-function resetLobby(){
-  $('lobbyStatus').textContent='Выбери действие';
-  $('lobbyStatus').classList.remove('err');
-  $('lobbyHost1').style.display='block';
-  $('lobbyHost2').style.display='none';
-  $('lobbyJoin1').style.display='block';
-  $('lobbyPickStep').style.display='none';
-}
-function closeLobby(){
-  $('onlineLobby').classList.remove('show');
-  if(ws){ try{ ws.close(); }catch(e){} ws=null; }
-  myRole=null; myRoomId=null; opponentFighter=null; myFighter=null;
-}
-function connectWS(){
-  return new Promise((resolve,reject)=>{
-    const proto = location.protocol==='https:'?'wss:':'ws:';
-    const url = proto + '//' + location.host;
-    ws = new WebSocket(url);
-    ws.onopen = ()=>resolve(ws);
-    ws.onerror = (e)=>reject(e);
-    ws.onmessage = (e)=>{
-      let msg; try{ msg=JSON.parse(e.data); }catch(_){ return; }
-      handleWsMessage(msg);
-    };
-    ws.onclose = ()=>{ $('lobbyStatus').textContent='Соединение потеряно'; $('lobbyStatus').classList.add('err'); };
-  });
-}
-function handleWsMessage(msg){
-  switch(msg.type){
-    case 'room-created':
-      myRoomId=msg.roomId;
-      $('lobbyHostCode').textContent=msg.roomId;
-      $('lobbyHost1').style.display='none';
-      $('lobbyJoin1').style.display='none';
-      $('lobbyHost2').style.display='block';
-      $('lobbyStatus').textContent='Ждём гостя...';
-      break;
-    case 'joined-room':
-      myRoomId=msg.roomId;
-      $('lobbyStatus').textContent='Подключено к '+msg.hostUsername;
-      showPickStep();
-      break;
-    case 'opponent-joined':
-      $('lobbyStatus').textContent=msg.username+' подключился!';
-      showPickStep();
-      break;
-    case 'opponent-left':
-      $('lobbyStatus').textContent='Противник вышел';
-      $('lobbyStatus').classList.add('err');
-      setTimeout(closeLobby, 1500);
-      break;
-    case 'relay':
-      if(msg.payload && msg.payload.type==='fighter-picked'){
-        opponentFighter = FIGHTERS[msg.payload.fighterId];
-        if(myFighter) startOnlineBattle();
-      }
-      break;
-    case 'error':
-      $('lobbyStatus').textContent=msg.message;
-      $('lobbyStatus').classList.add('err');
-      break;
-  }
-}
-function showPickStep(){
-  $('lobbyHost1').style.display='none';
-  $('lobbyHost2').style.display='none';
-  $('lobbyJoin1').style.display='none';
-  $('lobbyPickStep').style.display='block';
-  const row=$('lobbyPickRow'); row.innerHTML='';
-  const ids=Object.keys(FIGHTERS).filter(isUnlocked);
-  ids.forEach(id=>{
-    const f=FIGHTERS[id];
-    const el=document.createElement('div');
-    el.className='mini-fighter'+(f.side==='enemy'?' enemy':'');
-    const cv=document.createElement('canvas'); el.appendChild(cv);
-    el.onclick=()=>{
-      myFighter=f;
-      row.querySelectorAll('.mini-fighter').forEach(x=>x.classList.remove('selected'));
-      el.classList.add('selected');
-      if(ws && ws.readyState===1) ws.send(JSON.stringify({ type:'relay', payload:{ type:'fighter-picked', fighterId:f.id } }));
-      if(opponentFighter) startOnlineBattle();
-    };
-    row.appendChild(el);
-    setTimeout(()=>drawPortrait(cv,f),20);
-  });
-}
-function startOnlineBattle(){
-  if(!myFighter || !opponentFighter) return;
-  closeLobby();
-  $('menu').style.display='none';
-  side = myFighter.side;
-  gameActive=true;
-  battleKK=0; battleTrophies=0;
-  superCharge=0; ammo=MAX_AMMO; ammoTimer=0;
-  bullets=[]; particles=[]; floatingTexts=[]; zones=[];
-  const pStats=getFighterStats(myFighter);
-  player.fighter=myFighter; player.stats=pStats;
-  player.x=0; player.z=14; player.hp=pStats.hp; player.maxHp=pStats.hp; player.dead=false;
-  allies=[];
-  const oStats=getFighterStats(opponentFighter);
-  enemies=[{ x:0, z:-16, hp:oStats.hp, maxHp:oStats.hp, fighter:opponentFighter, stats:{hp:oStats.hp,dmg:oStats.dmg,speed:oStats.speed,fireRate:oStats.fireRate,level:1}, isBoss:true, ai:{cooldown:1,moveTimer:0,mdx:0,mdz:0,focusTimer:0,dodgeTimer:0}, ammo:3, ammoTimer:0, walkPhase:0, target:null, velX:0, velZ:0 }];
-  buildTeamsBar();
-  $('hud').style.display='flex';
-  $('ammoBox').style.display='flex';
-  $('leave').style.display='block';
-  let wasPC=false;
-  try{ wasPC = localStorage.getItem(PC_DETECT_KEY)==='1'; }catch(e){}
-  if(wasPC) enablePCMode();
-  if(!pcMode){
-    $('leftZone').style.display='block';
-    $('attackZone').style.display='block';
-    $('superZone').style.display='block';
-    $('joyL').style.display='block';
-    $('joyAttack').style.display='block';
-    $('joySuper').style.display='block';
-  }
-  camera2D.x=player.x; camera2D.z=player.z;
-  updateAmmoUI(); updateSuperUI();
-  lastT=performance.now();
-  requestAnimationFrame(loop);
-}
-
-$('lobbyBtnCreate').onclick=async ()=>{
-  $('lobbyStatus').textContent='Создание...';
-  try{
-    if(!ws) await connectWS();
-    ws.send(JSON.stringify({ type:'create-room', username:'Хост' }));
-    myRole='host';
-  }catch(e){ $('lobbyStatus').textContent='Ошибка соединения'; $('lobbyStatus').classList.add('err'); }
-};
-$('lobbyBtnJoinAccept').onclick=async ()=>{
-  const code=$('lobbyJoinOfferIn').value.trim();
-  if(!/^\d{6}$/.test(code)){ $('lobbyStatus').textContent='Код — 6 цифр'; $('lobbyStatus').classList.add('err'); return; }
-  $('lobbyStatus').textContent='Подключение...';
-  try{
-    if(!ws) await connectWS();
-    ws.send(JSON.stringify({ type:'join-room', roomId:code, username:'Гость' }));
-    myRole='guest';
-  }catch(e){ $('lobbyStatus').textContent='Ошибка соединения'; $('lobbyStatus').classList.add('err'); }
-};
-$('lobbyBtnStartGame').onclick=()=>{ if(myFighter && opponentFighter) startOnlineBattle(); else $('lobbyStatus').textContent='Ждём противника...'; };
-$('lobbyBtnCancel').onclick=closeLobby;
-
-/* ============ ИНИЦИАЛИЗАЦИЯ ============ */
-/* ============ ИНИЦИАЛИЗАЦИЯ ============ */
-updateProfileUI();
-switchMainTab('play');
-setTimeout(()=>{ const f=FIGHTERS[profile.selected.plant]; if(f) pickFighter(f); }, 50);
-</script>
-</body>
-</html>
+    bullets.push({ x:player.x, z:player.z, dx:Math.sin(a), dz:Math.cos(a), speed:20, fromPlayer:true, fromAlly:false, isSuper:true, baseDmg:dmgBase*1.5, radius:8, color:'#4ade80', life:1.5 })
