@@ -471,3 +471,271 @@ function fireSuperAimed(dirX, dirZ){
   for(let ang=0; ang<Math.PI*2; ang+=Math.PI/8){
     const a = Math.atan2(dirX,dirZ)+ang;
     bullets.push({ x:player.x, z:player.z, dx:Math.sin(a), dz:Math.cos(a), speed:20, fromPlayer:true, fromAlly:false, isSuper:true, baseDmg:dmgBase*1.5, radius:8, color:'#4ade80', life:1.5 })
+  }
+}
+function createMiniAvatar(fighter, isPlayer, isEnemySide){
+  const wrap=document.createElement('div');
+  wrap.className='mini-avatar'+(isEnemySide?' enemy':'')+(isPlayer?' is-player':'');
+  const cv=document.createElement('canvas'); wrap.appendChild(cv);
+  setTimeout(()=>{ if(!fighter) return; const dpr=Math.min(devicePixelRatio,2); const size=30; cv.width=size*dpr; cv.height=size*dpr; const c=cv.getContext('2d'); c.scale(dpr,dpr); c.clearRect(0,0,size,size); drawFighterShape(c, fighter, size/2, size/2, size*0.9, -Math.PI/2, false); }, 30);
+  return wrap;
+}
+function buildTeamsBar(){
+  const left=$('teamLeft'), right=$('teamRight');
+  left.innerHTML=''; right.innerHTML='';
+  if(player.fighter) left.appendChild(createMiniAvatar(player.fighter, true, side==='enemy'));
+  for(let i=0;i<allies.length;i++){ left.appendChild(createMiniAvatar(allies[i].fighter, false, side==='enemy')); }
+  for(let i=0;i<enemies.length;i++){ right.appendChild(createMiniAvatar(enemies[i].fighter, false, side!=='enemy')); }
+  $('teamsBar').style.display='flex';
+}
+let lastT = performance.now();
+function update(dt){
+  if(shakeAmount>0) shakeAmount=Math.max(0, shakeAmount-dt*40);
+  if(!gameActive) return;
+  if(player.shield>0) player.shield=Math.max(0, player.shield-dt);
+  updateAmmo(dt);
+  if(player.dead){
+    player.respawnTimer -= dt;
+    $('respawnTimer').textContent = Math.max(0, Math.ceil(player.respawnTimer));
+    if(player.respawnTimer<=0) respawnPlayer();
+  }
+  if(!player.dead){
+    const spd=player.stats.speed;
+    let mx=0, mz=0;
+    const m=touch.move;
+    if(m.active){ mx=m.dx; mz=m.dy; }
+    if(keys['w']||keys['arrowup']) mz=-1;
+    if(keys['s']||keys['arrowdown']) mz=1;
+    if(keys['d']||keys['arrowright']) mx=1;
+    if(keys['a']||keys['arrowleft']) mx=-1;
+    const ml=Math.hypot(mx,mz);
+    if(ml>0){ mx/=ml; mz/=ml; player.x += mx*spd*dt; player.z += mz*spd*dt; player.walkPhase += dt*10; }
+    const lim=ARENA/2-1;
+    player.x=Math.max(-lim,Math.min(lim,player.x));
+    player.z=Math.max(-lim,Math.min(lim,player.z));
+    const now = performance.now()/1000;
+    const fireInterval = player.stats.fireRate;
+    const a=touch.attack;
+    if(a.active && Math.hypot(a.dx,a.dy)>0.35){
+      if(ammo>0 && (now - player.lastShot) >= fireInterval){
+        player.lastShot=now;
+        performAttack(player, a.dx, a.dy, side==='enemy', true, false, player.stats.dmg);
+        ammo--; updateAmmoUI();
+      }
+    }
+    const s=touch.super;
+    if(s.active && Math.hypot(s.dx,s.dy)>0.35 && superCharge>=100){ fireSuperAimed(s.dx, s.dy); }
+  }
+  const allAlliesEnemies=[...allies, ...enemies];
+  for(const a of allies){ if(a.hp>0) updateAIUnit(a, dt, allAlliesEnemies, false); }
+  for(const e of enemies){ if(e.hp>0) updateAIUnit(e, dt, allAlliesEnemies, true); }
+  updateBullets(dt);
+  updateEffects(dt);
+  camera2D.x += (player.x - camera2D.x)*Math.min(1,dt*4);
+  camera2D.z += (player.z - camera2D.z)*Math.min(1,dt*4);
+  $('hpPlayer').textContent = '🌿 ' + Math.ceil(player.hp);
+  const totalEnemyHp = enemies.reduce((s,e)=>s+Math.max(0,e.hp),0);
+  const totalEnemyMax = enemies.reduce((s,e)=>s+e.maxHp,0);
+  $('hud').style.display = 'flex';
+  $('hud').querySelector('.e').textContent = '💠 ' + Math.ceil(totalEnemyHp) + (enemies.length>1?'':' / '+totalEnemyMax);
+}
+function draw(){
+  ctx.clearRect(0,0,W,H);
+  const bgGrad = ctx.createRadialGradient(W/2, H*0.6, 50, W/2, H*0.6, Math.max(W,H)*0.8);
+  bgGrad.addColorStop(0, '#0d1a2b');
+  bgGrad.addColorStop(1, '#05070d');
+  ctx.fillStyle = bgGrad;
+  ctx.fillRect(0,0,W,H);
+  const half=ARENA/2;
+  ctx.strokeStyle='rgba(124,248,107,.08)';
+  ctx.lineWidth=1;
+  for(let i=-half; i<=half; i+=2){
+    const p1=worldToScreen(i, -half); const p2=worldToScreen(i, half);
+    ctx.beginPath(); ctx.moveTo(p1.x,p1.y); ctx.lineTo(p2.x,p2.y); ctx.stroke();
+    const p3=worldToScreen(-half, i); const p4=worldToScreen(half, i);
+    ctx.beginPath(); ctx.moveTo(p3.x,p3.y); ctx.lineTo(p4.x,p4.y); ctx.stroke();
+  }
+  const tl=worldToScreen(-half,-half), br=worldToScreen(half,half);
+  ctx.strokeStyle='rgba(44,255,94,.5)'; ctx.lineWidth=2;
+  ctx.strokeRect(tl.x, tl.y, br.x-tl.x, br.y-tl.y);
+  for(const p of particles){ const s=worldToScreen(p.x,p.z); ctx.globalAlpha = p.life/p.maxLife; ctx.fillStyle = p.color; ctx.beginPath(); ctx.arc(s.x, s.y, p.size, 0, Math.PI*2); ctx.fill(); }
+  ctx.globalAlpha=1;
+  const allUnits=[];
+  if(!player.dead) allUnits.push({ u:player, isPlayer:true });
+  for(const a of allies) if(a.hp>0) allUnits.push({ u:a, isPlayer:false, isEnemy:false });
+  for(const e of enemies) if(e.hp>0) allUnits.push({ u:e, isPlayer:false, isEnemy:true });
+  allUnits.sort((a,b)=>a.u.z-b.u.z);
+  for(const {u, isPlayer, isEnemy} of allUnits){
+    const s=worldToScreen(u.x, u.z);
+    const size = isEnemy && u.isBoss ? 54 : 40;
+    drawFighterShape(ctx, u.fighter, s.x, s.y, size, 0, false);
+    if(!isPlayer){
+      const hpRatio = u.hp/u.maxHp;
+      const bw=36, bh=4;
+      ctx.fillStyle='rgba(0,0,0,.7)'; ctx.fillRect(s.x-bw/2, s.y-size*0.7, bw, bh);
+      ctx.fillStyle = isEnemy?'#00e5ff':'#7cf86b';
+      ctx.fillRect(s.x-bw/2, s.y-size*0.7, bw*hpRatio, bh);
+    }
+  }
+  for(const b of bullets){ const s=worldToScreen(b.x, b.z); ctx.fillStyle=b.color; ctx.shadowColor=b.color; ctx.shadowBlur=10; ctx.beginPath(); ctx.arc(s.x, s.y, b.radius, 0, Math.PI*2); ctx.fill(); ctx.shadowBlur=0; }
+  for(const t of floatingTexts){ const s=worldToScreen(t.x, t.z); ctx.globalAlpha = t.life/t.maxLife; ctx.fillStyle=t.color; ctx.font='bold 18px sans-serif'; ctx.textAlign='center'; ctx.fillText(t.text, s.x, s.y); }
+  ctx.globalAlpha=1;
+}
+function loop(){ const now=performance.now(); const dt=Math.min(0.05, (now-lastT)/1000); lastT=now; update(dt); draw(); requestAnimationFrame(loop); }
+function startGame(fighter){
+  side=fighter.side; gameActive=true; battleKK=0; battleTrophies=0; superCharge=0; superActive=false;
+  ammo=MAX_AMMO; ammoTimer=0; bullets=[]; particles=[]; floatingTexts=[]; zones=[];
+  spawnCharacters(fighter);
+  buildTeamsBar();
+  $('hud').style.display='flex'; $('ammoBox').style.display='flex'; $('leave').style.display='block';
+  $('respawnOverlay').style.display='none'; $('msg').style.display='none';
+  $('leftZone').style.display='block'; $('attackZone').style.display='block'; $('superZone').style.display='block';
+  $('joyL').style.display='block'; $('joyAttack').style.display='block'; $('joySuper').style.display='block';
+  camera2D.x=player.x; camera2D.z=player.z;
+  updateAmmoUI(); updateSuperUI();
+  lastT=performance.now(); requestAnimationFrame(loop);
+}
+function endGame(win){
+  if(!gameActive) return;
+  gameActive=false;
+  profile.kk += battleKK + (win?50:0);
+  profile.trophies += battleTrophies + (win?10:-5);
+  if(profile.trophies<0) profile.trophies=0;
+  saveProfile(); updateProfileUI();
+  const m=$('msg');
+  m.textContent = win ? '🏆 ПОБЕДА!' : '💀 ПОРАЖЕНИЕ';
+  m.style.color = win ? '#7cf86b' : '#ff2e8a';
+  m.style.display='block';
+  setTimeout(()=>{
+    m.style.display='none';
+    $('hud').style.display='none'; $('ammoBox').style.display='none';
+    $('leftZone').style.display='none'; $('attackZone').style.display='none'; $('superZone').style.display='none';
+    $('joyL').style.display='none'; $('joyAttack').style.display='none'; $('joySuper').style.display='none';
+    $('leave').style.display='none'; $('teamsBar').style.display='none';
+    $('respawnOverlay').style.display='none';
+    goToMenu();
+  }, 2500);
+}
+$('leave').onclick=()=>{ if(!gameActive) return; if(confirm('Выйти из боя?')){ gameActive=false; $('hud').style.display='none'; $('ammoBox').style.display='none'; $('leftZone').style.display='none'; $('attackZone').style.display='none'; $('superZone').style.display='none'; $('joyL').style.display='none'; $('joyAttack').style.display='none'; $('joySuper').style.display='none'; $('leave').style.display='none'; $('teamsBar').style.display='none'; goToMenu(); } };
+addEventListener('keydown', e=>{ keys[e.key.toLowerCase()]=true; });
+addEventListener('keyup', e=>{ keys[e.key.toLowerCase()]=false; });
+function bindJoystick(zoneEl, joyEl, t){
+  zoneEl.addEventListener('touchstart', e=>{
+    e.preventDefault();
+    const touch = e.changedTouches[0];
+    t.active=true; t.id=touch.identifier; t.cx=touch.clientX; t.cy=touch.clientY;
+    joyEl.style.left = touch.clientX+'px'; joyEl.style.top = touch.clientY+'px';
+    joyEl.style.transform='translate(-50%,-50%)'; joyEl.style.display='block';
+  }, {passive:false});
+  zoneEl.addEventListener('touchmove', e=>{
+    e.preventDefault();
+    for(const touch of e.changedTouches){
+      if(touch.identifier===t.id){
+        let dx = touch.clientX - t.cx, dy = touch.clientY - t.cy;
+        const d = Math.hypot(dx,dy); const max = 50;
+        if(d>max){ dx=dx/d*max; dy=dy/d*max; }
+        t.dx = dx/max; t.dy = dy/max;
+        const knob = joyEl.querySelector('.knob');
+        if(knob){ knob.style.left = (50 + (dx/max)*40)+'%'; knob.style.top = (50 + (dy/max)*40)+'%'; knob.style.transform='translate(-50%,-50%)'; }
+      }
+    }
+  }, {passive:false});
+  const end = e=>{
+    for(const touch of e.changedTouches){
+      if(touch.identifier===t.id){
+        t.active=false; t.id=null; t.dx=0; t.dy=0;
+        const knob = joyEl.querySelector('.knob');
+        if(knob){ knob.style.left='50%'; knob.style.top='50%'; }
+        joyEl.style.display='none';
+      }
+    }
+  };
+  zoneEl.addEventListener('touchend', end, {passive:false});
+  zoneEl.addEventListener('touchcancel', end, {passive:false});
+}
+bindJoystick($('leftZone'), $('joyL'), touch.move);
+bindJoystick($('attackZone'), $('joyAttack'), touch.attack);
+bindJoystick($('superZone'), $('joySuper'), touch.super);
+function openOnlineRoom(){ $('onlineLobby').classList.add('show'); resetLobby(); }
+function resetLobby(){
+  $('lobbyStatus').textContent='Выбери действие'; $('lobbyStatus').classList.remove('err');
+  $('lobbyHost1').style.display='block'; $('lobbyHost2').style.display='none';
+  $('lobbyJoin1').style.display='block'; $('lobbyPickStep').style.display='none';
+}
+function closeLobby(){
+  $('onlineLobby').classList.remove('show');
+  if(ws){ try{ ws.close(); }catch(e){} ws=null; }
+  opponentFighter=null; myFighter=null;
+}
+let ws=null, opponentFighter=null, myFighter=null;
+function connectWS(){
+  return new Promise((resolve,reject)=>{
+    const proto = location.protocol==='https:'?'wss:':'ws:';
+    ws = new WebSocket(proto + '//' + location.host);
+    ws.onopen = ()=>resolve(ws);
+    ws.onerror = (e)=>reject(e);
+    ws.onmessage = (e)=>{ let msg; try{ msg=JSON.parse(e.data); }catch(_){ return; } handleWsMessage(msg); };
+    ws.onclose = ()=>{ $('lobbyStatus').textContent='Соединение потеряно'; $('lobbyStatus').classList.add('err'); };
+  });
+}
+function handleWsMessage(msg){
+  switch(msg.type){
+    case 'room-created': $('lobbyHostCode').textContent=msg.roomId; $('lobbyHost1').style.display='none'; $('lobbyJoin1').style.display='none'; $('lobbyHost2').style.display='block'; $('lobbyStatus').textContent='Ждём гостя...'; break;
+    case 'joined-room': $('lobbyStatus').textContent='Подключено к '+msg.hostUsername; showPickStep(); break;
+    case 'opponent-joined': $('lobbyStatus').textContent=msg.username+' подключился!'; showPickStep(); break;
+    case 'opponent-left': $('lobbyStatus').textContent='Противник вышел'; $('lobbyStatus').classList.add('err'); setTimeout(closeLobby, 1500); break;
+    case 'relay': if(msg.payload && msg.payload.type==='fighter-picked'){ opponentFighter = FIGHTERS[msg.payload.fighterId]; if(myFighter) startOnlineBattle(); } break;
+    case 'error': $('lobbyStatus').textContent=msg.message; $('lobbyStatus').classList.add('err'); break;
+  }
+}
+function showPickStep(){
+  $('lobbyHost1').style.display='none'; $('lobbyHost2').style.display='none';
+  $('lobbyJoin1').style.display='none'; $('lobbyPickStep').style.display='block';
+  const row=$('lobbyPickRow'); row.innerHTML='';
+  const ids=Object.keys(FIGHTERS).filter(isUnlocked);
+  ids.forEach(id=>{
+    const f=FIGHTERS[id];
+    const el=document.createElement('div');
+    el.className='mini-fighter'+(f.side==='enemy'?' enemy':'');
+    const cv=document.createElement('canvas'); el.appendChild(cv);
+    el.onclick=()=>{
+      myFighter=f;
+      row.querySelectorAll('.mini-fighter').forEach(x=>x.classList.remove('selected'));
+      el.classList.add('selected');
+      if(ws && ws.readyState===1) ws.send(JSON.stringify({ type:'relay', payload:{ type:'fighter-picked', fighterId:f.id } }));
+      if(opponentFighter) startOnlineBattle();
+    };
+    row.appendChild(el);
+    setTimeout(()=>drawPortrait(cv,f),20);
+  });
+}
+function startOnlineBattle(){
+  if(!myFighter || !opponentFighter) return;
+  closeLobby();
+  $('menu').style.display='none';
+  side = myFighter.side; gameActive=true; battleKK=0; battleTrophies=0; superCharge=0; ammo=MAX_AMMO; ammoTimer=0;
+  bullets=[]; particles=[]; floatingTexts=[]; zones=[];
+  const pStats=getFighterStats(myFighter);
+  player.fighter=myFighter; player.stats=pStats;
+  player.x=0; player.z=14; player.hp=pStats.hp; player.maxHp=pStats.hp; player.dead=false;
+  allies=[];
+  const oStats=getFighterStats(opponentFighter);
+  enemies=[{ x:0, z:-16, hp:oStats.hp, maxHp:oStats.hp, fighter:opponentFighter, stats:{hp:oStats.hp,dmg:oStats.dmg,speed:oStats.speed,fireRate:oStats.fireRate,level:1}, isBoss:true, ai:{cooldown:1,moveTimer:0,mdx:0,mdz:0}, ammo:3, ammoTimer:0, walkPhase:0 }];
+  buildTeamsBar();
+  $('hud').style.display='flex'; $('ammoBox').style.display='flex'; $('leave').style.display='block';
+  $('leftZone').style.display='block'; $('attackZone').style.display='block'; $('superZone').style.display='block';
+  $('joyL').style.display='block'; $('joyAttack').style.display='block'; $('joySuper').style.display='block';
+  camera2D.x=player.x; camera2D.z=player.z;
+  updateAmmoUI(); updateSuperUI();
+  lastT=performance.now(); requestAnimationFrame(loop);
+}
+$('lobbyBtnCreate').onclick=async ()=>{ $('lobbyStatus').textContent='Создание...'; try{ if(!ws) await connectWS(); ws.send(JSON.stringify({ type:'create-room', username:'Хост' })); }catch(e){ $('lobbyStatus').textContent='Ошибка'; $('lobbyStatus').classList.add('err'); } };
+$('lobbyBtnJoinAccept').onclick=async ()=>{ const code=$('lobbyJoinOfferIn').value.trim(); if(!/^\d{6}$/.test(code)){ $('lobbyStatus').textContent='Код — 6 цифр'; $('lobbyStatus').classList.add('err'); return; } $('lobbyStatus').textContent='Подключение...'; try{ if(!ws) await connectWS(); ws.send(JSON.stringify({ type:'join-room', roomId:code, username:'Гость' })); }catch(e){ $('lobbyStatus').textContent='Ошибка'; $('lobbyStatus').classList.add('err'); } };
+$('lobbyBtnStartGame').onclick=()=>{ if(myFighter && opponentFighter) startOnlineBattle(); else $('lobbyStatus').textContent='Ждём противника...'; };
+$('lobbyBtnCancel').onclick=closeLobby;
+updateProfileUI();
+switchMainTab('play');
+setTimeout(()=>{ const f=FIGHTERS[profile.selected.plant]; if(f) pickFighter(f); }, 50);
+</script>
+</body>
+</html>
