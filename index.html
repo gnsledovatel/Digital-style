@@ -52,7 +52,7 @@ html,body{width:100%;height:100%;overflow:hidden;background:#000;font-family:-ap
 #boxOpening .result-card .rtype{font-size:11px;color:#9fd7ff}
 #boxOpening .tap-hint{color:#9fd7ff;font-size:13px;margin-top:20px}
 
-#playBtn{width:100%;max-width:440px;padding:14px;font-size:clamp(13px,3.6vw,17px);font-weight:900;letter-spacing:2px;color:#05070d;background:linear-gradient(180deg,#7cf86b,#2cff5e);border:2px solid #a8ffa0;border-radius:12px;text-align:center;cursor:pointer;opacity:.4;display:none}
+#playBtn{width:100%;max-width:440px;padding:14px;font-size:clamp(13px,3.6vw,17px);font-weight:900;letter-spacing:2px;color:#05070d;background:linear-gradient(180deg,#7cf86b,#2cff5e);border:2px solid #a8ffa0;border-radius:12px;text-align:center;cursor:pointer;opacity:.55;display:none}
 #playBtn.ready{opacity:1}
 #playBtn.show{display:block}
 
@@ -376,7 +376,7 @@ function refreshPick(){
     setTimeout(()=>drawPortrait(cv,f),10);
   });
 }
-function pickFighter(f){ chosenFighter=f; profile.selected[f.side]=f.id; saveProfile(); document.querySelectorAll('.pick-card').forEach(el=>el.classList.toggle('selected',el.dataset.id===f.id)); $('playBtn').textContent='В БОЙ: '+f.name; $('playBtn').classList.add('ready'); }
+function pickFighter(f){ chosenFighter=f; profile.selected[f.side]=f.id; saveProfile(); document.querySelectorAll('.pick-card').forEach(el=>el.classList.toggle('selected',el.dataset.id===f.id)); $('playBtn').textContent='В БОЙ: '+f.name; $('playBtn').classList.add('ready'); $('playBtn').classList.add('show'); }
 $('tabPlant').onclick=()=>{ pickSide='plant'; $('tabPlant').style.border='2px solid #7cf86b'; $('tabPlant').style.background='linear-gradient(180deg,#1c3d1f,#0e2410)'; $('tabEnemy').style.border='2px solid transparent'; $('tabEnemy').style.background='rgba(255,255,255,.06)'; refreshPick(); };
 $('tabEnemy').onclick=()=>{ pickSide='enemy'; $('tabEnemy').style.border='2px solid #00e5ff'; $('tabEnemy').style.background='linear-gradient(180deg,#0b2b3d,#04141d)'; $('tabPlant').style.border='2px solid transparent'; $('tabPlant').style.background='rgba(255,255,255,.06)'; refreshPick(); };
 $('playBtn').onclick=()=>{ if(!chosenFighter) return; $('menu').style.display='none'; startGame(chosenFighter); };
