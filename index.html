@@ -1,6 +1,15 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
+<div id="errBox" style="position:fixed;top:0;left:0;right:0;background:#ff2e8a;color:#fff;font:12px monospace;padding:8px;z-index:99999;display:none;white-space:pre-wrap;max-height:50vh;overflow:auto"></div>
+<script>
+window.onerror = function(msg, src, line, col){
+  var box = document.getElementById('errBox');
+  if(!box) return;
+  box.style.display = 'block';
+  box.textContent += '[ERROR] ' + msg + '\n  at line ' + line + ':' + col + '\n';
+};
+</script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
 <meta name="theme-color" content="#05070d">
