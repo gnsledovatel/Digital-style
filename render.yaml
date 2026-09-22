@@ -1,0 +1,9 @@
+services:
+  - type: web
+    name: digital-style
+    env: node
+    buildCommand: npm install
+    startCommand: npm start
+    envVars:
+      - key: SELF_URL
+        sync: false
