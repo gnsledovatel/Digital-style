@@ -266,6 +266,274 @@ html,body{width:100%;height:100%;overflow:hidden;background:#000;font-family:-ap
     <b>WASD</b> — движение · <b>ЛКМ</b> — атака · <b>ПКМ</b> — ульта
   </div>
 
+  <div id="debugPanel" style="position:absolute;top:120px;left:8px;background:rgba(0,0,0,.85);color:#0ff;font:11px monospace;padding:8px;border-radius:6px;z-index:999;display:none;max-width:320px;white-space:pre-wrap;pointer-events:none"></div>
+
+  <div id="respawnOverlay">
+    <div class="big">ТЫ ПАЛ</div>
+    <div class="timer" id="respawnTimer">5</div>
+    <div class="info">Возрождение если жив союзник</div>
+  </div>
+
+  <div id="msg"></div>
+  <div id="trophyToast"></div>
+</div>
+<script type="module">
+const $ = id => document.getElementById(id);
+
+/* ================== ПРОФИЛЬ ================== */
+const SAVE_KEY = 'digital_style_v16';
+let profile = {
+  kk: 200, trophies: 0,
+  unlocked: { plant_0: true, plant_1: true, plant_2: true, inv_0: true },
+  levels: {}, selected: { plant: 'plant_0', enemy: 'inv_0' }
+};
+try { const raw = localStorage.getItem(SAVE_KEY); if (raw) Object.assign(profile, JSON.parse(raw)); } catch(e){}
+function saveProfile(){ try { localStorage.setItem(SAVE_KEY, JSON.stringify(profile)); } catch(e){} }
+function getLevel(id){ return profile.levels[id] || 1; }
+const MAX_LEVEL = 10;
+function getUpgradeCost(level){ return 100 * level * level; }
+
+/* ================== БОЙЦЫ ================== */
+const PLANT_NAMES = ['КУСТ','КАКТУС','ЦВЕТОК','ДЕРЕВО','ГРИБ','ЯГОДА','БАМБУК','ЛИЛИЯ','РОЗА','ПАЛЬМА'];
+const PLANT_COLORS = ['#7cf86b','#4ade80','#f472b6','#166534','#ef4444','#ec4899','#22c55e','#fef3c7','#dc2626','#10b981'];
+const PLANT_SHAPES = ['blob','cactus','flower','tree','mushroom','berry','bamboo','lily','rose','palm'];
+const PLANT_ATTACKS = ['single','triple','shotgun','long','rapid','pierce','grenade','homing','wave','spiral'];
+const PLANT_SUPERS = ['heal','spikes','laser','roots','poison','burst','walls','shield','thorns','wave'];
+const INVADER_NAMES = ['ДРОН','ТАНК','СНАЙПЕР','ЖУК','ПРИЗРАК'];
+const INVADER_COLORS = ['#00e5ff','#0891b2','#6366f1','#a855f7','#e0e7ff'];
+const INVADER_SHAPES = ['drone','tank','sniper','bug','ghost'];
+const INVADER_ATTACKS = ['triple','grenade','lon.box-card.common{border-color:#7cf86b}
+.box-card.rare{border-color:#00e5ff}
+.box-card.epic{border-color:#a855f7}
+.box-card.legend{border-color:#ffd54f}
+.box-card .icon{font-size:36px}
+.box-card .title{font-size:11px;font-weight:900;color:#fff;text-align:center}
+.box-card .price{font-size:11px;font-weight:800;color:#ffb300;margin-top:4px}
+#boxOpening{position:fixed;inset:0;z-index:150;background:rgba(0,0,0,.9);display:none;flex-direction:column;align-items:center;justify-content:center}
+#boxOpening .box-anim{width:160px;height:200px;background:linear-gradient(180deg,#2a1a3a,#1a0f25);border:3px solid #a855f7;border-radius:20px;display:flex;align-items:center;justify-content:center;font-size:80px;animation:shake .6s infinite}
+@keyframes shake{0%,100%{transform:rotate(-3deg)}50%{transform:rotate(3deg)}}
+#boxOpening .result{display:none;flex-direction:column;align-items:center;gap:12px}
+#boxOpening .result.show{display:flex}
+#boxOpening .result-card{width:200px;padding:20px;background:linear-gradient(180deg,#1c3d1f,#0e2410);border:3px solid #7cf86b;border-radius:16px;text-align:center}
+#boxOpening .result-card canvas{width:80px;height:80px}
+#boxOpening .result-card .rname{font-weight:900;font-size:16px;color:#eaffea;margin-top:6px}
+#boxOpening .result-card .rtype{font-size:11px;color:#9fd7ff}
+#boxOpening .tap-hint{color:#9fd7ff;font-size:13px;margin-top:20px}
+
+#playBtn{width:100%;max-width:440px;padding:14px;font-size:clamp(13px,3.6vw,17px);font-weight:900;letter-spacing:2px;color:#05070d;background:linear-gradient(180deg,#7cf86b,#2cff5e);border:2px solid #a8ffa0;border-radius:12px;text-align:center;cursor:pointer;opacity:.55;display:none}
+#playBtn.ready{opacity:1}
+#playBtn.show{display:block}
+
+#onlineLobby{position:fixed;inset:0;z-index:190;background:rgba(5,7,13,.98);display:none;flex-direction:column;align-items:center;padding:20px;gap:14px;overflow-y:auto;pointer-events:auto}
+#onlineLobby.show{display:flex}
+#onlineLobby h2{font-size:clamp(20px,6vw,30px);font-weight:900;color:#00e5ff;text-align:center}
+#onlineLobby .lobby-step{width:100%;max-width:400px;padding:14px;background:rgba(0,0,0,.5);border:2px solid #00e5ff;border-radius:12px;display:flex;flex-direction:column;gap:10px}
+#onlineLobby .step-num{font-size:11px;font-weight:900;color:#ffb300;letter-spacing:2px}
+#onlineLobby .step-text{font-size:13px;color:#eaffea;font-weight:700}
+#onlineLobby button{padding:14px;background:linear-gradient(180deg,#00e5ff,#0891b2);border:none;color:#04141d;font-weight:900;font-size:14px;border-radius:12px;cursor:pointer;width:100%}
+#onlineLobby button.sec{background:linear-gradient(180deg,#2cff5e,#16a34a)}
+#onlineLobby button.cancel{background:linear-gradient(180deg,#ff2e8a,#be185d);color:#fff}
+#onlineLobby textarea{width:100%;padding:10px;background:rgba(255,255,255,.06);border:2px solid #00e5ff;border-radius:10px;color:#fff;font-size:14px;outline:none;resize:none}
+#onlineLobby .status-big{font-size:14px;font-weight:900;text-align:center;padding:10px;color:#7cf86b}
+#onlineLobby .status-big.err{color:#ff2e8a}
+#onlineLobby .pick-row{display:flex;gap:6px;flex-wrap:wrap;justify-content:center}
+#onlineLobby .mini-fighter{width:54px;height:54px;border-radius:50%;background:#0a1f10;border:2px solid #7cf86b;padding:2px;cursor:pointer;display:flex;align-items:center;justify-content:center}
+#onlineLobby .mini-fighter.enemy{border-color:#00e5ff;background:#0a1a2a}
+#onlineLobby .mini-fighter.selected{border-width:3px;box-shadow:0 0 12px #ffd54f;border-color:#ffd54f}
+#onlineLobby .mini-fighter canvas{width:100%;height:100%;border-radius:50%}
+
+#teamsBar{position:absolute;top:10px;left:50%;transform:translateX(-50%);display:none;gap:6px;padding:5px 8px;background:rgba(0,0,0,.55);border:2px solid #2cff5e;border-radius:12px;z-index:16}
+.mini-avatar{width:32px;height:32px;border-radius:50%;position:relative;background:#0a1f10;border:2px solid #7cf86b;overflow:hidden}
+.mini-avatar.enemy{border-color:#00e5ff;background:#0a1a2a}
+.mini-avatar.dead{opacity:.45;filter:grayscale(.8);border-color:#ff2e8a}
+.mini-avatar canvas{width:100%;height:100%}
+.mini-avatar .hp-mini{position:absolute;bottom:0;left:10%;right:10%;height:3px;background:rgba(0,0,0,.6)}
+.mini-avatar .hp-mini .fill{height:100%;background:#7cf86b;width:100%}
+.mini-avatar.enemy .hp-mini .fill{background:#00e5ff}
+.mini-avatar.is-player{border-width:3px;border-color:#ffd54f}
+
+#deadPanel{position:absolute;top:48px;left:50%;transform:translateX(-50%);display:none;gap:4px;padding:4px 8px;background:rgba(0,0,0,.55);border:2px solid #ff2e8a;border-radius:10px;z-index:15;align-items:center}
+#deadPanel .dead-label{font-size:10px;font-weight:900;color:#ff2e8a;padding:0 4px}
+#deadPanel .dead-mini{width:24px;height:24px;border-radius:50%;background:#1a0f0f;border:2px solid #ff2e8a;overflow:hidden;opacity:.6}
+#deadPanel .dead-mini.enemy{border-color:#00e5ff;background:#0f1a1a}
+#deadPanel .dead-mini canvas{width:100%;height:100%}
+
+#hud{display:none;position:absolute;top:84px;left:50%;transform:translateX(-50%);gap:8px;align-items:center;padding:5px 10px;background:rgba(0,0,0,.5);border:2px solid #2cff5e;border-radius:10px;font-weight:800;font-size:13px}
+#hud .p{color:#7cf86b}#hud .e{color:#00e5ff}#hud .vs{color:#ff2e8a}
+
+#ammoBox{position:absolute;left:50%;transform:translateX(-50%);bottom:10px;display:none;gap:5px;padding:6px 10px;background:rgba(0,0,0,.55);border:2px solid #ffb300;border-radius:10px;z-index:15}
+#ammoBox .ammo{width:20px;height:20px;border-radius:5px;background:#3a2200;border:2px solid #7a4a00;position:relative;overflow:hidden}
+#ammoBox .ammo.full{background:#ffb300;border-color:#ffe680}
+#ammoBox .ammo .fill{position:absolute;left:0;right:0;bottom:0;background:#ffb300;height:0%}
+
+#leftZone,#attackZone,#superZone{position:absolute;pointer-events:auto;touch-action:none;display:none}
+#leftZone{left:0;bottom:0;width:50%;height:55%}
+#attackZone{right:0;bottom:0;width:50%;height:55%}
+#superZone{right:0;top:0;width:50%;height:45%}
+
+.joy-fixed{position:absolute;width:110px;height:110px;border-radius:50%;pointer-events:none;display:none;z-index:5}
+.joy-fixed .knob{position:absolute;top:50%;left:50%;width:44px;height:44px;border-radius:50%;transform:translate(-50%,-50%)}
+#joyL{left:25%;top:77.5%;transform:translate(-50%,-50%);background:radial-gradient(circle,rgba(124,248,107,.18) 0%,transparent 70%);border:2px solid rgba(124,248,107,.7)}
+#joyL .knob{background:radial-gradient(circle at 35% 30%,#a8ffa0,#2cff5e 60%,#0f4a1c)}
+#joyAttack{left:75%;top:77.5%;transform:translate(-50%,-50%);background:radial-gradient(circle,rgba(0,229,255,.18) 0%,transparent 70%);border:2px solid rgba(0,229,255,.7)}
+#joyAttack .knob{background:radial-gradient(circle at 35% 30%,#a8f5ff,#00e5ff 60%,#003a4a)}
+#joySuper{left:75%;top:22.5%;transform:translate(-50%,-50%);background:radial-gradient(circle,rgba(255,179,0,.18) 0%,transparent 70%);border:2px solid rgba(255,179,0,.7)}
+#joySuper .knob{background:radial-gradient(circle at 35% 30%,#ffe680,#ffb300 60%,#7a4a00)}
+.joy-fixed .label{position:absolute;top:-22px;left:50%;transform:translateX(-50%);font-size:10px;font-weight:800;color:#9fd7ff;white-space:nowrap}
+#joySuper .superFillWrap{position:absolute;bottom:-12px;left:0;right:0;height:6px;background:rgba(0,0,0,.5);border-radius:3px;overflow:hidden}
+#joySuper .superFillWrap .superFillBar{height:100%;width:0%;background:linear-gradient(90deg,#ffb300,#ffe680)}
+
+#playerAimRay{position:absolute;height:8px;border-radius:4px;transform-origin:0 50%;pointer-events:none;display:none;z-index:8;background:linear-gradient(90deg,rgba(0,229,255,.95) 0%,rgba(0,229,255,.05) 100%)}
+#playerAimDot{position:absolute;width:18px;height:18px;border-radius:50%;pointer-events:none;display:none;z-index:9;background:radial-gradient(circle,#a8f5ff,#00e5ff);transform:translate(-50%,-50%)}
+
+#pcCrosshair{position:absolute;width:26px;height:26px;pointer-events:none;display:none;z-index:12;transform:translate(-50%,-50%)}
+#pcCrosshair::before,#pcCrosshair::after{content:'';position:absolute;background:#00e5ff;box-shadow:0 0 6px #00e5ff}
+#pcCrosshair::before{left:50%;top:0;width:2px;height:100%;transform:translateX(-50%)}
+#pcCrosshair::after{top:50%;left:0;height:2px;width:100%;transform:translateY(-50%)}
+
+#respawnOverlay{position:absolute;inset:0;display:none;flex-direction:column;align-items:center;justify-content:center;background:rgba(0,0,0,.55);z-index:25;text-align:center}
+#respawnOverlay .big{font-size:clamp(26px,8vw,52px);font-weight:900;color:#ff2e8a}
+#respawnOverlay .timer{font-size:clamp(36px,12vw,80px);font-weight:900;color:#fff}
+#respawnOverlay .info{font-size:13px;color:#9fd7ff;margin-top:10px}
+
+#msg{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-size:clamp(28px,9vw,60px);font-weight:900;color:#fff;display:none;z-index:30;text-align:center}
+#trophyToast{position:absolute;top:32%;left:50%;transform:translateX(-50%);font-size:clamp(20px,6vw,36px);font-weight:900;color:#ffd54f;display:none;z-index:31;text-align:center}
+
+#leave{position:absolute;top:10px;right:8px;width:32px;height:32px;border-radius:50%;background:rgba(255,46,138,.25);border:2px solid #ff2e8a;color:#ff2e8a;font-size:15px;font-weight:900;line-height:28px;text-align:center;display:none;pointer-events:auto;cursor:pointer;z-index:20}
+
+#pcHint{position:absolute;bottom:12px;left:12px;display:none;font-size:11px;color:#9fd7ff;background:rgba(0,0,0,.5);padding:6px 10px;border-radius:8px;border:1px solid rgba(0,229,255,.4);z-index:14;line-height:1.5}
+#pcHint b{color:#00e5ff}
+</style>
+</head>
+<body>
+<canvas id="game"></canvas>
+<div id="ui">
+  <div id="menu">
+    <div id="profile">
+      <span class="kk" id="kkCounter">💾 200</span>
+      <span class="trophy" id="trophyCounter">🏆 0</span>
+      <span class="rank" id="rankLabel">Ранг: Дерево I</span>
+    </div>
+    <h1>Digital Style</h1>
+    <div class="mainTabs">
+      <div class="mainTab active" id="mtPlay">🎮 Играть</div>
+      <div class="mainTab" id="mtBoxes">📦 Боксы</div>
+      <div class="mainTab" id="mtCollection">👥 Бойцы</div>
+      <div class="mainTab" id="mtUpgrade">⬆ Прокачка</div>
+      <div class="mainTab" id="mtOnline">🌐 Онлайн</div>
+    </div>
+
+    <div class="screen active" id="scPlay">
+      <div style="width:100%;max-width:440px;display:flex;gap:6px">
+        <div id="tabPlant" style="flex:1;padding:10px;text-align:center;font-weight:800;border-radius:10px;cursor:pointer;border:2px solid #7cf86b;background:linear-gradient(180deg,#1c3d1f,#0e2410)">🌿 Растения</div>
+        <div id="tabEnemy" style="flex:1;padding:10px;text-align:center;font-weight:800;border-radius:10px;cursor:pointer;border:2px solid transparent;background:rgba(255,255,255,.06)">💠 Захватчики</div>
+      </div>
+      <div id="pickGrid" class="pick-grid"></div>
+    </div>
+
+    <div class="screen" id="scBoxes">
+      <h2 style="color:#a855f7">📦 Открывай боксы</h2>
+      <div class="boxes-row" id="boxesRow"></div>
+    </div>
+
+    <div class="screen" id="scCollection">
+      <h2 style="color:#7cf86b">👥 Коллекция</h2>
+      <div class="collection-grid" id="collectionGrid"></div>
+    </div>
+
+    <div class="screen" id="scUpgrade">
+      <h2 style="color:#ffd54f">⬆ Прокачка</h2>
+      <div class="collection-grid" id="upgradeGrid"></div>
+    </div>
+
+    <div id="playBtn">ВЫБЕРИ БОЙЦА</div>
+  </div>
+
+  <div id="onlineLobby">
+    <h2>🌐 ОНЛАЙН</h2>
+    <div class="status-big" id="lobbyStatus">Выбери действие</div>
+
+    <div class="lobby-step" id="lobbyHost1">
+      <div class="step-num">ТЫ — ХОСТ</div>
+      <div class="step-text">Создай комнату и дай другу код</div>
+      <button id="lobbyBtnCreate">СОЗДАТЬ КОМНАТУ</button>
+    </div>
+
+    <div class="lobby-step" id="lobbyHost2" style="display:none">
+      <div class="step-num">ШАГ 1</div>
+      <div class="step-text">Код для друга:</div>
+      <div id="lobbyHostCode" style="padding:14px;background:#05070d;border:2px solid #00e5ff;border-radius:8px;font-size:32px;font-weight:900;text-align:center;letter-spacing:6px;color:#a8f5ff">—</div>
+    </div>
+
+    <div class="lobby-step" id="lobbyJoin1">
+      <div class="step-num">ТЫ — ГОСТЬ</div>
+      <div class="step-text">Введи код от друга:</div>
+      <textarea id="lobbyJoinOfferIn" rows="2" placeholder="123456"></textarea>
+      <button class="sec" id="lobbyBtnJoinAccept">ПОДКЛЮЧИТЬСЯ</button>
+    </div>
+
+    <div class="lobby-step" id="lobbyPickStep" style="display:none">
+      <div class="step-num">ШАГ 2</div>
+      <div class="step-text">Выбери бойца:</div>
+      <div class="pick-row" id="lobbyPickRow"></div>
+      <button class="sec" id="lobbyBtnStartGame">НАЧАТЬ БОЙ</button>
+    </div>
+
+    <button class="cancel" id="lobbyBtnCancel">ЗАКРЫТЬ</button>
+  </div>
+
+  <div id="boxOpening">
+    <div class="box-anim" id="boxAnim">📦</div>
+    <div class="result" id="boxResult">
+      <div class="result-card" id="boxResultCard">
+        <canvas id="boxResultCanvas" width="80" height="80"></canvas>
+        <div class="rname" id="boxResultName">—</div>
+        <div class="rtype" id="boxResultType">—</div>
+      </div>
+      <div class="tap-hint">ТАП — ЗАКРЫТЬ</div>
+    </div>
+  </div>
+
+  <div id="teamsBar">
+    <div class="team" id="teamLeft"></div>
+    <div style="color:#ff2e8a;font-weight:900;padding:0 4px">VS</div>
+    <div class="team" id="teamRight"></div>
+  </div>
+
+  <div id="deadPanel">
+    <div class="dead-label">☠ ВЫБЫЛИ:</div>
+    <div id="deadPanelList" style="display:flex;gap:4px;align-items:center"></div>
+  </div>
+
+  <div id="hud">
+    <span class="p" id="hpPlayer">🌿 100</span>
+    <span class="vs">VS</span>
+    <span class="e" id="hpEnemy">💠 500</span>
+  </div>
+
+  <div id="ammoBox">
+    <div class="ammo" id="ammo0"><div class="fill"></div></div>
+    <div class="ammo" id="ammo1"><div class="fill"></div></div>
+    <div class="ammo" id="ammo2"><div class="fill"></div></div>
+  </div>
+
+  <div id="leave">✕</div>
+  <div id="leftZone"></div>
+  <div id="attackZone"></div>
+  <div id="superZone"></div>
+
+  <div class="joy-fixed" id="joyL"><div class="label">ДВИЖЕНИЕ</div><div class="knob"></div></div>
+  <div class="joy-fixed" id="joyAttack"><div class="label">АТАКА</div><div class="knob"></div></div>
+  <div class="joy-fixed" id="joySuper"><div class="label">УЛЬТА</div><div class="knob"></div><div class="superFillWrap"><div class="superFillBar" id="superFillBar"></div></div></div>
+
+  <div id="playerAimRay"></div>
+  <div id="playerAimDot"></div>
+  <div id="pcCrosshair"></div>
+
+  <div id="pcHint">
+    <b>WASD</b> — движение · <b>ЛКМ</b> — атака · <b>ПКМ</b> — ульта
+  </div>
+
   <div id="respawnOverlay">
     <div class="big">ТЫ ПАЛ</div>
     <div class="timer" id="respawnTimer">5</div>
