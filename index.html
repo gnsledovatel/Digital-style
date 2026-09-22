@@ -1096,8 +1096,9 @@ $('lobbyBtnStartGame').onclick=()=>{ if(myFighter && opponentFighter) startOnlin
 $('lobbyBtnCancel').onclick=closeLobby;
 
 /* ============ ИНИЦИАЛИЗАЦИЯ ============ */
+/* ============ ИНИЦИАЛИЗАЦИЯ ============ */
 updateProfileUI();
-refreshPick();
+switchMainTab('play');
 setTimeout(()=>{ const f=FIGHTERS[profile.selected.plant]; if(f) pickFighter(f); }, 50);
 </script>
 </body>
