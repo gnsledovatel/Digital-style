@@ -199,6 +199,37 @@ html,body{width:100%;height:100%;overflow:hidden;background:#000;font-family:-ap
 #msg{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-size:clamp(28px,9vw,60px);font-weight:900;color:#fff;display:none;z-index:30;text-align:center;pointer-events:none}
 #trophyToast{position:absolute;top:32%;left:50%;transform:translateX(-50%);font-size:clamp(20px,6vw,36px);font-weight:900;color:#ffd54f;display:none;z-index:31;text-align:center;pointer-events:none}
 #leave{position:absolute;top:calc(env(safe-area-inset-top) + 6px);right:8px;width:32px;height:32px;border-radius:50%;background:rgba(255,46,138,.25);border:2px solid #ff2e8a;color:#ff2e8a;font-size:15px;font-weight:900;line-height:28px;text-align:center;display:none;pointer-events:auto;cursor:pointer;z-index:20}
+#fighterCard{position:fixed;inset:0;z-index:300;background:rgba(5,7,13,.97);display:none;flex-direction:column;align-items:center;padding:16px;padding-top:calc(env(safe-area-inset-top) + 16px);gap:10px;overflow-y:auto;pointer-events:auto}
+#fighterCard.show{display:flex}
+#fighterCard .fc-top{width:100%;max-width:440px;display:flex;gap:10px;align-items:center}
+#fighterCard .fc-portrait{width:96px;height:96px;border-radius:14px;background:linear-gradient(180deg,#1c3d1f,#0e2410);border:3px solid #7cf86b;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+#fighterCard .fc-portrait.enemy{background:linear-gradient(180deg,#0b2b3d,#04141d);border-color:#00e5ff}
+#fighterCard .fc-portrait canvas{width:88px;height:88px}
+#fighterCard .fc-head{flex:1}
+#fighterCard .fc-name{font-size:22px;font-weight:900;color:#eaffea}
+#fighterCard .fc-side{font-size:11px;font-weight:800;color:#9fd7ff;margin-top:2px}
+#fighterCard .fc-rarity{font-size:11px;font-weight:900;padding:2px 8px;border-radius:6px;display:inline-block;margin-top:4px}
+#fighterCard .fc-rarity.common{background:#7cf86b;color:#04141d}
+#fighterCard .fc-rarity.rare{background:#00e5ff;color:#04141d}
+#fighterCard .fc-rarity.epic{background:#a855f7;color:#fff}
+#fighterCard .fc-rarity.legend{background:#ffd54f;color:#04141d}
+#fighterCard .fc-lvl{font-size:13px;font-weight:900;color:#ffd54f;margin-top:4px}
+#fighterCard .fc-grid{width:100%;max-width:440px;display:grid;grid-template-columns:1fr 1fr;gap:6px}
+#fighterCard .fc-stat{background:rgba(0,0,0,.5);border:2px solid #2cff5e;border-radius:10px;padding:8px 10px}
+#fighterCard .fc-stat .lbl{font-size:10px;font-weight:800;color:#9fd7ff;display:block}
+#fighterCard .fc-stat .val{font-size:18px;font-weight:900;color:#7cf86b}
+#fighterCard .fc-section{width:100%;max-width:440px;background:rgba(0,0,0,.5);border:2px solid #2cff5e;border-radius:10px;padding:10px;display:flex;flex-direction:column;gap:6px}
+#fighterCard .fc-section h3{font-size:11px;font-weight:900;color:#9fd7ff;text-transform:uppercase}
+#fighterCard .fc-section .row{display:flex;justify-content:space-between;font-size:13px}
+#fighterCard .fc-section .k{color:#9fd7ff;font-weight:700}
+#fighterCard .fc-section .v{color:#eaffea;font-weight:800}
+#fighterCard .fc-progress{width:100%;height:10px;background:rgba(0,0,0,.6);border-radius:5px;overflow:hidden;border:1px solid #2cff5e}
+#fighterCard .fc-progress .fill{height:100%;background:linear-gradient(90deg,#7cf86b,#2cff5e);width:0%}
+#fighterCard .fc-btn{width:100%;max-width:440px;padding:14px;border:2px solid;border-radius:12px;font-weight:900;font-size:15px;cursor:pointer;pointer-events:auto}
+#fighterCard .fc-btn[disabled]{opacity:.4}
+#fighterCard .fc-btn.upgrade{background:linear-gradient(180deg,#ffd54f,#ffb300);border-color:#ffe680;color:#05070d}
+#fighterCard .fc-btn.fight{background:linear-gradient(180deg,#2cff5e,#16a34a);border-color:#a8ffa0;color:#05070d}
+#fighterCard .fc-close{width:100%;max-width:440px;padding:12px;background:rgba(255,46,138,.25);border:2px solid #ff2e8a;color:#ff2e8a;font-weight:900;border-radius:12px;cursor:pointer;pointer-events:auto}
 #soundBtn{position:fixed;top:calc(env(safe-area-inset-top) + 6px);right:48px;width:32px;height:32px;border-radius:50%;background:rgba(0,229,255,.2);border:2px solid #00e5ff;color:#00e5ff;font-size:15px;line-height:28px;text-align:center;display:none;pointer-events:auto;cursor:pointer;z-index:20}
 </style>
 </head>
@@ -297,7 +328,29 @@ html,body{width:100%;height:100%;overflow:hidden;background:#000;font-family:-ap
   <button class="fc-btn fight" id="fcFightBtn" style="display:none">В БОЙ</button>
   <button class="fc-close" id="fcCloseBtn">ЗАКРЫТЬ</button>
 </div>
-
+<div id="fighterCard">
+  <div class="fc-top">
+    <div class="fc-portrait" id="fcPortrait"><canvas id="fcCanvas" width="88" height="88"></canvas></div>
+    <div class="fc-head">
+      <div class="fc-name" id="fcName">—</div>
+      <div class="fc-side" id="fcSide">—</div>
+      <div class="fc-rarity" id="fcRarity">—</div>
+      <div class="fc-lvl" id="fcLvl">L1 / L10</div>
+    </div>
+  </div>
+  <div class="fc-grid">
+    <div class="fc-stat"><span class="lbl">HP</span><span class="val" id="fcHp">—</span></div>
+    <div class="fc-stat"><span class="lbl">Урон</span><span class="val" id="fcDmg">—</span></div>
+    <div class="fc-stat"><span class="lbl">Скорость</span><span class="val" id="fcSpeed">—</span></div>
+    <div class="fc-stat"><span class="lbl">Скорострельность</span><span class="val" id="fcRate">—</span></div>
+  </div>
+  <div class="fc-section"><h3>Тип атаки</h3><div class="row"><span class="k" id="fcAttackName">—</span><span class="v" id="fcAttackKind">—</span></div></div>
+  <div class="fc-section"><h3>Ульта</h3><div class="row"><span class="k" id="fcSuperName">—</span><span class="v" id="fcSuperKind">—</span></div></div>
+  <div class="fc-section"><h3>Прокачка</h3><div class="fc-progress"><div class="fill" id="fcProgress"></div></div><div class="row"><span class="k">Уровень</span><span class="v" id="fcLvlRow">L1 / L10</span></div><div class="row"><span class="k">Цена след.</span><span class="v" id="fcCost">—</span></div></div>
+  <button class="fc-btn upgrade" id="fcUpgradeBtn" style="display:none">ПРОКАЧАТЬ</button>
+  <button class="fc-btn fight" id="fcFightBtn" style="display:none">В БОЙ</button>
+  <button class="fc-close" id="fcCloseBtn">ЗАКРЫТЬ</button>
+</div>
 <div id="authModal">
   <div class="logo">Digital Style</div>
   <div class="authTabs"><div class="authTab active" id="tabLogin">ВХОД</div><div class="authTab" id="tabRegister">РЕГИСТРАЦИЯ</div></div>
