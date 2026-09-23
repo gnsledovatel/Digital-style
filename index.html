@@ -142,6 +142,41 @@ html,body{width:100%;height:100%;overflow:hidden;background:#000;font-family:-ap
 #authModal .hint{font-size:12px;color:#9fd7ff;text-align:center;max-width:320px;line-height:1.4}
 #authModal .err{color:#ff2e8a;font-weight:800;font-size:13px;text-align:center;min-height:18px}
 #authEmail{display:none}
+#fighterCard{position:fixed;inset:0;z-index:200;background:rgba(5,7,13,.96);display:none;flex-direction:column;align-items:center;justify-content:flex-start;padding:16px;gap:10px;overflow-y:auto;pointer-events:auto}
+#fighterCard.show{display:flex}
+#fighterCard .fc-top{width:100%;max-width:440px;display:flex;align-items:center;gap:10px}
+#fighterCard .fc-portrait{width:96px;height:96px;border-radius:14px;background:linear-gradient(180deg,#1c3d1f,#0e2410);border:3px solid #7cf86b;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+#fighterCard .fc-portrait.enemy{background:linear-gradient(180deg,#0b2b3d,#04141d);border-color:#00e5ff}
+#fighterCard .fc-portrait canvas{width:88px;height:88px}
+#fighterCard .fc-head{flex:1;display:flex;flex-direction:column;gap:2px}
+#fighterCard .fc-name{font-size:22px;font-weight:900;color:#eaffea;line-height:1.1}
+#fighterCard .fc-side{font-size:11px;font-weight:800;color:#9fd7ff}
+#fighterCard .fc-rarity{font-size:11px;font-weight:900;padding:2px 8px;border-radius:6px;display:inline-block;align-self:flex-start;margin-top:3px}
+#fighterCard .fc-rarity.common{background:#7cf86b;color:#04141d}
+#fighterCard .fc-rarity.rare{background:#00e5ff;color:#04141d}
+#fighterCard .fc-rarity.epic{background:#a855f7;color:#fff}
+#fighterCard .fc-rarity.legend{background:#ffd54f;color:#04141d}
+#fighterCard .fc-lvl{font-size:13px;font-weight:900;color:#ffd54f;margin-top:3px}
+#fighterCard .fc-grid{width:100%;max-width:440px;display:grid;grid-template-columns:1fr 1fr;gap:6px}
+#fighterCard .fc-stat{background:rgba(0,0,0,.5);border:2px solid #2cff5e;border-radius:10px;padding:8px 10px;display:flex;flex-direction:column;gap:2px}
+#fighterCard .fc-stat .lbl{font-size:10px;font-weight:800;color:#9fd7ff;text-transform:uppercase}
+#fighterCard .fc-stat .val{font-size:18px;font-weight:900;color:#7cf86b}
+#fighterCard .fc-stat .sub{font-size:10px;color:#ffd54f}
+#fighterCard .fc-section{width:100%;max-width:440px;background:rgba(0,0,0,.5);border:2px solid #2cff5e;border-radius:10px;padding:10px;display:flex;flex-direction:column;gap:6px}
+#fighterCard .fc-section h3{font-size:11px;font-weight:900;color:#9fd7ff;text-transform:uppercase;letter-spacing:1px}
+#fighterCard .fc-section .row{display:flex;justify-content:space-between;align-items:center;font-size:13px}
+#fighterCard .fc-section .row .k{color:#9fd7ff;font-weight:700}
+#fighterCard .fc-section .row .v{color:#eaffea;font-weight:800}
+#fighterCard .fc-section .desc{font-size:12px;color:#c8e6c9;line-height:1.35;background:rgba(124,248,107,.08);padding:8px;border-radius:8px;border-left:3px solid #7cf86b}
+#fighterCard .fc-section.enemy .desc{background:rgba(0,229,255,.08);border-left-color:#00e5ff;color:#b3e5fc}
+#fighterCard .fc-progress{width:100%;height:10px;background:rgba(0,0,0,.6);border-radius:5px;overflow:hidden;border:1px solid #2cff5e}
+#fighterCard .fc-progress .fill{height:100%;background:linear-gradient(90deg,#7cf86b,#2cff5e);width:0%}
+#fighterCard .fc-btn{width:100%;max-width:440px;padding:14px;background:linear-gradient(180deg,#7cf86b,#2cff5e);border:2px solid #a8ffa0;color:#05070d;font-weight:900;font-size:15px;border-radius:12px;cursor:pointer;text-align:center}
+#fighterCard .fc-btn[disabled]{opacity:.4;cursor:not-allowed}
+#fighterCard .fc-btn.upgrade{background:linear-gradient(180deg,#ffd54f,#ffb300);border-color:#ffe680}
+#fighterCard .fc-btn.fight{background:linear-gradient(180deg,#2cff5e,#16a34a);border-color:#a8ffa0}
+#fighterCard .fc-close{width:100%;max-width:440px;padding:12px;background:rgba(255,46,138,.25);border:2px solid #ff2e8a;color:#ff2e8a;font-weight:900;font-size:14px;border-radius:12px;cursor:pointer;text-align:center}
+#fighterCard .fc-compare{font-size:11px;color:#ffd54f;text-align:center;margin-top:2px}
 </style>
 </head>
 <body>
@@ -222,6 +257,45 @@ html,body{width:100%;height:100%;overflow:hidden;background:#000;font-family:-ap
   <button id="authBtn">ВОЙТИ</button>
   <div class="hint">Ник: 3-16 символов, буквы/цифры/_. Пароль: минимум 4 символа. Почта обязательна при регистрации.</div>
 </div>
+
+<div id="fighterCard">
+  <div class="fc-top">
+    <div class="fc-portrait" id="fcPortrait"><canvas id="fcCanvas" width="88" height="88"></canvas></div>
+    <div class="fc-head">
+      <div class="fc-name" id="fcName">—</div>
+      <div class="fc-side" id="fcSide">—</div>
+      <div class="fc-rarity" id="fcRarity">—</div>
+      <div class="fc-lvl" id="fcLvl">L1 / L10</div>
+    </div>
+  </div>
+  <div class="fc-grid">
+    <div class="fc-stat"><span class="lbl">HP</span><span class="val" id="fcHp">—</span><span class="sub" id="fcHpNext"></span></div>
+    <div class="fc-stat"><span class="lbl">Урон</span><span class="val" id="fcDmg">—</span><span class="sub" id="fcDmgNext"></span></div>
+    <div class="fc-stat"><span class="lbl">Скорость</span><span class="val" id="fcSpeed">—</span><span class="sub" id="fcSpeedNext"></span></div>
+    <div class="fc-stat"><span class="lbl">Скорострельность</span><span class="val" id="fcRate">—</span><span class="sub" id="fcRateNext"></span></div>
+  </div>
+  <div class="fc-section" id="fcSectionAttack">
+    <h3>Тип атаки</h3>
+    <div class="row"><span class="k" id="fcAttackName">—</span><span class="v" id="fcAttackKind">—</span></div>
+    <div class="desc" id="fcAttackDesc">—</div>
+  </div>
+  <div class="fc-section" id="fcSectionSuper">
+    <h3>Ульта</h3>
+    <div class="row"><span class="k" id="fcSuperName">—</span><span class="v" id="fcSuperKind">—</span></div>
+    <div class="desc" id="fcSuperDesc">—</div>
+  </div>
+  <div class="fc-section">
+    <h3>Прокачка</h3>
+    <div class="fc-progress"><div class="fill" id="fcProgress"></div></div>
+    <div class="row"><span class="k">Уровень</span><span class="v" id="fcLvlRow">L1 / L10</span></div>
+    <div class="row"><span class="k">Стоимость след. уровня</span><span class="v" id="fcCost">—</span></div>
+    <div class="fc-compare" id="fcCompare">—</div>
+  </div>
+  <button class="fc-btn upgrade" id="fcUpgradeBtn" style="display:none">ПРОКАЧАТЬ</button>
+  <button class="fc-btn fight" id="fcFightBtn" style="display:none">В БОЙ</button>
+  <button class="fc-close" id="fcCloseBtn">ЗАКРЫТЬ</button>
+</div>
+
 <script type="module">
 const $ = id => document.getElementById(id);
 const SAVE_KEY = 'digital_style_save_v15';
@@ -255,10 +329,9 @@ for (let i = 0; i < 3; i++) RARITIES.push('legend');
 const INVADER_RARITIES = ['rare','rare','rare','rare','rare','epic','epic','epic','legend','legend'];
 const FIGHTERS = {};
 for (let i = 0; i < 40; i++){ const id = 'plant_' + i; FIGHTERS[id] = { id, side:'plant', name: PLANT_NAMES[i], hp: 100 + (i*3)%140, dmg: 8 + (i*2)%16, speed: 6 + ((i*7)%40)/10, fireRate: 0.22 + ((i*3)%40)/100, color: PLANT_COLORS[i], shape:'blob', attack: PLANT_ATTACKS[i%10], super: PLANT_SUPERS[i%10], rarity: RARITIES[i] }; }
-// === УСИЛЕННЫЕ ЗАХВАТЧИКИ ===
 for (let i = 0; i < 10; i++){ const id = 'inv_' + i; FIGHTERS[id] = { id, side:'enemy', name: INVADER_NAMES[i], hp: 420 + i*55, dmg: 22 + i*4, speed: 7.2 + (i%5)*0.8, fireRate: 0.18 + (i%5)*0.08, color: INVADER_COLORS[i], shape:'drone', attack: INVADER_ATTACKS[i], super: INVADER_SUPERS[i], rarity: INVADER_RARITIES[i] }; }
 function getFighterStats(fighter){ const lvl = getLevel(fighter.id); const mult = 1 + (lvl-1) * 0.08; return { hp: Math.round(fighter.hp * mult), dmg: Math.round(fighter.dmg * mult * 100)/100, speed: fighter.speed * (1 + (lvl-1) * 0.02), fireRate: fighter.fireRate * (1 - (lvl-1) * 0.015), level: lvl }; }
-// === УСИЛЕННЫЙ БОСС ===
+function getStatsAtLevel(fighter, lvl){ const mult = 1 + (lvl-1) * 0.08; return { hp: Math.round(fighter.hp * mult), dmg: Math.round(fighter.dmg * mult * 100)/100, speed: fighter.speed * (1 + (lvl-1) * 0.02), fireRate: fighter.fireRate * (1 - (lvl-1) * 0.015) }; }
 const ENEMY_BOSS_BUFF = { hp: 1.7, dmg: 1.7, speed: 1.25, fireRate: 0.75 };
 const RESPAWN_TIME = 5.0;
 let chosenFighter = null, pickSide = 'plant';
@@ -350,6 +423,132 @@ function drawFighterShape(ctx, fighter, x, y, size, angle, isDead, walkPhase){
 function drawPortrait(canvas, fighter){ if(!fighter) return; const size=canvas.clientWidth||0; if (size<=0) return; const c=canvas.getContext('2d'); const dpr=Math.min(devicePixelRatio,2); canvas.width=size*dpr; canvas.height=size*dpr; c.setTransform(1,0,0,1,0,0); c.scale(dpr,dpr); c.clearRect(0,0,size,size); drawFighterShape(c,fighter,size/2,size/2,size*0.85,-Math.PI/2,false,0); }
 function updateProfileUI(){ $('kkCounter').textContent='KK '+profile.kk; $('trophyCounter').textContent='TR '+profile.trophies; const r=getRank(profile.trophies); $('rankLabel').textContent='Ранг: '+r.name; $('rankLabel').style.color=r.color; $('nickLabel').textContent=nickname||'—'; $('logoutBtn').style.display=token?'inline-block':'none'; }
 function isUnlocked(id){ return !!profile.unlocked[id]; }
+
+const ATTACK_NAMES = { single:'Одиночный', triple:'Тройной', shotgun:'Дробовик', long:'Дальний', rapid:'Скорострельный', pierce:'Пробивающий', grenade:'Граната', homing:'Самонаводка', wave:'Волна', spiral:'Спираль' };
+const ATTACK_DESC = {
+  single:'Один точный снаряд. Стабильный урон.',
+  triple:'Три снаряда веером. Хорош на средней дистанции.',
+  shotgun:'Пять снарядов широким веером. Сила вблизи.',
+  long:'Дальний мощный выстрел с увеличенной дальностью.',
+  rapid:'Два быстрых снаряда подряд. Высокий DPS.',
+  pierce:'Пробивает врагов насквозь, не останавливаясь.',
+  grenade:'Снаряд с взрывом по площади. Урон по зоне.',
+  homing:'Самонаводящийся снаряд — преследует цель.',
+  wave:'Широкая волна, задевает нескольких врагов.',
+  spiral:'Три снаряда по спирали. Накрывает площадь.'
+};
+const SUPER_NAMES = { heal:'Исцеление', spikes:'Шипы', laser:'Лазер', roots:'Корни', poison:'Яд', burst:'Взрыв', walls:'Стены', shield:'Щит', thorns:'Шипастый щит', wave:'Волна', dash:'Рывок', barrage:'Залп', swarm:'Рой', blink:'Прыжок' };
+const SUPER_DESC = {
+  heal:'Мгновенно +80 HP себе и всем союзникам.',
+  spikes:'Круг шипов вокруг — урон всем врагам рядом.',
+  laser:'8 мощных лазерных выстрелов вперёд.',
+  roots:'Зона 5м на 3 сек — замедляет врагов на 35%.',
+  poison:'Зона 5м на 4 сек — периодический урон ядом.',
+  burst:'Взрыв частиц вокруг — урон всем врагам.',
+  walls:'6 стен вокруг на 5 сек — блокируют и ранят.',
+  shield:'5 сек неуязвимости — урон снижен на 70%.',
+  thorns:'Круг шипов с высоким уроном по площади.',
+  wave:'Широкая волна урона во все стороны.',
+  dash:'Рывок вперёд — урон всем на пути.',
+  barrage:'3 мощных залпа вперёд.',
+  swarm:'Рой снарядов во все стороны 3 сек.',
+  blink:'Телепорт вперёд — урон в точке выхода.'
+};
+
+let currentCardFighter = null;
+let currentCardFrom = 'collection';
+function openFighterCard(fighterId, from){
+  const f = FIGHTERS[fighterId]; if(!f) return;
+  currentCardFighter = f;
+  currentCardFrom = from || 'collection';
+  const unlocked = isUnlocked(f.id);
+  const lvl = getLevel(f.id);
+  const stats = getFighterStats(f);
+  const statsMax = getStatsAtLevel(f, MAX_LEVEL);
+  const statsNext = lvl < MAX_LEVEL ? getStatsAtLevel(f, lvl+1) : null;
+  $('fcPortrait').className = 'fc-portrait' + (f.side==='enemy'?' enemy':'');
+  $('fcName').textContent = f.name;
+  $('fcSide').textContent = f.side==='plant' ? 'РАСТЕНИЕ' : 'ЗАХВАТЧИК';
+  const rar = $('fcRarity');
+  rar.className = 'fc-rarity ' + f.rarity;
+  rar.textContent = f.rarity.toUpperCase();
+  $('fcLvl').textContent = unlocked ? ('L'+lvl+' / L'+MAX_LEVEL) : 'НЕ ОТКРЫТ';
+  $('fcHp').textContent = unlocked ? stats.hp : '???';
+  $('fcHpNext').textContent = unlocked && statsNext ? ('→ '+statsNext.hp) : '';
+  $('fcDmg').textContent = unlocked ? Math.round(stats.dmg) : '???';
+  $('fcDmgNext').textContent = unlocked && statsNext ? ('→ '+Math.round(statsNext.dmg)) : '';
+  $('fcSpeed').textContent = unlocked ? stats.speed.toFixed(1) : '???';
+  $('fcSpeedNext').textContent = unlocked && statsNext ? ('→ '+statsNext.speed.toFixed(1)) : '';
+  $('fcRate').textContent = unlocked ? (1/stats.fireRate).toFixed(2)+'/сек' : '???';
+  $('fcRateNext').textContent = unlocked && statsNext ? ('→ '+(1/statsNext.fireRate).toFixed(2)+'/сек') : '';
+  $('fcAttackName').textContent = ATTACK_NAMES[f.attack] || f.attack;
+  $('fcAttackKind').textContent = f.attack;
+  $('fcAttackDesc').textContent = ATTACK_DESC[f.attack] || '—';
+  $('fcSuperName').textContent = SUPER_NAMES[f.super] || f.super;
+  $('fcSuperKind').textContent = f.super;
+  $('fcSuperDesc').textContent = SUPER_DESC[f.super] || '—';
+  const pct = ((lvl-1)/(MAX_LEVEL-1))*100;
+  $('fcProgress').style.width = pct + '%';
+  $('fcLvlRow').textContent = 'L' + lvl + ' / L' + MAX_LEVEL;
+  if(lvl < MAX_LEVEL){
+    const cost = getUpgradeCost(lvl);
+    $('fcCost').textContent = 'KK ' + cost;
+    $('fcCost').style.color = profile.kk >= cost ? '#7cf86b' : '#ff2e8a';
+    $('fcCompare').textContent = 'L1: HP '+f.hp+' | Урон '+Math.round(f.dmg)+'  →  L10: HP '+statsMax.hp+' | Урон '+Math.round(statsMax.dmg);
+  } else {
+    $('fcCost').textContent = 'МАКС';
+    $('fcCost').style.color = '#ffd54f';
+    $('fcCompare').textContent = 'Максимальный уровень достигнут';
+  }
+  const upBtn = $('fcUpgradeBtn');
+  if(unlocked && lvl < MAX_LEVEL){
+    const cost = getUpgradeCost(lvl);
+    upBtn.style.display = 'block';
+    upBtn.textContent = 'ПРОКАЧАТЬ — KK ' + cost;
+    upBtn.disabled = profile.kk < cost;
+  } else { upBtn.style.display = 'none'; }
+  const fightBtn = $('fcFightBtn');
+  if(unlocked){
+    fightBtn.style.display = 'block';
+    fightBtn.textContent = 'В БОЙ: ' + f.name;
+  } else { fightBtn.style.display = 'none'; }
+  $('fighterCard').classList.add('show');
+  setTimeout(()=>{
+    const cv = $('fcCanvas');
+    const dpr = Math.min(devicePixelRatio,2);
+    const size = 88;
+    cv.width = size*dpr; cv.height = size*dpr;
+    const c = cv.getContext('2d');
+    c.setTransform(1,0,0,1,0,0); c.scale(dpr,dpr); c.clearRect(0,0,size,size);
+    drawFighterShape(c, f, size/2, size/2, size*0.85, -Math.PI/2, false, 0);
+  }, 30);
+}
+function closeFighterCard(){ $('fighterCard').classList.remove('show'); currentCardFighter = null; }
+$('fcCloseBtn').onclick = closeFighterCard;
+$('fcUpgradeBtn').onclick = () => {
+  if(!currentCardFighter) return;
+  const f = currentCardFighter;
+  const lvl = getLevel(f.id);
+  if(lvl >= MAX_LEVEL) return;
+  const cost = getUpgradeCost(lvl);
+  if(profile.kk < cost) return;
+  profile.kk -= cost;
+  profile.levels[f.id] = lvl + 1;
+  saveProfile(); updateProfileUI();
+  openFighterCard(f.id, currentCardFrom);
+};
+$('fcFightBtn').onclick = () => {
+  if(!currentCardFighter) return;
+  const f = currentCardFighter;
+  if(!isUnlocked(f.id)) return;
+  chosenFighter = f;
+  profile.selected[f.side] = f.id;
+  saveProfile();
+  closeFighterCard();
+  if(currentCardFrom === 'lobby'){ $('menu').style.display='none'; startGame(f); }
+  else { $('playBtn').textContent='В БОЙ: '+f.name; $('playBtn').classList.add('ready'); $('playBtn').classList.add('show'); switchMainTab('play'); }
+};
+
 function switchMainTab(id){
   document.querySelectorAll('.mainTab').forEach(t=>t.classList.remove('active'));
   document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
@@ -376,7 +575,7 @@ function refreshStats(){ const list=$('statsList'); list.innerHTML=''; const row
 async function refreshFriends(){ const list=$('friendList'),inc=$('friendIncoming'),out=$('friendOutgoing'); list.innerHTML='<div class="label">Загрузка...</div>'; inc.innerHTML=''; out.innerHTML=''; if(!token){ list.innerHTML='<div class="label">Войди в аккаунт</div>'; return; } try{ const r=await fetch('/api/friends',{headers:{'X-Token':token}}); const data=await r.json(); list.innerHTML=''; inc.innerHTML=''; out.innerHTML=''; if(!data.ok){ list.innerHTML='<div class="label">Ошибка</div>'; return; } if(data.incoming&&data.incoming.length){ inc.innerHTML='<div class="label" style="color:#ffd54f">ВХОДЯЩИЕ</div>'; data.incoming.forEach(f=>{ const row=document.createElement('div'); row.className='friendRow incoming'; row.innerHTML='<span class="nick">'+f.nickname+'</span><button class="btn acc" data-act="accept" data-nick="'+f.nickname+'">ПРИНЯТЬ</button><button class="btn del" data-act="remove" data-nick="'+f.nickname+'">X</button>'; inc.appendChild(row); }); } if(data.friends&&data.friends.length){ list.innerHTML='<div class="label" style="color:#7cf86b">ДРУЗЬЯ ('+data.friends.length+')</div>'; data.friends.forEach(f=>{ const row=document.createElement('div'); row.className='friendRow'; const dotCls=f.online?'online':'offline'; row.innerHTML='<span class="dot '+dotCls+'"></span><span class="nick">'+f.nickname+'</span><button class="btn fight" data-act="fight" data-nick="'+f.nickname+'">БОЙ</button><button class="btn del" data-act="remove" data-nick="'+f.nickname+'">X</button>'; list.appendChild(row); }); } else { list.innerHTML='<div class="label" style="color:#9fd7ff">Пока нет друзей</div>'; } if(data.outgoing&&data.outgoing.length){ out.innerHTML='<div class="label" style="color:#6366f1">ОТПРАВЛЕННЫЕ</div>'; data.outgoing.forEach(f=>{ const row=document.createElement('div'); row.className='friendRow outgoing'; row.innerHTML='<span class="nick">'+f.nickname+'</span><span style="color:#6366f1;font-size:12px">ожидание</span>'; out.appendChild(row); }); } list.querySelectorAll('[data-act]').forEach(btn=>btn.onclick=()=>friendAction(btn.dataset.act,btn.dataset.nick)); inc.querySelectorAll('[data-act]').forEach(btn=>btn.onclick=()=>friendAction(btn.dataset.act,btn.dataset.nick)); }catch(e){ list.innerHTML='<div class="label" style="color:#ff2e8a">Ошибка сети</div>'; } }
 async function friendAction(act,nick){ if(!token) return; try{ if(act==='accept'){ await fetch('/api/friends/accept',{method:'POST',headers:{'Content-Type':'application/json','X-Token':token},body:JSON.stringify({friend:nick})}); refreshFriends(); } else if(act==='remove'){ if(!confirm('Удалить '+nick+'?')) return; await fetch('/api/friends/remove',{method:'POST',headers:{'Content-Type':'application/json','X-Token':token},body:JSON.stringify({friend:nick})}); refreshFriends(); } else if(act==='fight'){ $('onlineLobby').classList.add('show'); resetLobby(); try{ if(!ws) await connectWS(); }catch(e){} setTimeout(async ()=>{ if(ws&&ws.readyState===1){ ws.send(JSON.stringify({type:'create-room',username:nickname||'Хост'})); setTimeout(async ()=>{ const code=$('lobbyHostCode').textContent; if(code&&code!=='—'){ try{ await fetch('/api/friends/invite',{method:'POST',headers:{'Content-Type':'application/json','X-Token':token},body:JSON.stringify({friend:nick,roomId:code})}); }catch(e){} } },500); } },300); } }catch(e){ alert('Ошибка'); } }
 $('friendAddBtn').onclick=async ()=>{ const nick=$('friendInput').value.trim(); if(!nick) return; if(!token){ alert('Войди в аккаунт'); return; } try{ const r=await fetch('/api/friends/add',{method:'POST',headers:{'Content-Type':'application/json','X-Token':token},body:JSON.stringify({friend:nick})}); const data=await r.json(); if(!data.ok){ alert(data.error||'Ошибка'); return; } $('friendInput').value=''; alert(data.accepted?'Теперь друзья':'Заявка отправлена'); refreshFriends(); }catch(e){ alert('Ошибка сети'); } };
-function refreshPick(){ const grid=$('pickGrid'); grid.innerHTML=''; const ids=Object.keys(FIGHTERS).filter(id=>FIGHTERS[id].side===pickSide&&isUnlocked(id)); if(ids.length===0){ grid.innerHTML='<div style="text-align:center;color:#9fd7ff;padding:20px;grid-column:1/-1">Нет открытых бойцов</div>'; return; } ids.forEach(id=>{ const f=FIGHTERS[id]; const card=document.createElement('div'); card.className='pick-card'+(f.side==='enemy'?' enemySide':'')+(profile.selected[pickSide]===id?' selected':''); card.dataset.id=id; const lvl=document.createElement('div'); lvl.className='lvl'; lvl.textContent='L'+getLevel(id); card.appendChild(lvl); const cv=document.createElement('canvas'); card.appendChild(cv); const nm=document.createElement('div'); nm.className='name'; nm.textContent=f.name; card.appendChild(nm); card.onclick=()=>pickFighter(f); grid.appendChild(card); setTimeout(()=>drawPortrait(cv,f),10); }); }
+function refreshPick(){ const grid=$('pickGrid'); grid.innerHTML=''; const ids=Object.keys(FIGHTERS).filter(id=>FIGHTERS[id].side===pickSide&&isUnlocked(id)); if(ids.length===0){ grid.innerHTML='<div style="text-align:center;color:#9fd7ff;padding:20px;grid-column:1/-1">Нет открытых бойцов</div>'; return; } ids.forEach(id=>{ const f=FIGHTERS[id]; const card=document.createElement('div'); card.className='pick-card'+(f.side==='enemy'?' enemySide':'')+(profile.selected[pickSide]===id?' selected':''); card.dataset.id=id; const lvl=document.createElement('div'); lvl.className='lvl'; lvl.textContent='L'+getLevel(id); card.appendChild(lvl); const cv=document.createElement('canvas'); card.appendChild(cv); const nm=document.createElement('div'); nm.className='name'; nm.textContent=f.name; card.appendChild(nm); card.onclick=()=>openFighterCard(f.id,'play'); grid.appendChild(card); setTimeout(()=>drawPortrait(cv,f),10); }); }
 function pickFighter(f){ chosenFighter=f; profile.selected[f.side]=f.id; saveProfile(); document.querySelectorAll('.pick-card').forEach(el=>el.classList.toggle('selected',el.dataset.id===f.id)); $('playBtn').textContent='В БОЙ: '+f.name; $('playBtn').classList.add('ready'); $('playBtn').classList.add('show'); }
 $('tabPlant').onclick=()=>{ pickSide='plant'; $('tabPlant').style.border='2px solid #7cf86b'; $('tabPlant').style.background='linear-gradient(180deg,#1c3d1f,#0e2410)'; $('tabEnemy').style.border='2px solid transparent'; $('tabEnemy').style.background='rgba(255,255,255,.06)'; refreshPick(); };
 $('tabEnemy').onclick=()=>{ pickSide='enemy'; $('tabEnemy').style.border='2px solid #00e5ff'; $('tabEnemy').style.background='linear-gradient(180deg,#0b2b3d,#04141d)'; $('tabPlant').style.border='2px solid transparent'; $('tabPlant').style.background='rgba(255,255,255,.06)'; refreshPick(); };
@@ -391,9 +590,9 @@ function refreshBoxes(){ const row=$('boxesRow'); row.innerHTML=''; BOXES.forEac
 function pickRandomRarity(weights){ const r=Math.random(); let acc=0; for(const k in weights){ acc+=weights[k]; if(r<=acc) return k; } return 'common'; }
 function openBox(box){ if(profile.kk<box.price){ alert('Мало KK'); return; } profile.kk-=box.price; const isFighter=Math.random()<box.chanceFighter; if(!isFighter){ profile.kk+=box.kkBack; saveProfile(); updateProfileUI(); showBoxOpening(null,false,null,box,box.kkBack); return; } const rarity=pickRandomRarity(box.weights); const pool=Object.keys(FIGHTERS).filter(id=>FIGHTERS[id].rarity===rarity); const locked=pool.filter(id=>!isUnlocked(id)); let resultId=null; if(locked.length>0){ resultId=locked[Math.floor(Math.random()*locked.length)]; profile.unlocked[resultId]=true; saveProfile(); updateProfileUI(); showBoxOpening(resultId,true,rarity,box,0); } else { const bonus=rarity==='legend'?500:(rarity==='epic'?150:(rarity==='rare'?60:25)); profile.kk+=bonus; saveProfile(); updateProfileUI(); showBoxOpening(null,false,rarity,box,bonus); } }
 function showBoxOpening(resultId,isNew,rarity,box,kkBonus){ const overlay=$('boxOpening'); overlay.style.display='flex'; $('boxAnim').style.display='flex'; $('boxResult').classList.remove('show'); $('boxAnim').textContent=box.icon; setTimeout(()=>{ $('boxAnim').style.display='none'; const card=$('boxResultCard'); card.className='result-card '+(rarity||'common'); const cv=$('boxResultCanvas'); if(resultId){ const f=FIGHTERS[resultId]; drawPortrait(cv,f); $('boxResultName').textContent=f.name; $('boxResultType').textContent='НОВЫЙ! '+rarity.toUpperCase(); } else { const ctx=cv.getContext('2d'); ctx.clearRect(0,0,cv.width,cv.height); ctx.fillStyle='#ffb300'; ctx.font='bold 60px sans-serif'; ctx.textAlign='center'; ctx.fillText('KK',cv.width/2,cv.height/2+20); $('boxResultName').textContent='КУСКИ КОДА'; $('boxResultType').textContent='+'+kkBonus+' KK'; } $('boxResult').classList.add('show'); },1200); overlay.onclick=()=>{ overlay.style.display='none'; if($('mtBoxes').classList.contains('active')) refreshBoxes(); updateProfileUI(); }; }
-function refreshCollection(){ const grid=$('collectionGrid'); grid.innerHTML=''; Object.keys(FIGHTERS).forEach(id=>{ const f=FIGHTERS[id]; const card=document.createElement('div'); card.className='col-card'+(f.side==='enemy'?' enemySide':'')+(isUnlocked(id)?'':' locked'); const lvl=document.createElement('div'); lvl.className='lvl'; lvl.textContent='L'+getLevel(id); if(!isUnlocked(id)) lvl.style.display='none'; card.appendChild(lvl); const cv=document.createElement('canvas'); card.appendChild(cv); const nm=document.createElement('div'); nm.className='name'; nm.textContent=isUnlocked(id)?f.name:'???'; card.appendChild(nm); if(!isUnlocked(id)){ const lock=document.createElement('div'); lock.className='lock'; lock.textContent='X'; card.appendChild(lock); } grid.appendChild(card); setTimeout(()=>drawPortrait(cv,f),10); }); }
+function refreshCollection(){ const grid=$('collectionGrid'); grid.innerHTML=''; Object.keys(FIGHTERS).forEach(id=>{ const f=FIGHTERS[id]; const card=document.createElement('div'); card.className='col-card'+(f.side==='enemy'?' enemySide':'')+(isUnlocked(id)?'':' locked'); const lvl=document.createElement('div'); lvl.className='lvl'; lvl.textContent='L'+getLevel(id); if(!isUnlocked(id)) lvl.style.display='none'; card.appendChild(lvl); const cv=document.createElement('canvas'); card.appendChild(cv); const nm=document.createElement('div'); nm.className='name'; nm.textContent=isUnlocked(id)?f.name:'???'; card.appendChild(nm); if(!isUnlocked(id)){ const lock=document.createElement('div'); lock.className='lock'; lock.textContent='X'; card.appendChild(lock); } card.onclick=()=>openFighterCard(f.id,'collection'); grid.appendChild(card); setTimeout(()=>drawPortrait(cv,f),10); }); }
 let upgradeSelectedId=null;
-function refreshUpgrade(){ const grid=$('upgradeGrid'); grid.innerHTML=''; const ids=Object.keys(FIGHTERS).filter(isUnlocked); if(ids.length===0){ grid.innerHTML='<div style="text-align:center;color:#9fd7ff;padding:20px;grid-column:1/-1">Открой бойца в боксах</div>'; return; } ids.forEach(id=>{ const f=FIGHTERS[id]; const card=document.createElement('div'); card.className='col-card'+(f.side==='enemy'?' enemySide':''); if(upgradeSelectedId===id) card.style.borderWidth='3px'; const lvl=document.createElement('div'); lvl.className='lvl'; lvl.textContent='L'+getLevel(id); card.appendChild(lvl); const cv=document.createElement('canvas'); card.appendChild(cv); const nm=document.createElement('div'); nm.className='name'; nm.textContent=f.name; card.appendChild(nm); card.onclick=()=>{ upgradeSelectedId=id; refreshUpgrade(); }; grid.appendChild(card); setTimeout(()=>drawPortrait(cv,f),10); }); const detail=$('upgradeDetail'); if(!upgradeSelectedId){ detail.classList.remove('show'); return; } const f=FIGHTERS[upgradeSelectedId]; const lvl=getLevel(f.id); const stats=getFighterStats(f); const canLevel=lvl<MAX_LEVEL; const cost=canLevel?getUpgradeCost(lvl):0; const canBuy=profile.kk>=cost; detail.innerHTML=''; const cv=document.createElement('canvas'); cv.width=80; cv.height=80; detail.appendChild(cv); drawPortrait(cv,f); const info=document.createElement('div'); info.className='info'; info.innerHTML='<div class="nm">'+f.name+'</div><div class="lvl">Уровень '+lvl+' / '+MAX_LEVEL+'</div>'; detail.appendChild(info); const statsEl=document.createElement('div'); statsEl.className='stats'; statsEl.innerHTML='<div class="stat">HP: <b>'+stats.hp+'</b></div><div class="stat">Урон: <b>'+Math.round(stats.dmg)+'</b></div><div class="stat">Скорость: <b>'+stats.speed.toFixed(1)+'</b></div>'; detail.appendChild(statsEl); if(canLevel){ const btn=document.createElement('button'); btn.className='upgrade-btn'; btn.textContent='ПРОКАЧАТЬ - KK '+cost; btn.disabled=!canBuy; btn.onclick=()=>{ if(profile.kk<cost) return; profile.kk-=cost; profile.levels[f.id]=lvl+1; saveProfile(); updateProfileUI(); refreshUpgrade(); }; detail.appendChild(btn); } else { const maxEl=document.createElement('div'); maxEl.style.cssText='color:#ffd54f;font-weight:900;font-size:14px'; maxEl.textContent='МАКСИМАЛЬНЫЙ УРОВЕНЬ'; detail.appendChild(maxEl); } detail.classList.add('show'); }
+function refreshUpgrade(){ const grid=$('upgradeGrid'); grid.innerHTML=''; const ids=Object.keys(FIGHTERS).filter(isUnlocked); if(ids.length===0){ grid.innerHTML='<div style="text-align:center;color:#9fd7ff;padding:20px;grid-column:1/-1">Открой бойца в боксах</div>'; return; } ids.forEach(id=>{ const f=FIGHTERS[id]; const card=document.createElement('div'); card.className='col-card'+(f.side==='enemy'?' enemySide':''); if(upgradeSelectedId===id) card.style.borderWidth='3px'; const lvl=document.createElement('div'); lvl.className='lvl'; lvl.textContent='L'+getLevel(id); card.appendChild(lvl); const cv=document.createElement('canvas'); card.appendChild(cv); const nm=document.createElement('div'); nm.className='name'; nm.textContent=f.name; card.appendChild(nm); card.onclick=()=>openFighterCard(f.id,'upgrade'); grid.appendChild(card); setTimeout(()=>drawPortrait(cv,f),10); }); }
 function goToMenu(){ $('menu').style.display='flex'; updateProfileUI(); switchMainTab('play'); }
 const canvas=$('game'); const ctx=canvas.getContext('2d');
 let W=0,H=0,dpr=1;
@@ -411,7 +610,6 @@ const touch={ move:{active:false,id:null,dx:0,dy:0,cx:0,cy:0,r:65}, attack:{acti
 const player={ x:0, z:14, hp:100, maxHp:100, fighter:null, walkPhase:0, shield:0, velX:0, velZ:0, respawnTimer:0, dead:false, stats:null };
 let opponent=null, pvpMode=false, pvpSendTimer=0;
 let aimX=0, aimZ=-1;
-// === АВТОАТАКА ===
 let autoAtkCD=0;
 const AUTO_ATK_RANGE=18;
 function worldToScreen(wx,wz){ return { x:W/2+(wx-camera2D.x)*ZOOM, y:H*0.68+(wz-camera2D.z)*ZOOM }; }
@@ -548,22 +746,69 @@ function updateHUD(){ const pIcon=(side==='enemy')?'EN ':'HP '; const eIcon=(sid
 function drawArena(){ const halfPx=(ARENA/2)*ZOOM; const cx=W/2-camera2D.x*ZOOM,cy=H*0.68-camera2D.z*ZOOM; const g=ctx.createRadialGradient(cx,cy,0,cx,cy,halfPx); g.addColorStop(0,'#1a3a22'); g.addColorStop(1,'#0f2a17'); ctx.fillStyle=g; ctx.fillRect(cx-halfPx,cy-halfPx,halfPx*2,halfPx*2); ctx.strokeStyle='rgba(0,229,255,.18)'; ctx.lineWidth=1; const step=2*ZOOM; const sX=cx-halfPx,sY=cy-halfPx; for(let i=0;i<=ARENA/2;i++){ ctx.beginPath(); ctx.moveTo(sX+i*step,sY); ctx.lineTo(sX+i*step,sY+halfPx*2); ctx.stroke(); ctx.beginPath(); ctx.moveTo(sX,sY+i*step); ctx.lineTo(sX+halfPx*2,sY+i*step); ctx.stroke(); } ctx.strokeStyle='#2cff5e'; ctx.lineWidth=8; ctx.shadowColor='#2cff5e'; ctx.shadowBlur=20; ctx.strokeRect(cx-halfPx,cy-halfPx,halfPx*2,halfPx*2); ctx.shadowBlur=0; }
 function renderZones(){ for(const z of zones){ const p=worldToScreen(z.x,z.z); const r=z.radius*ZOOM; ctx.globalAlpha=Math.min(1,z.life); ctx.fillStyle=z.color; if(z.type==='wall'){ ctx.globalAlpha=1; ctx.beginPath(); ctx.arc(p.x,p.y,r,0,Math.PI*2); ctx.fill(); ctx.strokeStyle='#05070d'; ctx.lineWidth=3; ctx.stroke(); } else { ctx.globalAlpha=0.25*Math.min(1,z.life); ctx.beginPath(); ctx.arc(p.x,p.y,r,0,Math.PI*2); ctx.fill(); ctx.globalAlpha=0.7*Math.min(1,z.life); ctx.strokeStyle=z.color; ctx.lineWidth=3; ctx.beginPath(); ctx.arc(p.x,p.y,r,0,Math.PI*2); ctx.stroke(); } ctx.globalAlpha=1; } }
 function updateZones(dt){ for(const z of zones){ if(z.type==='roots'){ for(const e of enemies){ if(e.hp<=0) continue; if(Math.hypot(e.x-z.x,e.z-z.z)<z.radius){ e.x+=(z.x-e.x)*z.slow*dt*2; e.z+=(z.z-e.z)*z.slow*dt*2; } } } else if(z.type==='poison'){ z.tick-=dt; if(z.tick<=0){ z.tick=0.5; for(const e of enemies){ if(e.hp<=0) continue; if(Math.hypot(e.x-z.x,e.z-z.z)<z.radius){ e.hp=Math.max(0,e.hp-z.dps); spawnFloatingText(e.x,e.z,'-'+Math.round(z.dps),'#a855f7'); if(e.hp<=0){ battleKK+=10; battleTrophies+=2; battleKills++; } } } } } else if(z.type==='wall'){ z.tick-=dt; if(z.tick<=0){ z.tick=0.4; for(const e of enemies){ if(e.hp<=0) continue; if(Math.hypot(e.x-z.x,e.z-z.z)<z.radius+1){ e.hp=Math.max(0,e.hp-z.dmg); spawnFloatingText(e.x,e.z,'-'+Math.round(z.dmg),'#a16207'); if(e.hp<=0){ battleKK+=10; battleTrophies+=2; battleKills++; } } } } } } }
-function render(){ ctx.fillStyle='#05070d'; ctx.fillRect(0,0,W,H); if(!gameActive) return; drawArena(); renderZones(); bullets.forEach(b=>{ const p=worldToScreen(b.x,b.z); const r=b.radius; const g=ctx.createRadialGradient(p.x,p.y,0,p.x,p.y,r*2); g.addColorStop(0,b.color); g.addColorStop(0.5,b.color); g.addColorStop(1,'transparent'); ctx.fillStyle=g; ctx.beginPath(); ctx.arc(p.x,p.y,r*2,0,Math.PI*2); ctx.fill(); }); const all=[]; if(!player.dead&&player.hp>0) all.push({type:'player',ref:player}); allies.forEach(a=>{ if(a.hp>0) all.push({type:'ally',ref:a}); }); enemies.forEach(e=>{ if(e.hp>0) all.push({type:'enemy',ref:e}); }); if(pvpMode&&opponent&&!opponent.dead) all.push({type:'opponent',ref:opponent}); all.sort((a,b)=>a.ref.z-b.ref.z); all.forEach(u=>{ const p=worldToScreen(u.ref.x,u.ref.z); let angle; if(u.type==='player') angle=yaw; else if(u.type==='enemy'||u.type==='opponent'){ const t=u.ref.target&&u.ref.target.ref; if(t) angle=Math.atan2(t.x-u.ref.x,t.z-u.ref.z); else if(!player.dead) angle=Math.atan2(player.x-u.ref.x,player.z-u.ref.z); else angle=0; } else { const t=u.ref.target&&u.ref.target.ref; if(t) angle=Math.atan2(t.x-u.ref.x,t.z-u.ref.z); else angle=0; } const size=1.8*ZOOM; if(u.type==='player'){ ctx.fillStyle='rgba(124,248,107,.25)'; ctx.beginPath(); ctx.arc(p.x,p.y,size*0.7,0,Math.PI*2); ctx.fill(); } drawFighterShape(ctx,u.ref.fighter,p.x,p.y,size,angle,false,u.ref.walkPhase||0); if(u.ref===player&&player.shield>0){ ctx.strokeStyle='rgba(254,243,199,.8)'; ctx.lineWidth=4; ctx.beginPath(); ctx.arc(p.x,p.y,size*0.7,0,Math.PI*2); ctx.stroke(); } if(u.ref.hp<u.ref.maxHp){ const bw=size*0.9,bh=5; const bx=p.x-bw/2,by=p.y-size*0.75; ctx.fillStyle='rgba(0,0,0,.7)'; roundRect(ctx,bx-1,by-1,bw+2,bh+2,3); ctx.fill(); ctx.fillStyle=u.ref.fighter.side==='enemy'?'#00e5ff':'#7cf86b'; roundRect(ctx,bx,by,bw*(u.ref.hp/u.ref.maxHp),bh,2); ctx.fill(); } }); particles.forEach(p2=>{ const p=worldToScreen(p2.x,p2.z); ctx.globalAlpha=p2.life/p2.maxLife; ctx.fillStyle=p2.color; ctx.beginPath(); ctx.arc(p.x,p.y,p2.size,0,Math.PI*2); ctx.fill(); }); ctx.globalAlpha=1; floatingTexts.forEach(t=>{ const p=worldToScreen(t.x,t.z); ctx.globalAlpha=t.life/t.maxLife; ctx.fillStyle=t.color; ctx.font='bold 20px sans-serif'; ctx.textAlign='center'; ctx.strokeStyle='#000'; ctx.lineWidth=3; ctx.strokeText(t.text,p.x,p.y); ctx.fillText(t.text,p.x,p.y); }); ctx.globalAlpha=1; }
+// === ПРИЦЕЛ ===
+function drawCrosshair(){
+  if(!gameActive||player.dead) return;
+  const dist=6;
+  const tx=player.x+Math.sin(yaw)*dist;
+  const tz=player.z+Math.cos(yaw)*dist;
+  const p=worldToScreen(tx,tz);
+  // проверка: есть ли враг под прицелом
+  let onTarget=false;
+  const allTargets=[];
+  if(pvpMode&&opponent&&!opponent.dead) allTargets.push(opponent);
+  for(const e of enemies){ if(e.hp>0) allTargets.push(e); }
+  for(const t of allTargets){
+    const d=Math.hypot(t.x-tx,t.z-tz);
+    if(d<1.6){ onTarget=true; break; }
+  }
+  const baseColor = side==='enemy' ? '#00e5ff' : '#7cf86b';
+  const color = onTarget ? '#ff2e8a' : baseColor;
+  const pulse = ammo<=0 ? (Math.sin(performance.now()*0.01)*0.5+0.5) : 1;
+  const size = onTarget ? 22 : 16;
+  ctx.save();
+  ctx.translate(p.x,p.y);
+  ctx.globalAlpha = (ammo<=0?0.5:1) * pulse;
+  ctx.strokeStyle=color;
+  ctx.lineWidth=3;
+  ctx.shadowColor=color;
+  ctx.shadowBlur=10;
+  // 4 сектора
+  const gap=size*0.35;
+  const len=size*0.55;
+  ctx.beginPath();
+  ctx.moveTo(-size, -gap); ctx.lineTo(-size, -size); ctx.lineTo(-gap, -size);
+  ctx.moveTo(size, -gap); ctx.lineTo(size, -size); ctx.lineTo(gap, -size);
+  ctx.moveTo(-size, gap); ctx.lineTo(-size, size); ctx.lineTo(-gap, size);
+  ctx.moveTo(size, gap); ctx.lineTo(size, size); ctx.lineTo(gap, size);
+  ctx.stroke();
+  // точка в центре
+  ctx.beginPath();
+  ctx.arc(0,0,2.5,0,Math.PI*2);
+  ctx.fillStyle=color;
+  ctx.fill();
+  if(onTarget){
+    // внешнее кольцо при наведении
+    ctx.beginPath();
+    ctx.arc(0,0,size*1.1,0,Math.PI*2);
+    ctx.globalAlpha=0.6;
+    ctx.stroke();
+  }
+  ctx.restore();
+}
+function render(){ ctx.fillStyle='#05070d'; ctx.fillRect(0,0,W,H); if(!gameActive) return; drawArena(); renderZones(); bullets.forEach(b=>{ const p=worldToScreen(b.x,b.z); const r=b.radius; const g=ctx.createRadialGradient(p.x,p.y,0,p.x,p.y,r*2); g.addColorStop(0,b.color); g.addColorStop(0.5,b.color); g.addColorStop(1,'transparent'); ctx.fillStyle=g; ctx.beginPath(); ctx.arc(p.x,p.y,r*2,0,Math.PI*2); ctx.fill(); }); const all=[]; if(!player.dead&&player.hp>0) all.push({type:'player',ref:player}); allies.forEach(a=>{ if(a.hp>0) all.push({type:'ally',ref:a}); }); enemies.forEach(e=>{ if(e.hp>0) all.push({type:'enemy',ref:e}); }); if(pvpMode&&opponent&&!opponent.dead) all.push({type:'opponent',ref:opponent}); all.sort((a,b)=>a.ref.z-b.ref.z); all.forEach(u=>{ const p=worldToScreen(u.ref.x,u.ref.z); let angle; if(u.type==='player') angle=yaw; else if(u.type==='enemy'||u.type==='opponent'){ const t=u.ref.target&&u.ref.target.ref; if(t) angle=Math.atan2(t.x-u.ref.x,t.z-u.ref.z); else if(!player.dead) angle=Math.atan2(player.x-u.ref.x,player.z-u.ref.z); else angle=0; } else { const t=u.ref.target&&u.ref.target.ref; if(t) angle=Math.atan2(t.x-u.ref.x,t.z-u.ref.z); else angle=0; } const size=1.8*ZOOM; if(u.type==='player'){ ctx.fillStyle='rgba(124,248,107,.25)'; ctx.beginPath(); ctx.arc(p.x,p.y,size*0.7,0,Math.PI*2); ctx.fill(); } drawFighterShape(ctx,u.ref.fighter,p.x,p.y,size,angle,false,u.ref.walkPhase||0); if(u.ref===player&&player.shield>0){ ctx.strokeStyle='rgba(254,243,199,.8)'; ctx.lineWidth=4; ctx.beginPath(); ctx.arc(p.x,p.y,size*0.7,0,Math.PI*2); ctx.stroke(); } if(u.ref.hp<u.ref.maxHp){ const bw=size*0.9,bh=5; const bx=p.x-bw/2,by=p.y-size*0.75; ctx.fillStyle='rgba(0,0,0,.7)'; roundRect(ctx,bx-1,by-1,bw+2,bh+2,3); ctx.fill(); ctx.fillStyle=u.ref.fighter.side==='enemy'?'#00e5ff':'#7cf86b'; roundRect(ctx,bx,by,bw*(u.ref.hp/u.ref.maxHp),bh,2); ctx.fill(); } }); particles.forEach(p2=>{ const p=worldToScreen(p2.x,p2.z); ctx.globalAlpha=p2.life/p2.maxLife; ctx.fillStyle=p2.color; ctx.beginPath(); ctx.arc(p.x,p.y,p2.size,0,Math.PI*2); ctx.fill(); }); ctx.globalAlpha=1; floatingTexts.forEach(t=>{ const p=worldToScreen(t.x,t.z); ctx.globalAlpha=t.life/t.maxLife; ctx.fillStyle=t.color; ctx.font='bold 20px sans-serif'; ctx.textAlign='center'; ctx.strokeStyle='#000'; ctx.lineWidth=3; ctx.strokeText(t.text,p.x,p.y); ctx.fillText(t.text,p.x,p.y); }); ctx.globalAlpha=1; drawCrosshair(); }
 let superShootCD=0;
 let lastT=performance.now();
-// === АВТОАТАКА: игрок стреляет сам в ближайшего врага, если не двигается и есть патроны ===
 function tryAutoAttack(dt){
   if(!gameActive||player.dead||!player.fighter) return;
   if(ammo<=0) return;
   autoAtkCD-=dt;
   if(autoAtkCD>0) return;
-  // если игрок активно двигается — не автоатакуем (пусть сам целится)
   const m=touch.move;
   const moving=m.active&&Math.hypot(m.dx,m.dy)>0.2;
   const atk=touch.attack;
   const manualAiming=atk.active&&Math.hypot(atk.dx,atk.dy)>0.15;
   if(moving||manualAiming) return;
-  // ищем ближайшего врага в радиусе
   let best=null,bd=AUTO_ATK_RANGE;
   if(pvpMode&&opponent&&!opponent.dead){ const d=Math.hypot(opponent.x-player.x,opponent.z-player.z); if(d<bd){ bd=d; best=opponent; } }
   for(const e of enemies){ if(e.hp<=0) continue; const d=Math.hypot(e.x-player.x,e.z-player.z); if(d<bd){ bd=d; best=e; } }
