@@ -126,6 +126,18 @@ html,body{width:100%;height:100%;overflow:hidden;background:#000;font-family:-ap
 .statRow{width:100%;display:flex;justify-content:space-between;padding:6px 10px;background:rgba(0,0,0,.4);border:1px solid #2cff5e;border-radius:8px;font-size:13px}
 .statRow .lbl{color:#9fd7ff}
 .statRow .val{color:#7cf86b;font-weight:800}
+.friendRow{width:100%;display:flex;align-items:center;gap:8px;padding:8px 10px;background:rgba(255,255,255,.05);border:1px solid #2cff5e;border-radius:8px;font-size:13px}
+.friendRow .dot{width:10px;height:10px;border-radius:50%;flex-shrink:0}
+.friendRow .dot.online{background:#2cff5e;box-shadow:0 0 8px #2cff5e}
+.friendRow .dot.offline{background:#666}
+.friendRow .nick{flex:1;color:#eaffea;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.friendRow .btn{padding:5px 10px;border:none;border-radius:6px;font-weight:800;font-size:11px;cursor:pointer}
+.friendRow .btn.fight{background:linear-gradient(180deg,#00e5ff,#0891b2);color:#04141d}
+.friendRow .btn.del{background:rgba(255,46,138,.25);color:#ff2e8a;border:1px solid #ff2e8a}
+.friendRow .btn.acc{background:linear-gradient(180deg,#2cff5e,#16a34a);color:#04141d}
+.friendRow .label{color:#9fd7ff;font-size:12px;font-weight:800;padding:4px 0;width:100%}
+.friendRow.incoming{border-color:#ffd54f;background:rgba(255,213,79,.08)}
+.friendRow.outgoing{border-color:#6366f1;background:rgba(99,102,241,.08)}
 #authModal{position:fixed;inset:0;z-index:99999;background:radial-gradient(circle at 50% 30%,#0d1a2b 0%,#05070d 80%);display:none;flex-direction:column;align-items:center;justify-content:center;padding:20px;gap:12px}
 #authModal.show{display:flex}
 #authModal .logo{font-size:32px;font-weight:900;color:#7cf86b;letter-spacing:2px;text-shadow:0 0 20px #2cff5e;margin-bottom:10px}
@@ -160,6 +172,7 @@ html,body{width:100%;height:100%;overflow:hidden;background:#000;font-family:-ap
       <div class="mainTab" id="mtOnline">Онлайн</div>
       <div class="mainTab" id="mtTop">Топ</div>
       <div class="mainTab" id="mtStats">Стата</div>
+      <div class="mainTab" id="mtFriends">Друзья</div>
     </div>
     <div class="screen active" id="scPlay">
       <div style="width:100%;max-width:440px;display:flex;gap:6px">
@@ -173,6 +186,16 @@ html,body{width:100%;height:100%;overflow:hidden;background:#000;font-family:-ap
     <div class="screen" id="scUpgrade"><h2 style="color:#ffd54f">Прокачка</h2><div class="collection-grid" id="upgradeGrid"></div></div>
     <div class="screen" id="scTop"><h2 style="color:#ffd54f">🏆 Топ игроков</h2><div id="leaderboardList" style="width:100%;display:flex;flex-direction:column;gap:4px"></div></div>
     <div class="screen" id="scStats"><h2 style="color:#00e5ff">📊 Статистика</h2><div id="statsList" style="width:100%;display:flex;flex-direction:column;gap:4px"></div></div>
+    <div class="screen" id="scFriends">
+      <h2 style="color:#7cf86b">👥 Друзья</h2>
+      <div style="width:100%;display:flex;gap:6px">
+        <input id="friendInput" maxlength="16" placeholder="Ник друга" style="flex:1;padding:10px;background:rgba(255,255,255,.08);border:2px solid #00e5ff;border-radius:10px;color:#fff;font-size:14px;outline:none;text-align:center">
+        <button id="friendAddBtn" style="padding:10px 16px;background:linear-gradient(180deg,#2cff5e,#16a34a);border:none;color:#04141d;font-weight:900;border-radius:10px;cursor:pointer">+ ДОБАВИТЬ</button>
+      </div>
+      <div id="friendIncoming" style="width:100%;display:flex;flex-direction:column;gap:4px"></div>
+      <div id="friendList" style="width:100%;display:flex;flex-direction:column;gap:4px"></div>
+      <div id="friendOutgoing" style="width:100%;display:flex;flex-direction:column;gap:4px"></div>
+    </div>
     <div id="playBtn">ВЫБЕРИ БОЙЦА</div>
     <div id="dailyBtn">🎁 ЗАБРАТЬ +100 KK</div>
   </div>
@@ -223,23 +246,12 @@ const NICK_KEY = 'digital_style_nick';
 let token = '';
 let nickname = '';
 try { token = localStorage.getItem(TOKEN_KEY) || ''; nickname = localStorage.getItem(NICK_KEY) || ''; } catch(e){}
-
 let profile = { kk: 200, trophies: 0, wins: 0, losses: 0, kills: 0, games: 0, unlocked: { plant_0: true, plant_1: true, plant_2: true, inv_0: true }, levels: {}, selected: { plant: 'plant_0', enemy: 'inv_0' } };
 try { const raw = localStorage.getItem(SAVE_KEY); if (raw) Object.assign(profile, JSON.parse(raw)); } catch(e){}
-
-function saveProfile(){
-  try { localStorage.setItem(SAVE_KEY, JSON.stringify(profile)); } catch(e){}
-  if(token) syncToServer();
-}
+function saveProfile(){ try { localStorage.setItem(SAVE_KEY, JSON.stringify(profile)); } catch(e){} if(token) syncToServer(); }
 async function syncToServer(){
   if(!token) return;
-  try {
-    await fetch('/api/save', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'X-Token': token },
-      body: JSON.stringify({ kk: profile.kk, trophies: profile.trophies, wins: profile.wins||0, losses: profile.losses||0, kills: profile.kills||0, games: profile.games||0, unlocked: profile.unlocked, levels: profile.levels, selected: profile.selected })
-    });
-  } catch(e){}
+  try { await fetch('/api/save', { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-Token': token }, body: JSON.stringify({ kk: profile.kk, trophies: profile.trophies, wins: profile.wins||0, losses: profile.losses||0, kills: profile.kills||0, games: profile.games||0, unlocked: profile.unlocked, levels: profile.levels, selected: profile.selected }) }); } catch(e){}
 }
 async function loadMe(){
   if(!token) return false;
@@ -312,14 +324,15 @@ function drawInvaderGhost(ctx,c,walk,aim){ const bob=Math.sin(walk)*2; ctx.save(
 function drawFighterShape(ctx, f, x, y, size, angle, isDead, walkPhase, aimAngle){
   if(!f) return;
   ctx.save(); ctx.translate(x,y);
-  ctx.fillStyle='rgba(0,0,0,.45)'; ctx.beginPath(); ctx.ellipse(0,size*0.32,size*0.55,size*0.22,0,0,Math.PI*2); ctx.fill();
+  ctx.fillStyle='rgba(0,0,0,.35)'; ctx.beginPath(); ctx.ellipse(0,size*0.38,size*0.6,size*0.2,0,0,Math.PI*2); ctx.fill();
+  ctx.fillStyle='rgba(0,0,0,.2)'; ctx.beginPath(); ctx.ellipse(0,size*0.42,size*0.4,size*0.12,0,0,Math.PI*2); ctx.fill();
   ctx.rotate(angle + Math.PI/2);
   if(isDead) ctx.globalAlpha=0.3;
   const c = f.color || '#7cf86b';
-  ctx.scale(size/40, size/40);
   const idx = parseInt(f.id.split('_')[1]) || 0;
   const walk = walkPhase || 0;
   const aim = aimAngle !== undefined ? aimAngle : -Math.PI/2;
+  ctx.scale(size/40, size/40);
   if(f.side==='plant'){
     const drawers=[drawPlantBlob,drawPlantCactus,drawPlantFlower,drawPlantTree,drawPlantMushroom,drawPlantBerry,drawPlantBamboo,drawPlantLily,drawPlantRose,drawPlantPalm];
     drawers[idx % drawers.length](ctx, c, walk, aim);
@@ -352,6 +365,7 @@ function switchMainTab(id){
   if(id==='upgrade') refreshUpgrade();
   if(id==='top') refreshLeaderboard();
   if(id==='stats') refreshStats();
+  if(id==='friends') refreshFriends();
 }
 $('mtPlay').onclick=()=>switchMainTab('play');
 $('mtBoxes').onclick=()=>switchMainTab('boxes');
@@ -360,12 +374,10 @@ $('mtUpgrade').onclick=()=>switchMainTab('upgrade');
 $('mtOnline').onclick=()=>openOnlineRoom();
 $('mtTop').onclick=()=>switchMainTab('top');
 $('mtStats').onclick=()=>switchMainTab('stats');
+$('mtFriends').onclick=()=>switchMainTab('friends');
 async function refreshLeaderboard(){
   const list=$('leaderboardList'); list.innerHTML='<div style="color:#9fd7ff;text-align:center;padding:10px">Загрузка...</div>';
-  try{
-    const r = await fetch('/api/leaderboard');
-    const data = await r.json();
-    list.innerHTML='';
+  try{ const r = await fetch('/api/leaderboard'); const data = await r.json(); list.innerHTML='';
     if(!data.ok || !data.rows || data.rows.length===0){ list.innerHTML='<div style="color:#9fd7ff;text-align:center;padding:10px">Пока никого нет</div>'; return; }
     data.rows.forEach((p,i)=>{ const row=document.createElement('div'); row.className='leaderRow'+(p.nickname===nickname?' me':''); const medal=i===0?'🥇':i===1?'🥈':i===2?'🥉':'#'+(i+1); row.innerHTML='<span class="pos">'+medal+'</span><span class="nick">'+p.nickname+'</span><span class="tr">🏆 '+p.trophies+'</span>'; list.appendChild(row); });
   }catch(e){ list.innerHTML='<div style="color:#ff2e8a;text-align:center;padding:10px">Ошибка</div>'; }
@@ -375,6 +387,63 @@ function refreshStats(){
   const rows=[['Игрок',nickname||'—'],['Ранг',getRank(profile.trophies||0).icon+' '+getRank(profile.trophies||0).name],['Трофеи',profile.trophies||0],['KK',profile.kk],['Игр',profile.games||0],['Побед',profile.wins||0],['Поражений',profile.losses||0],['Убийств',profile.kills||0],['Винрейт',(profile.games>0?Math.round((profile.wins/profile.games)*100)+'%':'—')]];
   rows.forEach(([k,v])=>{ const row=document.createElement('div'); row.className='statRow'; row.innerHTML='<span class="lbl">'+k+'</span><span class="val">'+v+'</span>'; list.appendChild(row); });
 }
+async function refreshFriends(){
+  const list=$('friendList'), inc=$('friendIncoming'), out=$('friendOutgoing');
+  list.innerHTML='<div class="label">Загрузка...</div>'; inc.innerHTML=''; out.innerHTML='';
+  if(!token){ list.innerHTML='<div class="label">Войди в аккаунт</div>'; return; }
+  try{
+    const r = await fetch('/api/friends',{headers:{'X-Token':token}});
+    const data = await r.json();
+    list.innerHTML=''; inc.innerHTML=''; out.innerHTML='';
+    if(!data.ok){ list.innerHTML='<div class="label">Ошибка</div>'; return; }
+    if(data.incoming && data.incoming.length){
+      inc.innerHTML='<div class="label" style="color:#ffd54f">📥 ВХОДЯЩИЕ ЗАЯВКИ</div>';
+      data.incoming.forEach(f=>{ const row=document.createElement('div'); row.className='friendRow incoming'; row.innerHTML='<span class="nick">'+f.nickname+'</span><button class="btn acc" data-act="accept" data-nick="'+f.nickname+'">ПРИНЯТЬ</button><button class="btn del" data-act="remove" data-nick="'+f.nickname+'">✕</button>'; inc.appendChild(row); });
+    }
+    if(data.friends && data.friends.length){
+      list.innerHTML='<div class="label" style="color:#7cf86b">👥 МОИ ДРУЗЬЯ ('+data.friends.length+')</div>';
+      data.friends.forEach(f=>{ const row=document.createElement('div'); row.className='friendRow'; const dotCls = f.online ? 'online' : 'offline'; row.innerHTML='<span class="dot '+dotCls+'"></span><span class="nick">'+f.nickname+'</span><button class="btn fight" data-act="fight" data-nick="'+f.nickname+'">БОЙ</button><button class="btn del" data-act="remove" data-nick="'+f.nickname+'">✕</button>'; list.appendChild(row); });
+    } else {
+      list.innerHTML='<div class="label" style="color:#9fd7ff">Пока нет друзей. Добавь по нику выше.</div>';
+    }
+    if(data.outgoing && data.outgoing.length){
+      out.innerHTML='<div class="label" style="color:#6366f1">📤 ОТПРАВЛЕННЫЕ ЗАЯВКИ</div>';
+      data.outgoing.forEach(f=>{ const row=document.createElement('div'); row.className='friendRow outgoing'; row.innerHTML='<span class="nick">'+f.nickname+'</span><span class="label" style="width:auto;color:#6366f1">ожидание</span>'; out.appendChild(row); });
+    }
+    list.querySelectorAll('[data-act]').forEach(btn=>btn.onclick=()=>friendAction(btn.dataset.act, btn.dataset.nick));
+    inc.querySelectorAll('[data-act]').forEach(btn=>btn.onclick=()=>friendAction(btn.dataset.act, btn.dataset.nick));
+  }catch(e){ list.innerHTML='<div class="label" style="color:#ff2e8a">Ошибка сети</div>'; }
+}
+async function friendAction(act, nick){
+  if(!token) return;
+  try{
+    if(act==='accept'){ await fetch('/api/friends/accept',{method:'POST',headers:{'Content-Type':'application/json','X-Token':token},body:JSON.stringify({friend:nick})}); refreshFriends(); }
+    else if(act==='remove'){ if(!confirm('Удалить '+nick+'?')) return; await fetch('/api/friends/remove',{method:'POST',headers:{'Content-Type':'application/json','X-Token':token},body:JSON.stringify({friend:nick})}); refreshFriends(); }
+    else if(act==='fight'){
+      $('onlineLobby').classList.add('show'); resetLobby();
+      try{ if(!ws) await connectWS(); }catch(e){}
+      setTimeout(async ()=>{
+        if(ws && ws.readyState===1){
+          ws.send(JSON.stringify({type:'create-room',username:nickname||'Хост'}));
+          setTimeout(async ()=>{ const code = $('lobbyHostCode').textContent; if(code && code !== '—'){ try{ await fetch('/api/friends/invite',{method:'POST',headers:{'Content-Type':'application/json','X-Token':token},body:JSON.stringify({friend:nick, roomId:code})}); }catch(e){} } }, 500);
+        }
+      }, 300);
+    }
+  }catch(e){ alert('Ошибка'); }
+}
+$('friendAddBtn').onclick=async ()=>{
+  const nick=$('friendInput').value.trim();
+  if(!nick){ return; }
+  if(!token){ alert('Войди в аккаунт'); return; }
+  try{
+    const r = await fetch('/api/friends/add',{method:'POST',headers:{'Content-Type':'application/json','X-Token':token},body:JSON.stringify({friend:nick})});
+    const data = await r.json();
+    if(!data.ok){ alert(data.error||'Ошибка'); return; }
+    $('friendInput').value='';
+    alert(data.accepted ? 'Теперь вы друзья!' : 'Заявка отправлена');
+    refreshFriends();
+  }catch(e){ alert('Ошибка сети'); }
+};
 function refreshPick(){
   const grid=$('pickGrid'); grid.innerHTML='';
   const ids = Object.keys(FIGHTERS).filter(id => FIGHTERS[id].side === pickSide && isUnlocked(id));
@@ -457,24 +526,18 @@ function performAttack(shooter,dirX,dirZ,isEnemy,fromPlayer,fromAlly,baseDmg,att
   else if(type==='homing'){ bullets.push({x:shooter.x,z:shooter.z,dx:Math.sin(baseAngle),dz:Math.cos(baseAngle),speed:20,fromPlayer,fromAlly,baseDmg:baseDmg*1.1,radius:7,color:'#ff8c00',life:3,homing:true}); }
   else { bullets.push({x:shooter.x,z:shooter.z,dx:Math.sin(baseAngle),dz:Math.cos(baseAngle),speed:30,fromPlayer,fromAlly,baseDmg,radius:6,color,life:2.5}); }
   spawnParticles(shooter.x+dirX,shooter.z+dirZ,color,3,3);
-  if(fromPlayer){ sndShoot(); player.recoil=0.15; }
+  if(fromPlayer){ sndShoot(); player.recoil=0.15; for(let i=0;i<6;i++){ const a=baseAngle+(Math.random()-0.5)*0.6; particles.push({x:shooter.x+Math.sin(baseAngle)*1.2,z:shooter.z+Math.cos(baseAngle)*1.2,vx:Math.sin(a)*8,vz:Math.cos(a)*8,life:0.25,maxLife:0.25,color:'#fff8c0',size:3+Math.random()*3}); } }
 }
 function updateAIUnit(unit,dt,allUnits,isEnemy){
   const ai=unit.ai;
   if(unit.ammo<3){ unit.ammoTimer+=dt; if(unit.ammoTimer>=2.0){ unit.ammoTimer-=2.0; unit.ammo++; } }
   let tx=player.x,tz=player.z,bd=999;
-  if(isEnemy){
-    if(!player.dead&&player.hp>0){ bd=Math.hypot(player.x-unit.x,player.z-unit.z); tx=player.x; tz=player.z; }
-    for(const a of allies){ if(a.hp<=0) continue; const d=Math.hypot(a.x-unit.x,a.z-unit.z); if(d<bd){ bd=d; tx=a.x; tz=a.z; } }
-  } else {
-    for(const e of enemies){ if(e.hp<=0) continue; const d=Math.hypot(e.x-unit.x,e.z-unit.z); if(d<bd){ bd=d; tx=e.x; tz=e.z; } }
-  }
+  if(isEnemy){ if(!player.dead&&player.hp>0){ bd=Math.hypot(player.x-unit.x,player.z-unit.z); tx=player.x; tz=player.z; } for(const a of allies){ if(a.hp<=0) continue; const d=Math.hypot(a.x-unit.x,a.z-unit.z); if(d<bd){ bd=d; tx=a.x; tz=a.z; } } }
+  else { for(const e of enemies){ if(e.hp<=0) continue; const d=Math.hypot(e.x-unit.x,e.z-unit.z); if(d<bd){ bd=d; tx=e.x; tz=e.z; } } }
   if(bd===999){ return; }
   const dx=tx-unit.x,dz=tz-unit.z,dist=Math.hypot(dx,dz)||1;
   ai.moveTimer-=dt; let mx=0,mz=0;
-  if(dist>9){ mx=dx/dist; mz=dz/dist; }
-  else if(dist<5){ mx=-dx/dist; mz=-dz/dist; }
-  else { if(ai.moveTimer<=0){ ai.moveTimer=1+Math.random(); ai.mdx=Math.cos(Math.random()*Math.PI*2); ai.mdz=Math.sin(Math.random()*Math.PI*2); } mx=ai.mdx; mz=ai.mdz; }
+  if(dist>9){ mx=dx/dist; mz=dz/dist; } else if(dist<5){ mx=-dx/dist; mz=-dz/dist; } else { if(ai.moveTimer<=0){ ai.moveTimer=1+Math.random(); ai.mdx=Math.cos(Math.random()*Math.PI*2); ai.mdz=Math.sin(Math.random()*Math.PI*2); } mx=ai.mdx; mz=ai.mdz; }
   for(const o of allUnits){ if(o===unit||o.hp<=0) continue; const ddx=unit.x-o.x,ddz=unit.z-o.z,dd=Math.hypot(ddx,ddz); if(dd<2.4&&dd>0.01){ mx+=(ddx/dd)*(2.4-dd)*0.6; mz+=(ddz/dd)*(2.4-dd)*0.6; } }
   const ml=Math.hypot(mx,mz);
   if(ml>0){ mx/=ml; mz/=ml; const spd=isEnemy?(unit.stats?unit.stats.speed:6):6; unit.x+=mx*spd*0.7*dt; unit.z+=mz*spd*0.7*dt; unit.walkPhase+=dt*8; }
@@ -709,10 +772,18 @@ function resetLobby(){ $('lobbyStatus').textContent='Выбери действи
 function closeLobby(){ $('onlineLobby').classList.remove('show'); if(ws){ try{ ws.close(); }catch(e){} ws=null; } opponentFighter=null; myFighter=null; }
 let ws=null, opponentFighter=null, myFighter=null;
 function connectWS(){ return new Promise((resolve,reject)=>{ const proto=location.protocol==='https:'?'wss:':'ws:'; ws=new WebSocket(proto+'//'+location.host); ws.onopen=()=>resolve(ws); ws.onerror=(e)=>reject(e); ws.onmessage=(e)=>{ let msg; try{ msg=JSON.parse(e.data); }catch(_){ return; } handleWsMessage(msg); }; ws.onclose=()=>{ $('lobbyStatus').textContent='Соединение потеряно'; $('lobbyStatus').classList.add('err'); }; }); }
-function handleWsMessage(msg){
+async function handleWsMessage(msg){
   switch(msg.type){
+    case 'friend-invite': {
+      if(confirm('🎮 '+msg.from+' приглашает в бой! Присоединиться?')){
+        $('onlineLobby').classList.add('show'); resetLobby();
+        try{ if(!ws) await connectWS(); }catch(e){}
+        setTimeout(()=>{ if(ws && ws.readyState===1) ws.send(JSON.stringify({type:'join-room',roomId:msg.roomId,username:nickname||'Гость'})); }, 300);
+      }
+      break;
+    }
     case 'room-created': $('lobbyHostCode').textContent=msg.roomId; $('lobbyHost1').style.display='none'; $('lobbyJoin1').style.display='none'; $('lobbyHost2').style.display='block'; $('lobbyStatus').textContent='Ждём гостя...'; break;
-    case 'joined-room': $('lobbyStatus').textContent='Подключено к '+msg.hostUsername; showPickStep(); break;
+    case 'joined-room': $('lobbyStatus').textContent='Подключено к '+msg.hostUsername; showPickStep(); refreshFriends(); break;
     case 'opponent-joined': $('lobbyStatus').textContent=msg.username+' подключился!'; showPickStep(); break;
     case 'opponent-left': $('lobbyStatus').textContent='Противник вышел'; $('lobbyStatus').classList.add('err'); setTimeout(closeLobby,1500); break;
     case 'relay': if(msg.payload&&msg.payload.type==='fighter-picked'){ opponentFighter=FIGHTERS[msg.payload.fighterId]; if(myFighter) startOnlineBattle(); } break;
@@ -750,7 +821,6 @@ $('lobbyBtnCreate').onclick=async ()=>{ $('lobbyStatus').textContent='Созда
 $('lobbyBtnJoinAccept').onclick=async ()=>{ const code=$('lobbyJoinOfferIn').value.trim(); if(!/^\d{6}$/.test(code)){ $('lobbyStatus').textContent='Код — 6 цифр'; $('lobbyStatus').classList.add('err'); return; } $('lobbyStatus').textContent='Подключение...'; try{ if(!ws) await connectWS(); ws.send(JSON.stringify({type:'join-room',roomId:code,username:nickname||'Гость'})); }catch(e){ $('lobbyStatus').textContent='Ошибка'; $('lobbyStatus').classList.add('err'); } };
 $('lobbyBtnStartGame').onclick=()=>{ if(myFighter&&opponentFighter) startOnlineBattle(); else $('lobbyStatus').textContent='Ждём противника...'; };
 $('lobbyBtnCancel').onclick=closeLobby;
-
 let authMode='login';
 function showAuth(){ $('authModal').classList.add('show'); $('authNick').value=''; $('authPass').value=''; $('authErr').textContent=''; }
 function hideAuth(){ $('authModal').classList.remove('show'); }
@@ -778,6 +848,7 @@ $('authBtn').onclick=async ()=>{
     profile.selected=pl.selected||profile.selected;
     try{ localStorage.setItem(SAVE_KEY,JSON.stringify(profile)); }catch(e){}
     hideAuth(); updateProfileUI(); checkDaily();
+    try{ if(ws && ws.readyState===1) ws.send(JSON.stringify({type:'identify',nickname})); }catch(e){}
   }catch(e){ $('authErr').textContent='Ошибка сети'; }
   $('authBtn').textContent=authMode==='login'?'ВОЙТИ':'СОЗДАТЬ АККАУНТ'; $('authBtn').disabled=false;
 };
@@ -820,7 +891,7 @@ async function init(){
   setTimeout(()=>{ const f=FIGHTERS[profile.selected.plant]; if(f) pickFighter(f); },50);
   if(token){
     const ok = await loadMe();
-    if(ok){ updateProfileUI(); checkDaily(); }
+    if(ok){ updateProfileUI(); checkDaily(); try{ if(ws && ws.readyState===1) ws.send(JSON.stringify({type:'identify',nickname})); }catch(e){} }
     else { showAuth(); }
   } else {
     showAuth();
