@@ -5,15 +5,6 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
 <meta name="theme-color" content="#05070d">
 <title>Digital Style</title>
-<div id="errBox" style="position:fixed;top:0;left:0;right:0;background:#ff2e8a;color:#fff;font:12px monospace;padding:8px;z-index:99999;display:none;white-space:pre-wrap;max-height:50vh;overflow:auto"></div>
-<script>
-window.onerror = function(msg, src, line, col){
-  var box = document.getElementById('errBox');
-  if(!box) return;
-  box.style.display = 'block';
-  box.textContent += '[ERROR] ' + msg + '\n  at line ' + line + ':' + col + '\n';
-};
-</script>
 <style>
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;user-select:none}
 html,body{width:100%;height:100%;overflow:hidden;background:#000;font-family:-apple-system,'Segoe UI',Arial,sans-serif;color:#fff;touch-action:none;position:fixed;inset:0}
@@ -135,18 +126,19 @@ html,body{width:100%;height:100%;overflow:hidden;background:#000;font-family:-ap
 .statRow{width:100%;display:flex;justify-content:space-between;padding:6px 10px;background:rgba(0,0,0,.4);border:1px solid #2cff5e;border-radius:8px;font-size:13px}
 .statRow .lbl{color:#9fd7ff}
 .statRow .val{color:#7cf86b;font-weight:800}
-#authModal{position:fixed;inset:0;z-index:300;background:radial-gradient(circle at 50% 30%,#0d1a2b 0%,#05070d 80%);display:none;flex-direction:column;align-items:center;justify-content:center;padding:20px;gap:12px}
-#authModal.show{display:flex}
+#authModal{position:fixed;inset:0;z-index:99999;background:radial-gradient(circle at 50% 30%,#0d1a2b 0%,#05070d 80%);display:none;flex-direction:column;align-items:center;justify-content:center;padding:20px;gap:12px;pointer-events:auto !important;touch-action:auto !important}
+#authModal.show{display:flex !important}
+#authModal *{pointer-events:auto !important;touch-action:auto !important}
 #authModal .logo{font-size:32px;font-weight:900;color:#7cf86b;letter-spacing:2px;text-shadow:0 0 20px #2cff5e;margin-bottom:10px}
 #authModal .authTabs{display:flex;gap:6px;width:100%;max-width:320px}
 #authModal .authTab{flex:1;padding:10px;text-align:center;font-weight:800;font-size:13px;border-radius:10px;cursor:pointer;border:2px solid transparent;background:rgba(255,255,255,.06);color:#9fd7ff}
 #authModal .authTab.active{background:linear-gradient(180deg,#1c3d1f,#0e2410);border-color:#7cf86b;color:#eaffea}
-#authModal input{width:100%;max-width:320px;padding:12px;background:rgba(255,255,255,.06);border:2px solid #00e5ff;border-radius:10px;color:#fff;font-size:16px;outline:none;text-align:center;pointer-events:auto}
-#authModal input:focus{border-color:#7cf86b}
-#authModal button{padding:14px;background:linear-gradient(180deg,#2cff5e,#16a34a);border:none;color:#04141d;font-weight:900;font-size:14px;border-radius:12px;cursor:pointer;width:100%;max-width:320px}
+#authModal input{width:100%;max-width:320px;padding:14px;background:rgba(255,255,255,.08);border:2px solid #00e5ff;border-radius:10px;color:#fff;font-size:16px;outline:none;text-align:center;-webkit-user-select:text;user-select:text;cursor:text;pointer-events:auto !important;touch-action:auto !important}
+#authModal input:focus{border-color:#7cf86b;background:rgba(255,255,255,.12)}
+#authModal button{padding:14px;background:linear-gradient(180deg,#2cff5e,#16a34a);border:none;color:#04141d;font-weight:900;font-size:14px;border-radius:12px;cursor:pointer;width:100%;max-width:320px;pointer-events:auto !important;touch-action:auto !important}
 #authModal .hint{font-size:12px;color:#9fd7ff;text-align:center;max-width:320px;line-height:1.4}
 #authModal .err{color:#ff2e8a;font-weight:800;font-size:13px;text-align:center;min-height:18px}
-#logoutBtn{padding:4px 10px;background:rgba(255,46,138,.2);border:1px solid #ff2e8a;color:#ff2e8a;font-weight:800;font-size:11px;border-radius:6px;cursor:pointer}
+#logoutBtn{padding:4px 10px;background:rgba(255,46,138,.2);border:1px solid #ff2e8a;color:#ff2e8a;font-weight:800;font-size:11px;border-radius:6px;cursor:pointer;pointer-events:auto}
 </style>
 </head>
 <body>
@@ -211,18 +203,18 @@ html,body{width:100%;height:100%;overflow:hidden;background:#000;font-family:-ap
   <div id="respawnOverlay"><div class="big">ТЫ ПАЛ</div><div class="timer" id="respawnTimer">5</div><div class="info">Возрождение если жив союзник</div></div>
   <div id="msg"></div>
   <div id="trophyToast"></div>
-  <div id="authModal">
-    <div class="logo">Digital Style</div>
-    <div class="authTabs">
-      <div class="authTab active" id="tabLogin">ВХОД</div>
-      <div class="authTab" id="tabRegister">РЕГИСТРАЦИЯ</div>
-    </div>
-    <input id="authNick" maxlength="16" placeholder="Ник" autocomplete="username">
-    <input id="authPass" type="password" maxlength="32" placeholder="Пароль" autocomplete="current-password">
-    <div class="err" id="authErr"></div>
-    <button id="authBtn">ВОЙТИ</button>
-    <div class="hint">Ник: 3-16 символов, буквы/цифры/_. Пароль: минимум 4 символа.</div>
+</div>
+<div id="authModal">
+  <div class="logo">Digital Style</div>
+  <div class="authTabs">
+    <div class="authTab active" id="tabLogin">ВХОД</div>
+    <div class="authTab" id="tabRegister">РЕГИСТРАЦИЯ</div>
   </div>
+  <input id="authNick" maxlength="16" placeholder="Ник" autocomplete="username" inputmode="text">
+  <input id="authPass" type="password" maxlength="32" placeholder="Пароль" autocomplete="current-password">
+  <div class="err" id="authErr"></div>
+  <button id="authBtn">ВОЙТИ</button>
+  <div class="hint">Ник: 3-16 символов, буквы/цифры/_. Пароль: минимум 4 символа.</div>
 </div>
 <script type="module">
 const $ = id => document.getElementById(id);
@@ -232,10 +224,8 @@ const NICK_KEY = 'digital_style_nick';
 let token = '';
 let nickname = '';
 try { token = localStorage.getItem(TOKEN_KEY) || ''; nickname = localStorage.getItem(NICK_KEY) || ''; } catch(e){}
-
 let profile = { kk: 200, trophies: 0, wins: 0, losses: 0, kills: 0, games: 0, unlocked: { plant_0: true, plant_1: true, plant_2: true, inv_0: true }, levels: {}, selected: { plant: 'plant_0', enemy: 'inv_0' } };
 try { const raw = localStorage.getItem(SAVE_KEY); if (raw) Object.assign(profile, JSON.parse(raw)); } catch(e){}
-
 function saveProfile(){
   try { localStorage.setItem(SAVE_KEY, JSON.stringify(profile)); } catch(e){}
   if(token) syncToServer();
@@ -762,8 +752,8 @@ $('lobbyBtnCancel').onclick=closeLobby;
 
 // ===== АВТОРИЗАЦИЯ =====
 let authMode='login';
-function showAuth(){ $('authModal').classList.add('show'); $('authNick').value=''; $('authPass').value=''; $('authErr').textContent=''; }
-function hideAuth(){ $('authModal').classList.remove('show'); }
+function showAuth(){ const m=$('authModal'); m.style.display='flex'; m.style.pointerEvents='auto'; m.style.touchAction='auto'; $('authNick').value=''; $('authPass').value=''; $('authErr').textContent=''; }
+function hideAuth(){ $('authModal').style.display='none'; }
 $('tabLogin').onclick=()=>{ authMode='login'; $('tabLogin').classList.add('active'); $('tabRegister').classList.remove('active'); $('authBtn').textContent='ВОЙТИ'; $('authErr').textContent=''; };
 $('tabRegister').onclick=()=>{ authMode='register'; $('tabRegister').classList.add('active'); $('tabLogin').classList.remove('active'); $('authBtn').textContent='СОЗДАТЬ АККАУНТ'; $('authErr').textContent=''; };
 $('authBtn').onclick=async ()=>{
