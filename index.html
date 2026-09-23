@@ -691,8 +691,7 @@ function refreshPick(){
     const lvl = document.createElement('div'); lvl.className = 'lvl'; lvl.textContent = 'L' + getLevel(id); card.appendChild(lvl);
     const cv = document.createElement('canvas'); card.appendChild(cv);
     const nm = document.createElement('div'); nm.className = 'name'; nm.textContent = f.name; card.appendChild(nm);
-    const handler = ev => { ev.preventDefault(); ev.stopPropagation(); pickFighter(f); };
-    card.addEventListener('touchstart', handler, {passive:false});
+    const handler = ev => { ev.preventDefault(); ev.stopPropagation(); openFighterCard(f.id, 'play'); };    card.addEventListener('touchstart', handler, {passive:false});
     card.addEventListener('click', handler);
     grid.appendChild(card);
     setTimeout(() => drawPortrait(cv, f), 10);
@@ -1423,7 +1422,7 @@ $('authBtn').addEventListener('click', async () => {
 $('authPass').addEventListener('keydown', e => { if (e.key === 'Enter') $('authBtn').click(); });
 $('nickLabel').addEventListener('click', () => { if (token) showAuth(); });
 $('logoutBtn').addEventListener('click', () => { if (!confirm('Выйти?')) return; token = ''; nickname = ''; try { localStorage.removeItem(TOKEN_KEY); localStorage.removeItem(NICK_KEY); localStorage.removeItem(SAVE_KEY); } catch(e){} location.reload(); });
-
+const handler = ev => { ev.preventDefault(); ev.stopPropagation(); openFighterCard(f.id, 'play'); };
 /* ============ СТАРТ ============ */
 updateProfileUI();
 requestAnimationFrame(function frame(t){ const dt = Math.min(0.05, (t - lastT)/1000); lastT = t; update(dt); render(); requestAnimationFrame(frame); });
