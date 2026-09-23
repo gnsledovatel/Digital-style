@@ -746,52 +746,138 @@ function updateHUD(){ const pIcon=(side==='enemy')?'EN ':'HP '; const eIcon=(sid
 function drawArena(){ const halfPx=(ARENA/2)*ZOOM; const cx=W/2-camera2D.x*ZOOM,cy=H*0.68-camera2D.z*ZOOM; const g=ctx.createRadialGradient(cx,cy,0,cx,cy,halfPx); g.addColorStop(0,'#1a3a22'); g.addColorStop(1,'#0f2a17'); ctx.fillStyle=g; ctx.fillRect(cx-halfPx,cy-halfPx,halfPx*2,halfPx*2); ctx.strokeStyle='rgba(0,229,255,.18)'; ctx.lineWidth=1; const step=2*ZOOM; const sX=cx-halfPx,sY=cy-halfPx; for(let i=0;i<=ARENA/2;i++){ ctx.beginPath(); ctx.moveTo(sX+i*step,sY); ctx.lineTo(sX+i*step,sY+halfPx*2); ctx.stroke(); ctx.beginPath(); ctx.moveTo(sX,sY+i*step); ctx.lineTo(sX+halfPx*2,sY+i*step); ctx.stroke(); } ctx.strokeStyle='#2cff5e'; ctx.lineWidth=8; ctx.shadowColor='#2cff5e'; ctx.shadowBlur=20; ctx.strokeRect(cx-halfPx,cy-halfPx,halfPx*2,halfPx*2); ctx.shadowBlur=0; }
 function renderZones(){ for(const z of zones){ const p=worldToScreen(z.x,z.z); const r=z.radius*ZOOM; ctx.globalAlpha=Math.min(1,z.life); ctx.fillStyle=z.color; if(z.type==='wall'){ ctx.globalAlpha=1; ctx.beginPath(); ctx.arc(p.x,p.y,r,0,Math.PI*2); ctx.fill(); ctx.strokeStyle='#05070d'; ctx.lineWidth=3; ctx.stroke(); } else { ctx.globalAlpha=0.25*Math.min(1,z.life); ctx.beginPath(); ctx.arc(p.x,p.y,r,0,Math.PI*2); ctx.fill(); ctx.globalAlpha=0.7*Math.min(1,z.life); ctx.strokeStyle=z.color; ctx.lineWidth=3; ctx.beginPath(); ctx.arc(p.x,p.y,r,0,Math.PI*2); ctx.stroke(); } ctx.globalAlpha=1; } }
 function updateZones(dt){ for(const z of zones){ if(z.type==='roots'){ for(const e of enemies){ if(e.hp<=0) continue; if(Math.hypot(e.x-z.x,e.z-z.z)<z.radius){ e.x+=(z.x-e.x)*z.slow*dt*2; e.z+=(z.z-e.z)*z.slow*dt*2; } } } else if(z.type==='poison'){ z.tick-=dt; if(z.tick<=0){ z.tick=0.5; for(const e of enemies){ if(e.hp<=0) continue; if(Math.hypot(e.x-z.x,e.z-z.z)<z.radius){ e.hp=Math.max(0,e.hp-z.dps); spawnFloatingText(e.x,e.z,'-'+Math.round(z.dps),'#a855f7'); if(e.hp<=0){ battleKK+=10; battleTrophies+=2; battleKills++; } } } } } else if(z.type==='wall'){ z.tick-=dt; if(z.tick<=0){ z.tick=0.4; for(const e of enemies){ if(e.hp<=0) continue; if(Math.hypot(e.x-z.x,e.z-z.z)<z.radius+1){ e.hp=Math.max(0,e.hp-z.dmg); spawnFloatingText(e.x,e.z,'-'+Math.round(z.dmg),'#a16207'); if(e.hp<=0){ battleKK+=10; battleTrophies+=2; battleKills++; } } } } } } }
-// === ПРИЦЕЛ ===
+// === ПРИЦЕЛ (разные формы по типу атаки) ===
 function drawCrosshair(){
   if(!gameActive||player.dead) return;
+  if(!player.fighter) return;
   const dist=6;
   const tx=player.x+Math.sin(yaw)*dist;
   const tz=player.z+Math.cos(yaw)*dist;
   const p=worldToScreen(tx,tz);
-  // проверка: есть ли враг под прицелом
   let onTarget=false;
   const allTargets=[];
   if(pvpMode&&opponent&&!opponent.dead) allTargets.push(opponent);
   for(const e of enemies){ if(e.hp>0) allTargets.push(e); }
   for(const t of allTargets){
-    const d=Math.hypot(t.x-tx,t.z-tz);
-    if(d<1.6){ onTarget=true; break; }
+    if(Math.hypot(t.x-tx,t.z-tz)<1.6){ onTarget=true; break; }
   }
   const baseColor = side==='enemy' ? '#00e5ff' : '#7cf86b';
   const color = onTarget ? '#ff2e8a' : baseColor;
   const pulse = ammo<=0 ? (Math.sin(performance.now()*0.01)*0.5+0.5) : 1;
   const size = onTarget ? 22 : 16;
+  const type = player.fighter.attack;
   ctx.save();
   ctx.translate(p.x,p.y);
   ctx.globalAlpha = (ammo<=0?0.5:1) * pulse;
   ctx.strokeStyle=color;
+  ctx.fillStyle=color;
   ctx.lineWidth=3;
   ctx.shadowColor=color;
   ctx.shadowBlur=10;
-  // 4 сектора
   const gap=size*0.35;
   const len=size*0.55;
-  ctx.beginPath();
-  ctx.moveTo(-size, -gap); ctx.lineTo(-size, -size); ctx.lineTo(-gap, -size);
-  ctx.moveTo(size, -gap); ctx.lineTo(size, -size); ctx.lineTo(gap, -size);
-  ctx.moveTo(-size, gap); ctx.lineTo(-size, size); ctx.lineTo(-gap, size);
-  ctx.moveTo(size, gap); ctx.lineTo(size, size); ctx.lineTo(gap, size);
-  ctx.stroke();
-  // точка в центре
-  ctx.beginPath();
-  ctx.arc(0,0,2.5,0,Math.PI*2);
-  ctx.fillStyle=color;
-  ctx.fill();
+  switch(type){
+    case 'single': {
+      // круг + точка
+      ctx.beginPath(); ctx.arc(0,0,size*0.7,0,Math.PI*2); ctx.stroke();
+      ctx.beginPath(); ctx.arc(0,0,2.5,0,Math.PI*2); ctx.fill();
+      break;
+    }
+    case 'triple': {
+      // 3 точки веером
+      for(let i=-1;i<=1;i++){
+        ctx.beginPath(); ctx.arc(0,0,size*0.6,0,Math.PI*2); ctx.stroke();
+        ctx.beginPath(); ctx.arc(i*size*0.5, -size*0.3 + Math.abs(i)*size*0.15, 3, 0, Math.PI*2); ctx.fill();
+      }
+      break;
+    }
+    case 'shotgun': {
+      // широкий веер из 5 линий
+      for(let i=-2;i<=2;i++){
+        const a=i*0.22;
+        ctx.beginPath();
+        ctx.moveTo(0,0);
+        ctx.lineTo(Math.sin(a)*size*1.2, -Math.cos(a)*size*1.2);
+        ctx.stroke();
+      }
+      break;
+    }
+    case 'long': {
+      // длинная риска + точка
+      ctx.beginPath(); ctx.moveTo(-size*1.4,0); ctx.lineTo(size*1.4,0); ctx.stroke();
+      ctx.beginPath(); ctx.arc(0,0,3,0,Math.PI*2); ctx.fill();
+      ctx.beginPath(); ctx.moveTo(0,-size*0.4); ctx.lineTo(0,size*0.4); ctx.stroke();
+      break;
+    }
+    case 'rapid': {
+      // двойной круг
+      ctx.beginPath(); ctx.arc(0,0,size*0.5,0,Math.PI*2); ctx.stroke();
+      ctx.beginPath(); ctx.arc(0,0,size*0.9,0,Math.PI*2); ctx.stroke();
+      ctx.beginPath(); ctx.arc(0,0,2,0,Math.PI*2); ctx.fill();
+      break;
+    }
+    case 'pierce': {
+      // шеврон >
+      ctx.beginPath();
+      ctx.moveTo(-size*0.8,-size*0.7); ctx.lineTo(size*0.8,0); ctx.lineTo(-size*0.8,size*0.7);
+      ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(-size*0.8,0); ctx.lineTo(size*0.8,0); ctx.stroke();
+      break;
+    }
+    case 'grenade': {
+      // круг с пунктиром
+      ctx.beginPath(); ctx.arc(0,0,size*0.9,0,Math.PI*2); ctx.stroke();
+      ctx.setLineDash([4,4]);
+      ctx.beginPath(); ctx.arc(0,0,size*1.4,0,Math.PI*2); ctx.stroke();
+      ctx.setLineDash([]);
+      ctx.beginPath(); ctx.arc(0,0,3,0,Math.PI*2); ctx.fill();
+      break;
+    }
+    case 'homing': {
+      // круг с хвостом
+      ctx.beginPath(); ctx.arc(0,0,size*0.6,0,Math.PI*2); ctx.stroke();
+      ctx.beginPath(); ctx.arc(0,0,2.5,0,Math.PI*2); ctx.fill();
+      ctx.beginPath();
+      ctx.moveTo(0,size*0.8); ctx.lineTo(-size*0.3,size*1.2); ctx.lineTo(size*0.3,size*1.2); ctx.closePath();
+      ctx.fill();
+      break;
+    }
+    case 'wave': {
+      // 3 дуги
+      for(let i=1;i<=3;i++){
+        ctx.beginPath();
+        ctx.arc(0,0,size*0.4*i, Math.PI*0.2, Math.PI*0.8);
+        ctx.stroke();
+      }
+      ctx.beginPath(); ctx.arc(0,0,2.5,0,Math.PI*2); ctx.fill();
+      break;
+    }
+    case 'spiral': {
+      // спираль из точек
+      for(let i=0;i<8;i++){
+        const ang = i*0.8;
+        const r = size*0.15 + i*size*0.12;
+        ctx.beginPath();
+        ctx.arc(Math.cos(ang)*r, Math.sin(ang)*r, 2, 0, Math.PI*2);
+        ctx.fill();
+      }
+      break;
+    }
+    default: {
+      // стандартный
+      ctx.beginPath();
+      ctx.moveTo(-size, -gap); ctx.lineTo(-size, -size); ctx.lineTo(-gap, -size);
+      ctx.moveTo(size, -gap); ctx.lineTo(size, -size); ctx.lineTo(gap, -size);
+      ctx.moveTo(-size, gap); ctx.lineTo(-size, size); ctx.lineTo(-gap, size);
+      ctx.moveTo(size, gap); ctx.lineTo(size, size); ctx.lineTo(gap, size);
+      ctx.stroke();
+      ctx.beginPath(); ctx.arc(0,0,2.5,0,Math.PI*2); ctx.fill();
+    }
+  }
   if(onTarget){
-    // внешнее кольцо при наведении
     ctx.beginPath();
-    ctx.arc(0,0,size*1.1,0,Math.PI*2);
-    ctx.globalAlpha=0.6;
+    ctx.arc(0,0,size*1.5,0,Math.PI*2);
+    ctx.globalAlpha=0.5;
     ctx.stroke();
   }
   ctx.restore();
