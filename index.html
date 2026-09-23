@@ -1271,7 +1271,82 @@ bindFixedJoy($('attackZone'), touch.attack, $('joyAttack'), $('joyAttack').query
 bindFixedJoy($('superZone'), touch.super, $('joySuper'), $('joySuper').querySelector('.knob'), 'super');
 addEventListener('keydown', e => { keys[e.key.toLowerCase()] = true; if (e.key === 'Escape' && gameActive) leaveToMenu(); });
 addEventListener('keyup', e => { keys[e.key.toLowerCase()] = false; });
-
+/* ================== КАРТОЧКА БОЙЦА ================== */
+let currentCardFighter = null;
+function openFighterCard(fighterId){
+  const f = FIGHTERS[fighterId]; if (!f) return;
+  currentCardFighter = f;
+  const unlocked = isUnlocked(f.id);
+  const lvl = getLevel(f.id);
+  const stats = getFighterStats(f);
+  $('fcPortrait').className = 'fc-portrait' + (f.side === 'enemy' ? ' enemy' : '');
+  $('fcName').textContent = f.name;
+  $('fcSide').textContent = f.side === 'plant' ? 'РАСТЕНИЕ' : 'ЗАХВАТЧИК';
+  $('fcRarity').className = 'fc-rarity ' + f.rarity;
+  $('fcRarity').textContent = f.rarity.toUpperCase();
+  $('fcLvl').textContent = unlocked ? ('L' + lvl + ' / L' + MAX_LEVEL) : 'НЕ ОТКРЫТ';
+  $('fcHp').textContent = unlocked ? stats.hp : '???';
+  $('fcDmg').textContent = unlocked ? Math.round(stats.dmg) : '???';
+  $('fcSpeed').textContent = unlocked ? stats.speed.toFixed(1) : '???';
+  $('fcRate').textContent = unlocked ? (1/stats.fireRate).toFixed(2) + '/сек' : '???';
+  $('fcAttackName').textContent = ATTACK_NAMES[f.attack] || f.attack;
+  $('fcAttackKind').textContent = f.attack;
+  $('fcSuperName').textContent = SUPER_NAMES[f.super] || f.super;
+  $('fcSuperKind').textContent = f.super;
+  const pct = ((lvl-1)/(MAX_LEVEL-1))*100;
+  $('fcProgress').style.width = pct + '%';
+  $('fcLvlRow').textContent = 'L' + lvl + ' / L' + MAX_LEVEL;
+  if (lvl < MAX_LEVEL){
+    const cost = getUpgradeCost(lvl);
+    $('fcCost').textContent = '💾 ' + cost;
+    $('fcCost').style.color = profile.kk >= cost ? '#7cf86b' : '#ff2e8a';
+  } else $('fcCost').textContent = 'МАКС';
+  const upBtn = $('fcUpgradeBtn');
+  if (unlocked && lvl < MAX_LEVEL){
+    upBtn.style.display = 'block';
+    upBtn.textContent = 'ПРОКАЧАТЬ — 💾 ' + getUpgradeCost(lvl);
+    upBtn.disabled = profile.kk < getUpgradeCost(lvl);
+  } else upBtn.style.display = 'none';
+  const fightBtn = $('fcFightBtn');
+  if (unlocked){ fightBtn.style.display = 'block'; fightBtn.textContent = 'В БОЙ: ' + f.name; }
+  else fightBtn.style.display = 'none';
+  $('fighterCard').classList.add('show');
+  setTimeout(() => {
+    const cv = $('fcCanvas');
+    const dpr = Math.min(devicePixelRatio, 2);
+    const size = 88;
+    cv.width = size*dpr; cv.height = size*dpr;
+    const c = cv.getContext('2d');
+    c.setTransform(1,0,0,1,0,0); c.scale(dpr, dpr); c.clearRect(0, 0, size, size);
+    drawFighterShape(c, f, size/2, size/2, size*0.85, -Math.PI/2, false, 0);
+  }, 30);
+}
+$('fcCloseBtn').addEventListener('click', () => { $('fighterCard').classList.remove('show'); currentCardFighter = null; });
+$('fcUpgradeBtn').addEventListener('click', () => {
+  if (!currentCardFighter) return;
+  const f = currentCardFighter;
+  const lvl = getLevel(f.id);
+  if (lvl >= MAX_LEVEL) return;
+  const cost = getUpgradeCost(lvl);
+  if (profile.kk < cost) return;
+  profile.kk -= cost;
+  profile.levels[f.id] = lvl + 1;
+  playSound('click');
+  saveProfile(); updateProfileUI();
+  openFighterCard(f.id);
+});
+$('fcFightBtn').addEventListener('click', () => {
+  if (!currentCardFighter) return;
+  const f = currentCardFighter;
+  if (!isUnlocked(f.id)) return;
+  chosenFighter = f;
+  profile.selected[f.side] = f.id;
+  saveProfile();
+  $('fighterCard').classList.remove('show');
+  rollRandomMap();
+  $('menu').style.display = 'none';
+  startGame(f);
+});
 /* ================== AUTH (СЕРВЕР) ================== */
 let authMode = 'login';
 function showAuth(){ $('authModal').classList.add('show'); $('authNick').value = ''; $('authPass').value = ''; $('authErr').textContent = ''; }
