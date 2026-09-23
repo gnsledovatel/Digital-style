@@ -10,14 +10,25 @@ const { Pool } = pg;
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const PORT = process.env.PORT || 3000;
 
-/* ============ POSTGRESQL ============ */
+/* ============ БД ============ */
 let pool = null;
 let dbReady = false;
-const sessions = new Map(); // token -> { nickname, expires }
+const sessions = new Map();
 
 if (process.env.DATABASE_URL) {
-  pool = new Pool({ connectionString: process.env.DATABASE_URL, ssl: { rejectUnauthorized: false } });
-  initDB().catch(err => console.error('DB init error:', err.message));
+  try {
+    pool = new Pool({
+      connectionString: process.env.DATABASE_URL,
+      ssl: { rejectUnauthorized: false },
+      max: 5,
+      idleTimeoutMillis: 30000,
+      connectionTimeoutMillis: 5000
+    });
+    pool.on('error', (err) => console.error('[pg pool error]', err.message));
+    initDB().catch(err => console.error('[DB init]', err.message));
+  } catch (e) {
+    console.error('[pg create]', e.message);
+  }
 } else {
   console.warn('⚠️ DATABASE_URL не задан');
 }
@@ -39,9 +50,9 @@ async function initDB(){
       daily_last TEXT DEFAULT '',
       created_at TIMESTAMPTZ DEFAULT NOW(),
       updated_at TIMESTAMPTZ DEFAULT NOW()
-    );
-    CREATE INDEX IF NOT EXISTS idx_trophies ON players(trophies DESC);
+    )
   `);
+  await pool.query('CREATE INDEX IF NOT EXISTS idx_trophies ON players(trophies DESC)');
   await pool.query('ALTER TABLE players ADD COLUMN IF NOT EXISTS password_hash TEXT');
   await pool.query('ALTER TABLE players ADD COLUMN IF NOT EXISTS password_salt TEXT');
   dbReady = true;
@@ -56,15 +67,12 @@ function genSalt(){ return crypto.randomBytes(16).toString('hex'); }
 function genToken(){ return crypto.randomBytes(32).toString('hex'); }
 
 async function registerPlayer(nickname, password){
-  const existing = await pool.query('SELECT id FROM players WHERE nickname = $1', [nickname]);
+  const existing = await pool.query('SELECT id, password_hash FROM players WHERE nickname = $1', [nickname]);
   if (existing.rows.length > 0) {
-    const p = existing.rows[0];
-    const full = await pool.query('SELECT password_hash FROM players WHERE id = $1', [p.id]);
-    if (full.rows[0].password_hash) throw new Error('Ник занят');
-    // старый аккаунт без пароля — «присваиваем» пароль
+    if (existing.rows[0].password_hash) throw new Error('Ник занят');
     const salt = genSalt();
     const hash = hashPassword(password, salt);
-    await pool.query('UPDATE players SET password_hash = $1, password_salt = $2 WHERE id = $3', [hash, salt, p.id]);
+    await pool.query('UPDATE players SET password_hash = $1, password_salt = $2 WHERE id = $3', [hash, salt, existing.rows[0].id]);
   } else {
     const salt = genSalt();
     const hash = hashPassword(password, salt);
@@ -79,7 +87,7 @@ async function loginPlayer(nickname, password){
   const r = await pool.query('SELECT * FROM players WHERE nickname = $1', [nickname]);
   if (r.rows.length === 0) throw new Error('Игрок не найден');
   const p = r.rows[0];
-  if (!p.password_hash) throw new Error('Аккаунт без пароля. Зарегистрируйся заново');
+  if (!p.password_hash) throw new Error('Аккаунт без пароля');
   const hash = hashPassword(password, p.password_salt);
   if (hash !== p.password_hash) throw new Error('Неверный пароль');
   const token = genToken();
@@ -121,107 +129,158 @@ async function leaderboard(limit = 20){
 
 /* ============ HTTP ============ */
 const server = http.createServer(async (req, res) => {
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, X-Token');
-  if (req.method === 'OPTIONS') { res.writeHead(200); res.end(); return; }
+  try {
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type, X-Token');
+    if (req.method === 'OPTIONS') { res.writeHead(204); res.end(); return; }
 
-  const url = new URL(req.url, 'http://localhost');
-  const pathname = url.pathname;
+    const url = new URL(req.url, 'http://localhost');
+    const pathname = url.pathname;
+    console.log(`[${req.method}] ${pathname}`);
 
-  function sendJSON(code, obj){ res.writeHead(code, { 'Content-Type': 'application/json' }); res.end(JSON.stringify(obj)); }
+    function sendJSON(code, obj){
+      res.writeHead(code, { 'Content-Type': 'application/json; charset=utf-8' });
+      res.end(JSON.stringify(obj));
+    }
 
-  if (pathname === '/health') { sendJSON(200, { ok: true, db: dbReady, time: Date.now() }); return; }
+    /* ==== API РОУТЫ ==== */
+    if (pathname === '/health') {
+      sendJSON(200, { ok: true, db: dbReady, time: Date.now() });
+      return;
+    }
 
-  if (pathname === '/api/leaderboard' && req.method === 'GET') {
-    try { sendJSON(200, { ok: true, rows: await leaderboard(20) }); }
-    catch (e) { sendJSON(500, { ok: false, error: e.message }); }
-    return;
-  }
-
-  // ====== РЕГИСТРАЦИЯ ======
-  if (pathname === '/api/register' && req.method === 'POST') {
-    let body = '';
-    req.on('data', c => body += c);
-    req.on('end', async () => {
+    if (pathname === '/api/leaderboard' && req.method === 'GET') {
       try {
-        const { nickname, password } = JSON.parse(body);
-        if (!nickname || nickname.length < 3 || nickname.length > 16) throw new Error('Ник 3-16 символов');
-        if (!/^[a-zA-Z0-9_]+$/.test(nickname)) throw new Error('Ник: только буквы, цифры, _');
-        if (!password || password.length < 4) throw new Error('Пароль минимум 4 символа');
-        const token = await registerPlayer(nickname, password);
+        const rows = await leaderboard(20);
+        sendJSON(200, { ok: true, rows });
+      } catch (e) {
+        console.error('[leaderboard]', e.message);
+        sendJSON(500, { ok: false, error: e.message });
+      }
+      return;
+    }
+
+    if (pathname === '/api/register' && req.method === 'POST') {
+      let body = '';
+      req.on('data', c => body += c);
+      req.on('end', async () => {
+        try {
+          const { nickname, password } = JSON.parse(body);
+          if (!nickname || nickname.length < 3 || nickname.length > 16) throw new Error('Ник 3-16 символов');
+          if (!/^[a-zA-Z0-9_]+$/.test(nickname)) throw new Error('Ник: буквы, цифры, _');
+          if (!password || password.length < 4) throw new Error('Пароль минимум 4 символа');
+          if (!dbReady) throw new Error('БД недоступна');
+          const token = await registerPlayer(nickname, password);
+          const player = await getPlayer(nickname);
+          sendJSON(200, { ok: true, token, player });
+        } catch (e) {
+          console.error('[register]', e.message);
+          sendJSON(400, { ok: false, error: e.message });
+        }
+      });
+      return;
+    }
+
+    if (pathname === '/api/login' && req.method === 'POST') {
+      let body = '';
+      req.on('data', c => body += c);
+      req.on('end', async () => {
+        try {
+          const { nickname, password } = JSON.parse(body);
+          if (!nickname || !password) throw new Error('Заполни все поля');
+          if (!dbReady) throw new Error('БД недоступна');
+          const token = await loginPlayer(nickname, password);
+          const player = await getPlayer(nickname);
+          sendJSON(200, { ok: true, token, player });
+        } catch (e) {
+          console.error('[login]', e.message);
+          sendJSON(401, { ok: false, error: e.message });
+        }
+      });
+      return;
+    }
+
+    if (pathname === '/api/me' && req.method === 'GET') {
+      const nickname = authByToken(req.headers['x-token']);
+      if (!nickname) { sendJSON(401, { ok: false, error: 'Не авторизован' }); return; }
+      try {
         const player = await getPlayer(nickname);
-        sendJSON(200, { ok: true, token, player });
-      } catch (e) { sendJSON(400, { ok: false, error: e.message }); }
-    });
-    return;
-  }
+        sendJSON(200, { ok: true, player });
+      } catch (e) {
+        sendJSON(500, { ok: false, error: e.message });
+      }
+      return;
+    }
 
-  // ====== ВХОД ======
-  if (pathname === '/api/login' && req.method === 'POST') {
-    let body = '';
-    req.on('data', c => body += c);
-    req.on('end', async () => {
+    if (pathname === '/api/save' && req.method === 'POST') {
+      const nickname = authByToken(req.headers['x-token']);
+      if (!nickname) { sendJSON(401, { ok: false, error: 'Не авторизован' }); return; }
+      let body = '';
+      req.on('data', c => body += c);
+      req.on('end', async () => {
+        try {
+          const data = JSON.parse(body);
+          const p = await updatePlayer(nickname, data);
+          sendJSON(200, { ok: true, player: p });
+        } catch (e) {
+          console.error('[save]', e.message);
+          sendJSON(500, { ok: false, error: e.message });
+        }
+      });
+      return;
+    }
+
+    if (pathname === '/api/daily' && req.method === 'POST') {
+      const nickname = authByToken(req.headers['x-token']);
+      if (!nickname) { sendJSON(401, { ok: false, error: 'Не авторизован' }); return; }
       try {
-        const { nickname, password } = JSON.parse(body);
-        if (!nickname || !password) throw new Error('Заполни все поля');
-        const token = await loginPlayer(nickname, password);
-        const player = await getPlayer(nickname);
-        sendJSON(200, { ok: true, token, player });
-      } catch (e) { sendJSON(401, { ok: false, error: e.message }); }
+        const p = await getPlayer(nickname);
+        const today = new Date().toISOString().slice(0, 10);
+        if (p.daily_last === today) { sendJSON(200, { ok: true, claimed: false, player: p }); return; }
+        const updated = await updatePlayer(nickname, { kk: p.kk + 100, daily_last: today });
+        sendJSON(200, { ok: true, claimed: true, reward: 100, player: updated });
+      } catch (e) {
+        sendJSON(500, { ok: false, error: e.message });
+      }
+      return;
+    }
+
+    /* ==== ЛЮБОЙ ДРУГОЙ /api/* — 404 JSON, НЕ HTML ==== */
+    if (pathname.startsWith('/api/')) {
+      sendJSON(404, { ok: false, error: 'API route not found' });
+      return;
+    }
+
+    /* ==== СТАТИКА ==== */
+    let filePath = pathname === '/' ? '/index.html' : pathname;
+    filePath = path.join(__dirname, filePath);
+
+    fs.readFile(filePath, (err, data) => {
+      if (err) {
+        res.writeHead(404, { 'Content-Type': 'text/plain' });
+        res.end('Not found');
+        return;
+      }
+      const ext = path.extname(filePath);
+      const types = {
+        '.html': 'text/html; charset=utf-8',
+        '.js': 'text/javascript; charset=utf-8',
+        '.css': 'text/css; charset=utf-8',
+        '.json': 'application/json; charset=utf-8',
+        '.png': 'image/png',
+        '.jpg': 'image/jpeg',
+        '.svg': 'image/svg+xml',
+        '.ico': 'image/x-icon'
+      };
+      res.writeHead(200, { 'Content-Type': types[ext] || 'application/octet-stream' });
+      res.end(data);
     });
-    return;
-  }
 
-  // ====== ПРОФИЛЬ ПО ТОКЕНУ ======
-  if (pathname === '/api/me' && req.method === 'GET') {
-    const nickname = authByToken(req.headers['x-token']);
-    if (!nickname) { sendJSON(401, { ok: false, error: 'Не авторизован' }); return; }
-    try { sendJSON(200, { ok: true, player: await getPlayer(nickname) }); }
-    catch (e) { sendJSON(500, { ok: false, error: e.message }); }
-    return;
+  } catch (e) {
+    console.error('[server]', e.message);
+    try { res.writeHead(500); res.end('Server error'); } catch(_){}
   }
-
-  // ====== СОХРАНЕНИЕ ======
-  if (pathname === '/api/save' && req.method === 'POST') {
-    const nickname = authByToken(req.headers['x-token']);
-    if (!nickname) { sendJSON(401, { ok: false, error: 'Не авторизован' }); return; }
-    let body = '';
-    req.on('data', c => body += c);
-    req.on('end', async () => {
-      try {
-        const data = JSON.parse(body);
-        const p = await updatePlayer(nickname, data);
-        sendJSON(200, { ok: true, player: p });
-      } catch (e) { sendJSON(500, { ok: false, error: e.message }); }
-    });
-    return;
-  }
-
-  // ====== ЕЖЕДНЕВКА ======
-  if (pathname === '/api/daily' && req.method === 'POST') {
-    const nickname = authByToken(req.headers['x-token']);
-    if (!nickname) { sendJSON(401, { ok: false, error: 'Не авторизован' }); return; }
-    try {
-      const p = await getPlayer(nickname);
-      const today = new Date().toISOString().slice(0, 10);
-      if (p.daily_last === today) { sendJSON(200, { ok: true, claimed: false, player: p }); return; }
-      const updated = await updatePlayer(nickname, { kk: p.kk + 100, daily_last: today });
-      sendJSON(200, { ok: true, claimed: true, reward: 100, player: updated });
-    } catch (e) { sendJSON(500, { ok: false, error: e.message }); }
-    return;
-  }
-
-  // ====== СТАТИКА ======
-  let filePath = pathname === '/' ? '/index.html' : pathname;
-  filePath = path.join(__dirname, filePath);
-  fs.readFile(filePath, (err, data) => {
-    if (err) { res.writeHead(404); res.end('Not found'); return; }
-    const ext = path.extname(filePath);
-    const types = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.css': 'text/css; charset=utf-8', '.png': 'image/png', '.ico': 'image/x-icon' };
-    res.writeHead(200, { 'Content-Type': types[ext] || 'text/plain' });
-    res.end(data);
-  });
 });
 
 /* ============ WEBSOCKET ============ */
@@ -275,6 +334,7 @@ wss.on('connection', (ws) => {
   ws.on('error', (err) => console.error('WS error:', err.message));
 });
 
+/* ============ ЗАПУСК ============ */
 server.listen(PORT, '0.0.0.0', () => {
   console.log('🚀 Digital Style on port', PORT, '| БД:', dbReady ? 'OK' : 'FAIL');
 });
