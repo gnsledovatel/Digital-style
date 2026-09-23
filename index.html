@@ -216,7 +216,7 @@ html,body{width:100%;height:100%;overflow:hidden;background:#000;font-family:-ap
   <div class="hint">Ник: 3-16 символов, буквы/цифры/_. Пароль: минимум 4 символа.</div>
 </div>
 <script type="module">
-  const $ = id => document.getElementById(id);
+const $ = id => document.getElementById(id);
 const SAVE_KEY = 'digital_style_v16';
 const TOKEN_KEY = 'digital_style_token';
 const NICK_KEY = 'digital_style_nick';
@@ -386,7 +386,31 @@ $('tabEnemy').onclick=()=>{ pickSide='enemy'; $('tabEnemy').style.border='2px so
 $('playBtn').onclick=()=>{ if(!chosenFighter) return; $('menu').style.display='none'; startGame(chosenFighter); };
 function refreshBoxes(){ const row=$('boxesRow'); row.innerHTML=''; const boxes=[{name:'ОБЫЧНЫЙ',icon:'A',price:50,cls:'common'},{name:'РЕДКИЙ',icon:'B',price:150,cls:'rare'},{name:'ЭПИК',icon:'C',price:400,cls:'epic'},{name:'ЛЕГЕНДА',icon:'D',price:1000,cls:'legend'}]; boxes.forEach(b=>{ const card=document.createElement('div'); card.className='box-card '+b.cls; card.innerHTML='<div class="icon">'+b.icon+'</div><div class="title">'+b.name+'</div><div class="price">KK '+b.price+'</div>'; card.onclick=()=>openBox(b); row.appendChild(card); }); }
 function openBox(box){ if(profile.kk<box.price){ alert('Мало KK'); return; } profile.kk-=box.price; const locked=Object.keys(FIGHTERS).filter(id=>!isUnlocked(id)); if(locked.length>0){ const id=locked[Math.floor(Math.random()*locked.length)]; profile.unlocked[id]=true; saveProfile(); updateProfileUI(); showBoxOpening(id, box); } else { profile.kk+=50; saveProfile(); updateProfileUI(); showBoxOpening(null, box); } }
-funct
+function showBoxOpening(id, box){ const ov=$('boxOpening'); ov.style.display='flex'; $('boxAnim').textContent=box.icon; $('boxAnim').style.display='flex'; $('boxResult').classList.remove('show'); setTimeout(()=>{ $('boxAnim').style.display='none'; const cv=$('boxResultCanvas'); if(id){ drawPortrait(cv, FIGHTERS[id]); $('boxResultName').textContent=FIGHTERS[id].name; $('boxResultType').textContent='НОВЫЙ!'; } else { const c=cv.getContext('2d'); c.clearRect(0,0,cv.width,cv.height); c.fillStyle='#ffb300'; c.font='bold 60px sans-serif'; c.textAlign='center'; c.fillText('KK', cv.width/2, cv.height/2+20); $('boxResultName').textContent='KK +50'; $('boxResultType').textContent='ДУБЛИКАТ'; } $('boxResult').classList.add('show'); }, 800); ov.onclick=()=>{ ov.style.display='none'; }; }
+function refreshCollection(){ const grid=$('collectionGrid'); grid.innerHTML=''; Object.keys(FIGHTERS).forEach(id=>{ const f=FIGHTERS[id]; const card=document.createElement('div'); card.className='col-card'+(f.side==='enemy'?' enemySide':'')+(isUnlocked(id)?'':' locked'); const lvl=document.createElement('div'); lvl.className='lvl'; lvl.textContent='L'+getLevel(id); card.appendChild(lvl); const atk=document.createElement('div'); atk.className='atk'; atk.textContent=attackIcon(f.attack); card.appendChild(atk); const cv=document.createElement('canvas'); card.appendChild(cv); const nm=document.createElement('div'); nm.className='name'; nm.textContent=isUnlocked(id)?f.name:'???'; card.appendChild(nm); if(!isUnlocked(id)){ const lock=document.createElement('div'); lock.className='lock'; lock.textContent='X'; card.appendChild(lock); } grid.appendChild(card); setTimeout(()=>drawPortrait(cv,f),10); }); }
+let upgradeSelectedId=null;
+function refreshUpgrade(){
+  const grid=$('upgradeGrid'); grid.innerHTML='';
+  const ids = Object.keys(FIGHTERS).filter(isUnlocked);
+  ids.forEach(id=>{ const f=FIGHTERS[id]; const card=document.createElement('div'); card.className='col-card'+(f.side==='enemy'?' enemySide':''); const lvl=document.createElement('div'); lvl.className='lvl'; lvl.textContent='L'+getLevel(id); card.appendChild(lvl); const cv=document.createElement('canvas'); card.appendChild(cv); const nm=document.createElement('div'); nm.className='name'; nm.textContent=f.name; card.appendChild(nm); card.onclick=()=>{ upgradeSelectedId=id; refreshUpgrade(); }; grid.appendChild(card); setTimeout(()=>drawPortrait(cv,f),10); });
+  if(!upgradeSelectedId) return;
+  const f=FIGHTERS[upgradeSelectedId]; const lvl=getLevel(f.id); const cost=getUpgradeCost(lvl); const canBuy=profile.kk>=cost&&lvl<MAX_LEVEL;
+  const msg = lvl>=MAX_LEVEL ? f.name+': МАКСИМУМ' : f.name+' L'+lvl+'\nПрокачать за KK '+cost+'?\n(У тебя: '+profile.kk+')';
+  if (confirm(msg) && canBuy){ profile.kk-=cost; profile.levels[f.id]=lvl+1; saveProfile(); updateProfileUI(); refreshUpgrade(); }
+}
+function goToMenu(){ $('menu').style.display='flex'; updateProfileUI(); switchMainTab('play'); }
+let audioCtx=null;
+function ensureAudio(){ if(!audioCtx){ try{ audioCtx=new (window.AudioContext||window.webkitAudioContext)(); }catch(e){} } if(audioCtx&&audioCtx.state==='suspended') audioCtx.resume(); return audioCtx; }
+function beep(freq,dur,type,vol){ const ctx=ensureAudio(); if(!ctx) return; const o=ctx.createOscillator(), g=ctx.createGain(); o.type=type||'square'; o.frequency.value=freq; g.gain.value=vol||0.05; g.gain.exponentialRampToValueAtTime(0.001,ctx.currentTime+dur); o.connect(g); g.connect(ctx.destination); o.start(); o.stop(ctx.currentTime+dur); }
+function sndShoot(){ beep(660,0.08,'square',0.04); }
+function sndHit(){ beep(220,0.06,'sawtooth',0.05); }
+function sndKill(){ beep(120,0.2,'sawtooth',0.08); }
+function sndDie(){ beep(80,0.4,'sawtooth',0.1); }
+function sndWin(){ [660,880,1100].forEach((f,i)=>setTimeout(()=>beep(f,0.15,'square',0.06),i*120)); }
+function sndLose(){ [400,300,200].forEach((f,i)=>setTimeout(()=>beep(f,0.2,'sawtooth',0.08),i*150)); }
+function sndSuper(){ beep(1400,0.3,'sine',0.1); setTimeout(()=>beep(900,0.3,'sine',0.1),100); }
+function sndRankUp(){ [660,880,1100,1320].forEach((f,i)=>setTimeout(()=>beep(f,0.2,'square',0.08),i*130)); }
+function sndDaily(){ [880,1100,1320].forEach((f,i)=>setTimeout(()=>beep(f,0.15,'sine',0.08),i*100)); }
 const canvas=$('game'); const ctx=canvas.getContext('2d');
 let W=0,H=0,dpr=1;
 function resize(){ dpr=Math.min(devicePixelRatio,2); W=innerWidth; H=innerHeight; canvas.width=W*dpr; canvas.height=H*dpr; canvas.style.width=W+'px'; canvas.style.height=H+'px'; ctx.setTransform(dpr,0,0,dpr,0,0); }
@@ -598,7 +622,7 @@ function draw(){
     drawFighterShape(ctx,u.fighter,s.x+recoilOff*aimX,s.y+recoilOff*aimZ,size,0,false,u.walkPhase||0,Math.atan2(aimZ,aimX));
     const hpRatio=Math.max(0,u.hp/u.maxHp);
     const bw=44,bh=6;
-        const barColor=isPlayer?'#ffd54f':(isEnemy?'#00e5ff':'#7cf86b');
+    const barColor=isPlayer?'#ffd54f':(isEnemy?'#00e5ff':'#7cf86b');
     const barY=s.y-size*0.85;
     ctx.fillStyle='rgba(0,0,0,.85)'; ctx.fillRect(s.x-bw/2-1,barY-1,bw+2,bh+2);
     ctx.fillStyle='#222'; ctx.fillRect(s.x-bw/2,barY,bw,bh);
@@ -806,4 +830,3 @@ init();
 </script>
 </body>
 </html>
- 
