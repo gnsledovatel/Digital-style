@@ -199,7 +199,6 @@ html,body{width:100%;height:100%;overflow:hidden;background:#000;font-family:-ap
 #msg{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-size:clamp(28px,9vw,60px);font-weight:900;color:#fff;display:none;z-index:30;text-align:center;pointer-events:none}
 #trophyToast{position:absolute;top:32%;left:50%;transform:translateX(-50%);font-size:clamp(20px,6vw,36px);font-weight:900;color:#ffd54f;display:none;z-index:31;text-align:center;pointer-events:none}
 #leave{position:absolute;top:calc(env(safe-area-inset-top) + 6px);right:8px;width:32px;height:32px;border-radius:50%;background:rgba(255,46,138,.25);border:2px solid #ff2e8a;color:#ff2e8a;font-size:15px;font-weight:900;line-height:28px;text-align:center;display:none;pointer-events:auto;cursor:pointer;z-index:20}
-#fighterCard{position:fixed;inset:0;z-index:300;background:rgba(5,7,13,.97);display:none;flex-direction:column;align-items:center;padding:16px;padding-top:calc(env(safe-area-inset-top) + 16px);gap:10px;overflow-y:auto;pointer-events:auto}
 #fighterCard.show{display:flex}
 #fighterCard .fc-top{width:100%;max-width:440px;display:flex;gap:10px;align-items:center}
 #fighterCard .fc-portrait{width:96px;height:96px;border-radius:14px;background:linear-gradient(180deg,#1c3d1f,#0e2410);border:3px solid #7cf86b;display:flex;align-items:center;justify-content:center;flex-shrink:0}
@@ -305,29 +304,6 @@ html,body{width:100%;height:100%;overflow:hidden;background:#000;font-family:-ap
   <div id="msg"></div><div id="trophyToast"></div>
 </div>
 
-<div id="fighterCard">
-  <div class="fc-top">
-    <div class="fc-portrait" id="fcPortrait"><canvas id="fcCanvas" width="88" height="88"></canvas></div>
-    <div class="fc-head">
-      <div class="fc-name" id="fcName">—</div>
-      <div class="fc-side" id="fcSide">—</div>
-      <div class="fc-rarity" id="fcRarity">—</div>
-      <div class="fc-lvl" id="fcLvl">L1 / L10</div>
-    </div>
-  </div>
-  <div class="fc-grid">
-    <div class="fc-stat"><span class="lbl">HP</span><span class="val" id="fcHp">—</span></div>
-    <div class="fc-stat"><span class="lbl">Урон</span><span class="val" id="fcDmg">—</span></div>
-    <div class="fc-stat"><span class="lbl">Скорость</span><span class="val" id="fcSpeed">—</span></div>
-    <div class="fc-stat"><span class="lbl">Скорострельность</span><span class="val" id="fcRate">—</span></div>
-  </div>
-  <div class="fc-section"><h3>Тип атаки</h3><div class="row"><span class="k" id="fcAttackName">—</span><span class="v" id="fcAttackKind">—</span></div></div>
-  <div class="fc-section"><h3>Ульта</h3><div class="row"><span class="k" id="fcSuperName">—</span><span class="v" id="fcSuperKind">—</span></div></div>
-  <div class="fc-section"><h3>Прокачка</h3><div class="fc-progress"><div class="fill" id="fcProgress"></div></div><div class="row"><span class="k">Уровень</span><span class="v" id="fcLvlRow">L1 / L10</span></div><div class="row"><span class="k">Цена след.</span><span class="v" id="fcCost">—</span></div></div>
-  <button class="fc-btn upgrade" id="fcUpgradeBtn" style="display:none">ПРОКАЧАТЬ</button>
-  <button class="fc-btn fight" id="fcFightBtn" style="display:none">В БОЙ</button>
-  <button class="fc-close" id="fcCloseBtn">ЗАКРЫТЬ</button>
-</div>
 <div id="fighterCard">
   <div class="fc-top">
     <div class="fc-portrait" id="fcPortrait"><canvas id="fcCanvas" width="88" height="88"></canvas></div>
