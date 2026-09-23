@@ -10,7 +10,6 @@ const { Pool } = pg;
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const PORT = process.env.PORT || 3000;
 
-/* ============ БД ============ */
 let pool = null;
 let dbReady = false;
 const sessions = new Map();
@@ -24,7 +23,7 @@ if (process.env.DATABASE_URL) {
       idleTimeoutMillis: 30000,
       connectionTimeoutMillis: 5000
     });
-    pool.on('error', (err) => console.error('[pg pool error]', err.message));
+    pool.on('error', (err) => console.error('[pg pool]', err.message));
     initDB().catch(err => console.error('[DB init]', err.message));
   } catch (e) {
     console.error('[pg create]', e.message);
@@ -59,7 +58,6 @@ async function initDB(){
   console.log('✅ БД готова');
 }
 
-/* ============ АВТОРИЗАЦИЯ ============ */
 function hashPassword(password, salt){
   return crypto.scryptSync(password, salt, 64).toString('hex');
 }
@@ -127,7 +125,6 @@ async function leaderboard(limit = 20){
   return r.rows;
 }
 
-/* ============ HTTP ============ */
 const server = http.createServer(async (req, res) => {
   try {
     res.setHeader('Access-Control-Allow-Origin', '*');
@@ -144,7 +141,6 @@ const server = http.createServer(async (req, res) => {
       res.end(JSON.stringify(obj));
     }
 
-    /* ==== API РОУТЫ ==== */
     if (pathname === '/health') {
       sendJSON(200, { ok: true, db: dbReady, time: Date.now() });
       return;
@@ -246,13 +242,11 @@ const server = http.createServer(async (req, res) => {
       return;
     }
 
-    /* ==== ЛЮБОЙ ДРУГОЙ /api/* — 404 JSON, НЕ HTML ==== */
     if (pathname.startsWith('/api/')) {
       sendJSON(404, { ok: false, error: 'API route not found' });
       return;
     }
 
-    /* ==== СТАТИКА ==== */
     let filePath = pathname === '/' ? '/index.html' : pathname;
     filePath = path.join(__dirname, filePath);
 
@@ -283,7 +277,6 @@ const server = http.createServer(async (req, res) => {
   }
 });
 
-/* ============ WEBSOCKET ============ */
 const wss = new WebSocketServer({ server });
 const rooms = new Map();
 function genRoomId() { let id = ''; for (let i = 0; i < 6; i++) id += Math.floor(Math.random() * 10); return id; }
@@ -334,7 +327,13 @@ wss.on('connection', (ws) => {
   ws.on('error', (err) => console.error('WS error:', err.message));
 });
 
-/* ============ ЗАПУСК ============ */
 server.listen(PORT, '0.0.0.0', () => {
   console.log('🚀 Digital Style on port', PORT, '| БД:', dbReady ? 'OK' : 'FAIL');
+});
+
+process.on('uncaughtException', (err) => {
+  console.error('[uncaughtException]', err.message);
+});
+process.on('unhandledRejection', (err) => {
+  console.error('[unhandledRejection]', err && err.message);
 });
