@@ -292,12 +292,8 @@ const INVADER_COLORS = ['#00e5ff','#0891b2','#6366f1','#a855f7','#e0e7ff'];
 const INVADER_ATTACKS = ['triple','grenade','long','rapid','homing'];
 const INVADER_SUPERS = ['dash','shield','barrage','swarm','blink'];
 const FIGHTERS = {};
-for (let i = 0; i < 10; i++){
-  FIGHTERS['plant_'+i] = { id:'plant_'+i, side:'plant', name:PLANT_NAMES[i], hp:100+(i*5)%100, dmg:10+i*2, speed:6+(i%3), fireRate:0.25+i*0.03, color:PLANT_COLORS[i], attack:PLANT_ATTACKS[i], super:PLANT_SUPERS[i], rarity: i<5?'common':'rare' };
-}
-for (let i = 0; i < 5; i++){
-  FIGHTERS['inv_'+i] = { id:'inv_'+i, side:'enemy', name:INVADER_NAMES[i], hp:300+i*50, dmg:15+i*3, speed:6.5+i*0.5, fireRate:0.3+i*0.05, color:INVADER_COLORS[i], attack:INVADER_ATTACKS[i], super:INVADER_SUPERS[i], rarity: i<2?'rare':'epic' };
-}
+for (let i = 0; i < 10; i++){ FIGHTERS['plant_'+i] = { id:'plant_'+i, side:'plant', name:PLANT_NAMES[i], hp:100+(i*5)%100, dmg:10+i*2, speed:6+(i%3), fireRate:0.25+i*0.03, color:PLANT_COLORS[i], attack:PLANT_ATTACKS[i], super:PLANT_SUPERS[i], rarity: i<5?'common':'rare' }; }
+for (let i = 0; i < 5; i++){ FIGHTERS['inv_'+i] = { id:'inv_'+i, side:'enemy', name:INVADER_NAMES[i], hp:300+i*50, dmg:15+i*3, speed:6.5+i*0.5, fireRate:0.3+i*0.05, color:INVADER_COLORS[i], attack:INVADER_ATTACKS[i], super:INVADER_SUPERS[i], rarity: i<2?'rare':'epic' }; }
 function getFighterStats(f){ const lvl = getLevel(f.id); const m = 1 + (lvl-1)*0.08; return { hp:Math.round(f.hp*m), dmg:f.dmg*m, speed:f.speed*(1+(lvl-1)*0.02), fireRate:f.fireRate*(1-(lvl-1)*0.015), level:lvl }; }
 const ENEMY_BOSS_BUFF = { hp:1.4, dmg:1.4, speed:1.15, fireRate:0.85 };
 const RESPAWN_TIME = 5.0;
@@ -333,13 +329,8 @@ function drawFighterShape(ctx, f, x, y, size, angle, isDead, walkPhase, aimAngle
   const walk = walkPhase || 0;
   const aim = aimAngle !== undefined ? aimAngle : -Math.PI/2;
   ctx.scale(size/40, size/40);
-  if(f.side==='plant'){
-    const drawers=[drawPlantBlob,drawPlantCactus,drawPlantFlower,drawPlantTree,drawPlantMushroom,drawPlantBerry,drawPlantBamboo,drawPlantLily,drawPlantRose,drawPlantPalm];
-    drawers[idx % drawers.length](ctx, c, walk, aim);
-  } else {
-    const drawers=[drawInvaderDrone,drawInvaderTank,drawInvaderSniper,drawInvaderBug,drawInvaderGhost];
-    drawers[idx % drawers.length](ctx, c, walk, aim);
-  }
+  if(f.side==='plant'){ const drawers=[drawPlantBlob,drawPlantCactus,drawPlantFlower,drawPlantTree,drawPlantMushroom,drawPlantBerry,drawPlantBamboo,drawPlantLily,drawPlantRose,drawPlantPalm]; drawers[idx % drawers.length](ctx, c, walk, aim); }
+  else { const drawers=[drawInvaderDrone,drawInvaderTank,drawInvaderSniper,drawInvaderBug,drawInvaderGhost]; drawers[idx % drawers.length](ctx, c, walk, aim); }
   ctx.restore();
 }
 function drawPortrait(canvas, fighter){ if(!fighter) return; const c=canvas.getContext('2d'); const dpr=Math.min(devicePixelRatio,2); const size=canvas.clientWidth||100; canvas.width=size*dpr; canvas.height=size*dpr; c.scale(dpr,dpr); c.clearRect(0,0,size,size); drawFighterShape(c,fighter,size/2,size/2,size*0.85,-Math.PI/2,false,0,-Math.PI/2); }
@@ -375,15 +366,13 @@ $('mtOnline').onclick=()=>openOnlineRoom();
 $('mtTop').onclick=()=>switchMainTab('top');
 $('mtStats').onclick=()=>switchMainTab('stats');
 $('mtFriends').onclick=()=>switchMainTab('friends');
-async function refreshLeaderboard(){
-  const list=$('leaderboardList'); list.innerHTML='<div style="color:#9fd7ff;text-align:center;padding:10px">Загрузка...</div>';
+async function refreshLeaderboard(){ const list=$('leaderboardList'); list.innerHTML='<div style="color:#9fd7ff;text-align:center;padding:10px">Загрузка...</div>';
   try{ const r = await fetch('/api/leaderboard'); const data = await r.json(); list.innerHTML='';
     if(!data.ok || !data.rows || data.rows.length===0){ list.innerHTML='<div style="color:#9fd7ff;text-align:center;padding:10px">Пока никого нет</div>'; return; }
     data.rows.forEach((p,i)=>{ const row=document.createElement('div'); row.className='leaderRow'+(p.nickname===nickname?' me':''); const medal=i===0?'🥇':i===1?'🥈':i===2?'🥉':'#'+(i+1); row.innerHTML='<span class="pos">'+medal+'</span><span class="nick">'+p.nickname+'</span><span class="tr">🏆 '+p.trophies+'</span>'; list.appendChild(row); });
   }catch(e){ list.innerHTML='<div style="color:#ff2e8a;text-align:center;padding:10px">Ошибка</div>'; }
 }
-function refreshStats(){
-  const list=$('statsList'); list.innerHTML='';
+function refreshStats(){ const list=$('statsList'); list.innerHTML='';
   const rows=[['Игрок',nickname||'—'],['Ранг',getRank(profile.trophies||0).icon+' '+getRank(profile.trophies||0).name],['Трофеи',profile.trophies||0],['KK',profile.kk],['Игр',profile.games||0],['Побед',profile.wins||0],['Поражений',profile.losses||0],['Убийств',profile.kills||0],['Винрейт',(profile.games>0?Math.round((profile.wins/profile.games)*100)+'%':'—')]];
   rows.forEach(([k,v])=>{ const row=document.createElement('div'); row.className='statRow'; row.innerHTML='<span class="lbl">'+k+'</span><span class="val">'+v+'</span>'; list.appendChild(row); });
 }
@@ -396,18 +385,13 @@ async function refreshFriends(){
     const data = await r.json();
     list.innerHTML=''; inc.innerHTML=''; out.innerHTML='';
     if(!data.ok){ list.innerHTML='<div class="label">Ошибка</div>'; return; }
-    if(data.incoming && data.incoming.length){
-      inc.innerHTML='<div class="label" style="color:#ffd54f">📥 ВХОДЯЩИЕ ЗАЯВКИ</div>';
+    if(data.incoming && data.incoming.length){ inc.innerHTML='<div class="label" style="color:#ffd54f">📥 ВХОДЯЩИЕ ЗАЯВКИ</div>';
       data.incoming.forEach(f=>{ const row=document.createElement('div'); row.className='friendRow incoming'; row.innerHTML='<span class="nick">'+f.nickname+'</span><button class="btn acc" data-act="accept" data-nick="'+f.nickname+'">ПРИНЯТЬ</button><button class="btn del" data-act="remove" data-nick="'+f.nickname+'">✕</button>'; inc.appendChild(row); });
     }
-    if(data.friends && data.friends.length){
-      list.innerHTML='<div class="label" style="color:#7cf86b">👥 МОИ ДРУЗЬЯ ('+data.friends.length+')</div>';
+    if(data.friends && data.friends.length){ list.innerHTML='<div class="label" style="color:#7cf86b">👥 МОИ ДРУЗЬЯ ('+data.friends.length+')</div>';
       data.friends.forEach(f=>{ const row=document.createElement('div'); row.className='friendRow'; const dotCls = f.online ? 'online' : 'offline'; row.innerHTML='<span class="dot '+dotCls+'"></span><span class="nick">'+f.nickname+'</span><button class="btn fight" data-act="fight" data-nick="'+f.nickname+'">БОЙ</button><button class="btn del" data-act="remove" data-nick="'+f.nickname+'">✕</button>'; list.appendChild(row); });
-    } else {
-      list.innerHTML='<div class="label" style="color:#9fd7ff">Пока нет друзей. Добавь по нику выше.</div>';
-    }
-    if(data.outgoing && data.outgoing.length){
-      out.innerHTML='<div class="label" style="color:#6366f1">📤 ОТПРАВЛЕННЫЕ ЗАЯВКИ</div>';
+    } else { list.innerHTML='<div class="label" style="color:#9fd7ff">Пока нет друзей. Добавь по нику выше.</div>'; }
+    if(data.outgoing && data.outgoing.length){ out.innerHTML='<div class="label" style="color:#6366f1">📤 ОТПРАВЛЕННЫЕ ЗАЯВКИ</div>';
       data.outgoing.forEach(f=>{ const row=document.createElement('div'); row.className='friendRow outgoing'; row.innerHTML='<span class="nick">'+f.nickname+'</span><span class="label" style="width:auto;color:#6366f1">ожидание</span>'; out.appendChild(row); });
     }
     list.querySelectorAll('[data-act]').forEach(btn=>btn.onclick=()=>friendAction(btn.dataset.act, btn.dataset.nick));
@@ -422,26 +406,18 @@ async function friendAction(act, nick){
     else if(act==='fight'){
       $('onlineLobby').classList.add('show'); resetLobby();
       try{ if(!ws) await connectWS(); }catch(e){}
-      setTimeout(async ()=>{
-        if(ws && ws.readyState===1){
-          ws.send(JSON.stringify({type:'create-room',username:nickname||'Хост'}));
-          setTimeout(async ()=>{ const code = $('lobbyHostCode').textContent; if(code && code !== '—'){ try{ await fetch('/api/friends/invite',{method:'POST',headers:{'Content-Type':'application/json','X-Token':token},body:JSON.stringify({friend:nick, roomId:code})}); }catch(e){} } }, 500);
-        }
-      }, 300);
+      setTimeout(async ()=>{ if(ws && ws.readyState===1){ ws.send(JSON.stringify({type:'create-room',username:nickname||'Хост'}));
+        setTimeout(async ()=>{ const code = $('lobbyHostCode').textContent; if(code && code !== '—'){ try{ await fetch('/api/friends/invite',{method:'POST',headers:{'Content-Type':'application/json','X-Token':token},body:JSON.stringify({friend:nick, roomId:code})}); }catch(e){} } }, 500);
+      } }, 300);
     }
   }catch(e){ alert('Ошибка'); }
 }
 $('friendAddBtn').onclick=async ()=>{
-  const nick=$('friendInput').value.trim();
-  if(!nick){ return; }
-  if(!token){ alert('Войди в аккаунт'); return; }
-  try{
-    const r = await fetch('/api/friends/add',{method:'POST',headers:{'Content-Type':'application/json','X-Token':token},body:JSON.stringify({friend:nick})});
+  const nick=$('friendInput').value.trim(); if(!nick){ return; } if(!token){ alert('Войди в аккаунт'); return; }
+  try{ const r = await fetch('/api/friends/add',{method:'POST',headers:{'Content-Type':'application/json','X-Token':token},body:JSON.stringify({friend:nick})});
     const data = await r.json();
     if(!data.ok){ alert(data.error||'Ошибка'); return; }
-    $('friendInput').value='';
-    alert(data.accepted ? 'Теперь вы друзья!' : 'Заявка отправлена');
-    refreshFriends();
+    $('friendInput').value=''; alert(data.accepted ? 'Теперь вы друзья!' : 'Заявка отправлена'); refreshFriends();
   }catch(e){ alert('Ошибка сети'); }
 };
 function refreshPick(){
@@ -492,6 +468,7 @@ const MAX_AMMO=3, RELOAD_TIME=2.0;
 let ammo=MAX_AMMO, ammoTimer=0, battleKK=0, battleTrophies=0, battleKills=0, oldRank=null;
 const touch={ move:{active:false,id:null,dx:0,dy:0,cx:0,cy:0,r:65}, attack:{active:false,id:null,dx:0,dy:0,cx:0,cy:0,r:65}, super:{active:false,id:null,dx:0,dy:0,cx:0,cy:0,r:65} };
 const player={ x:0, z:14, hp:100, maxHp:100, fighter:null, walkPhase:0, shield:0, respawnTimer:0, dead:false, stats:null, lastShot:0, wasAiming:false, recoil:0 };
+let opponent=null, pvpMode=false, pvpSendTimer=0;
 let aimX=0, aimZ=-1;
 function worldToScreen(wx,wz){ return { x:W/2+(wx-camera2D.x)*ZOOM+(Math.random()-0.5)*shakeAmount, y:H*0.68+(wz-camera2D.z)*ZOOM+(Math.random()-0.5)*shakeAmount }; }
 function genArenaDecor(){ arenaDecor=[]; for(let i=0;i<28;i++){ arenaDecor.push({type:Math.random()<0.7?'grass':'rock',x:(Math.random()-0.5)*ARENA,z:(Math.random()-0.5)*ARENA,size:3+Math.random()*6,hue:Math.random()<0.5?'#0d3b1f':'#0a2b16'}); } for(let i=0;i<8;i++){ arenaDecor.push({type:'rock',x:(Math.random()-0.5)*ARENA,z:(Math.random()-0.5)*ARENA,size:6+Math.random()*4}); } }
@@ -555,6 +532,13 @@ function updateBullets(dt){
     let dead=b.life<=0;
     if(Math.abs(b.x)>ARENA/2||Math.abs(b.z)>ARENA/2) dead=true;
     const hitR=b.radius/6;
+    if(b.fromPlayer && pvpMode && opponent && !opponent.dead){
+      if(Math.hypot(opponent.x-b.x, opponent.z-b.z) < hitR){
+        opponent.hp = Math.max(0, opponent.hp - b.baseDmg);
+        spawnParticles(opponent.x, opponent.z, '#00e5ff', 5, 5); sndHit();
+        dead = true;
+      }
+    }
     if(b.fromPlayer||b.fromAlly){
       for(let j=0;j<enemies.length;j++){
         const e=enemies[j]; if(e.hp<=0) continue;
@@ -567,6 +551,15 @@ function updateBullets(dt){
           if(e.hp<=0){ battleKK+=10; battleTrophies+=2; battleKills++; sndKill(); addCorpse(e,true); }
           if(!b.pierce){ dead=true; break; }
         }
+      }
+    } else if(b.fromOpponent){
+      if(!player.dead && Math.hypot(player.x-b.x, player.z-b.z) < hitR){
+        player.hp = Math.max(0, player.hp - b.baseDmg);
+        shakeAmount = 6; sndHit();
+        spawnParticles(player.x, player.z, '#ff2e8a', 3, 4);
+        if(ws && ws.readyState===1){ ws.send(JSON.stringify({ type:'pvp-hit', payload:{ dmg: b.baseDmg } })); }
+        if(player.hp <= 0 && !player.dead){ player.dead = true; sndDie(); if(ws && ws.readyState===1) ws.send(JSON.stringify({ type:'pvp-dead', payload:{} })); endPvP(false); }
+        dead = true;
       }
     } else {
       if(!player.dead&&Math.hypot(player.x-b.x,player.z-b.z)<hitR){
@@ -581,8 +574,10 @@ function updateBullets(dt){
     }
     if(dead){ spawnParticles(b.x,b.z,b.color,4,4); bullets.splice(i,1); }
   }
-  if(gameActive && enemies.length>0 && enemies.every(e=>e.hp<=0)) endGame(true);
-  if(gameActive && player.dead && allies.every(a=>a.hp<=0)) endGame(false);
+  if(!pvpMode){
+    if(gameActive && enemies.length>0 && enemies.every(e=>e.hp<=0)) endGame(true);
+    if(gameActive && player.dead && allies.every(a=>a.hp<=0)) endGame(false);
+  }
 }
 function killPlayer(){ player.dead=true; player.respawnTimer=RESPAWN_TIME; player.hp=0; spawnParticles(player.x,player.z,'#ff2e8a',40,15); shakeAmount=15; $('respawnOverlay').style.display='flex'; }
 function respawnPlayer(){ let sx=0,sz=12; const alive=allies.filter(a=>a.hp>0); if(alive.length>0){ const a=alive[Math.floor(Math.random()*alive.length)]; sx=a.x+(Math.random()-0.5)*4; sz=a.z+(Math.random()-0.5)*4; } const lim=ARENA/2-1; player.x=Math.max(-lim,Math.min(lim,sx)); player.z=Math.max(-lim,Math.min(lim,sz)); player.hp=player.maxHp; player.dead=false; player.respawnTimer=0; ammo=MAX_AMMO; ammoTimer=0; $('respawnOverlay').style.display='none'; spawnParticles(player.x,player.z,'#7cf86b',30,12); }
@@ -611,15 +606,21 @@ function fireSuperAimed(dirX,dirZ){
 }
 function spawnFloatingText(x,z,text,color){ floatingTexts.push({x,z,text,color,life:1.2,maxLife:1.2}); }
 function createMiniAvatar(fighter,isPlayer,isEnemySide){ const wrap=document.createElement('div'); wrap.className='mini-avatar'+(isEnemySide?' enemy':'')+(isPlayer?' is-player':''); const cv=document.createElement('canvas'); wrap.appendChild(cv); setTimeout(()=>{ if(!fighter) return; const dpr=Math.min(devicePixelRatio,2); const size=30; cv.width=size*dpr; cv.height=size*dpr; const c=cv.getContext('2d'); c.scale(dpr,dpr); c.clearRect(0,0,size,size); drawFighterShape(c,fighter,size/2,size/2,size*0.9,-Math.PI/2,false,0,-Math.PI/2); },30); return wrap; }
-function buildTeamsBar(){ const left=$('teamLeft'),right=$('teamRight'); left.innerHTML=''; right.innerHTML=''; if(player.fighter) left.appendChild(createMiniAvatar(player.fighter,true,side==='enemy')); for(let i=0;i<allies.length;i++) left.appendChild(createMiniAvatar(allies[i].fighter,false,side==='enemy')); for(let i=0;i<enemies.length;i++) right.appendChild(createMiniAvatar(enemies[i].fighter,false,side!=='enemy')); $('teamsBar').style.display='flex'; }
+function buildTeamsBar(){ const left=$('teamLeft'),right=$('teamRight'); left.innerHTML=''; right.innerHTML=''; if(player.fighter) left.appendChild(createMiniAvatar(player.fighter,true,side==='enemy')); for(let i=0;i<allies.length;i++) left.appendChild(createMiniAvatar(allies[i].fighter,false,side==='enemy')); for(let i=0;i<enemies.length;i++) right.appendChild(createMiniAvatar(enemies[i].fighter,false,side!=='enemy')); if(pvpMode && opponent) right.appendChild(createMiniAvatar(opponent.fighter,false,true)); $('teamsBar').style.display='flex'; }
 let lastT=performance.now();
 function update(dt){
   if(shakeAmount>0) shakeAmount=Math.max(0,shakeAmount-dt*40);
   if(player.recoil>0) player.recoil=Math.max(0,player.recoil-dt);
+  if(pvpMode && gameActive && ws && ws.readyState===1){
+    pvpSendTimer -= dt;
+    if(pvpSendTimer <= 0){ pvpSendTimer = 0.05;
+      ws.send(JSON.stringify({ type:'pvp-state', payload:{ x:player.x, z:player.z, hp:player.hp, maxHp:player.maxHp, walkPhase:player.walkPhase, aimX:aimX, aimZ:aimZ, dead:player.dead, shield:player.shield, recoil:player.recoil } }));
+    }
+  }
   if(!gameActive) return;
   if(player.shield>0) player.shield=Math.max(0,player.shield-dt);
   updateAmmo(dt);
-  if(player.dead){ player.respawnTimer-=dt; $('respawnTimer').textContent=Math.max(0,Math.ceil(player.respawnTimer)); if(player.respawnTimer<=0) respawnPlayer(); }
+  if(player.dead && !pvpMode){ player.respawnTimer-=dt; $('respawnTimer').textContent=Math.max(0,Math.ceil(player.respawnTimer)); if(player.respawnTimer<=0) respawnPlayer(); }
   if(!player.dead){
     const spd=player.stats.speed;
     let mx=0,mz=0;
@@ -637,8 +638,17 @@ function update(dt){
     const fireInterval=player.stats.fireRate;
     const a=touch.attack;
     if(a.active&&Math.hypot(a.dx,a.dy)>0.15){ aimX=a.dx; aimZ=a.dy; player.wasAiming=true; }
-    if(player.wasAiming&&!a.active){ player.wasAiming=false; if(ammo>0&&(now-player.lastShot)>=fireInterval*0.3){ player.lastShot=now; performAttack(player,aimX,aimZ,side==='enemy',true,false,player.stats.dmg,player.fighter.attack); ammo--; updateAmmoUI(); shakeAmount=3; } player.lastShot=now+0.3; }
-    if(!a.active&&!player.wasAiming&&(now-player.lastShot)>=fireInterval){ let ne=null,nd=999; for(const e of enemies){ if(e.hp<=0) continue; const d=Math.hypot(e.x-player.x,e.z-player.z); if(d<nd){nd=d;ne=e;} } if(ne&&nd<10&&ammo>0){ const dx=ne.x-player.x,dz=ne.z-player.z,d=Math.hypot(dx,dz)||1; aimX=dx/d; aimZ=dz/d; player.lastShot=now; performAttack(player,aimX,aimZ,side==='enemy',true,false,player.stats.dmg,player.fighter.attack); ammo--; updateAmmoUI(); } }
+    if(player.wasAiming&&!a.active){ player.wasAiming=false;
+      if(ammo>0&&(now-player.lastShot)>=fireInterval*0.3){ player.lastShot=now;
+        performAttack(player,aimX,aimZ,side==='enemy',true,false,player.stats.dmg,player.fighter.attack);
+        if(pvpMode && ws && ws.readyState===1){
+          ws.send(JSON.stringify({ type:'pvp-shot', payload:{ x:player.x, z:player.z, dx:aimX, dz:aimZ, dmg:player.stats.dmg, attack:player.fighter.attack } }));
+        }
+        ammo--; updateAmmoUI(); shakeAmount=3;
+      }
+      player.lastShot=now+0.3;
+    }
+    if(!pvpMode && !a.active&&!player.wasAiming&&(now-player.lastShot)>=fireInterval){ let ne=null,nd=999; for(const e of enemies){ if(e.hp<=0) continue; const d=Math.hypot(e.x-player.x,e.z-player.z); if(d<nd){nd=d;ne=e;} } if(ne&&nd<10&&ammo>0){ const dx=ne.x-player.x,dz=ne.z-player.z,d=Math.hypot(dx,dz)||1; aimX=dx/d; aimZ=dz/d; player.lastShot=now; performAttack(player,aimX,aimZ,side==='enemy',true,false,player.stats.dmg,player.fighter.attack); ammo--; updateAmmoUI(); } }
     const s=touch.super;
     if(s.active&&Math.hypot(s.dx,s.dy)>0.35&&superCharge>=100){ fireSuperAimed(s.dx,s.dy); }
   }
@@ -650,11 +660,15 @@ function update(dt){
   camera2D.x+=(player.x-camera2D.x)*Math.min(1,dt*4);
   camera2D.z+=(player.z-camera2D.z)*Math.min(1,dt*4);
   $('hpPlayer').textContent='HP '+Math.ceil(player.hp);
-  const teh=enemies.reduce((s,e)=>s+Math.max(0,e.hp),0);
-  const tem=enemies.reduce((s,e)=>s+Math.max(0,e.maxHp),0);
-  const pct=tem>0?Math.round(teh/tem*100):0;
+  if(pvpMode && opponent){
+    $('hud').querySelector('.e').textContent = 'EN ' + Math.ceil(opponent.hp) + ' / ' + opponent.maxHp;
+  } else {
+    const teh=enemies.reduce((s,e)=>s+Math.max(0,e.hp),0);
+    const tem=enemies.reduce((s,e)=>s+Math.max(0,e.maxHp),0);
+    const pct=tem>0?Math.round(teh/tem*100):0;
+    $('hud').querySelector('.e').innerHTML='EN '+Math.ceil(teh)+' / '+tem+' <span style="display:inline-block;width:60px;height:8px;background:rgba(0,0,0,.6);border-radius:4px;margin-left:4px;vertical-align:middle;overflow:hidden"><span style="display:block;height:100%;width:'+pct+'%;background:linear-gradient(90deg,#00e5ff,#0891b2)"></span></span>';
+  }
   $('hud').style.display='flex';
-  $('hud').querySelector('.e').innerHTML='EN '+Math.ceil(teh)+' / '+tem+' <span style="display:inline-block;width:60px;height:8px;background:rgba(0,0,0,.6);border-radius:4px;margin-left:4px;vertical-align:middle;overflow:hidden"><span style="display:block;height:100%;width:'+pct+'%;background:linear-gradient(90deg,#00e5ff,#0891b2)"></span></span>';
 }
 function draw(){
   ctx.clearRect(0,0,W,H);
@@ -676,10 +690,11 @@ function draw(){
   if(!player.dead) allUnits.push({u:player,isPlayer:true});
   for(const a of allies) if(a.hp>0) allUnits.push({u:a,isPlayer:false,isEnemy:false});
   for(const e of enemies) if(e.hp>0) allUnits.push({u:e,isPlayer:false,isEnemy:true});
+  if(pvpMode && opponent && !opponent.dead) allUnits.push({u:opponent,isPlayer:false,isEnemy:true,isOpponent:true});
   allUnits.sort((a,b)=>a.u.z-b.u.z);
-  for(const {u,isPlayer,isEnemy} of allUnits){
+  for(const {u,isPlayer,isEnemy,isOpponent} of allUnits){
     const s=worldToScreen(u.x,u.z);
-    const size=isEnemy&&u.isBoss?54:40;
+    const size = isOpponent ? 44 : (isEnemy&&u.isBoss?54:40);
     const recoilOff=(u===player&&player.recoil>0)?-3*(player.recoil/0.15):0;
     if(u===player&&player.shield>0){ ctx.strokeStyle='rgba(0,229,255,.8)'; ctx.lineWidth=3; ctx.beginPath(); ctx.arc(s.x,s.y-size*0.1,size*0.75,0,Math.PI*2); ctx.stroke(); }
     drawFighterShape(ctx,u.fighter,s.x+recoilOff*aimX,s.y+recoilOff*aimZ,size,0,false,u.walkPhase||0,Math.atan2(aimZ,aimX));
@@ -697,9 +712,9 @@ function draw(){
   if(gameActive&&!player.dead){
     const ps=worldToScreen(player.x,player.z);
     const aimWorld={x:player.x+aimX*8,z:player.z+aimZ*8};
-    const ws=worldToScreen(aimWorld.x,aimWorld.z);
+    const ws2=worldToScreen(aimWorld.x,aimWorld.z);
     const ray=$('playerAimRay'),dot=$('playerAimDot');
-    if(ray&&dot){ ray.style.display='block'; dot.style.display='block'; ray.style.left=ps.x+'px'; ray.style.top=(ps.y-4)+'px'; const ddx=ws.x-ps.x,ddy=ws.y-ps.y; const len=Math.hypot(ddx,ddy); ray.style.width=len+'px'; ray.style.transform='rotate('+Math.atan2(ddy,ddx)+'rad)'; dot.style.left=ws.x+'px'; dot.style.top=ws.y+'px'; }
+    if(ray&&dot){ ray.style.display='block'; dot.style.display='block'; ray.style.left=ps.x+'px'; ray.style.top=(ps.y-4)+'px'; const ddx=ws2.x-ps.x,ddy=ws2.y-ps.y; const len=Math.hypot(ddx,ddy); ray.style.width=len+'px'; ray.style.transform='rotate('+Math.atan2(ddy,ddx)+'rad)'; dot.style.left=ws2.x+'px'; dot.style.top=ws2.y+'px'; }
   } else {
     const ray=$('playerAimRay'),dot=$('playerAimDot');
     if(ray) ray.style.display='none'; if(dot) dot.style.display='none';
@@ -711,7 +726,8 @@ function draw(){
 function loop(){ const now=performance.now(); const dt=Math.min(0.05,(now-lastT)/1000); lastT=now; update(dt); draw(); requestAnimationFrame(loop); }
 function startGame(fighter){
   ensureAudio();
-  side=fighter.side; gameActive=true; battleKK=0; battleTrophies=0; battleKills=0; superCharge=0; superActive=false;
+  side=fighter.side; gameActive=true; pvpMode=false; opponent=null;
+  battleKK=0; battleTrophies=0; battleKills=0; superCharge=0; superActive=false;
   ammo=MAX_AMMO; ammoTimer=0; bullets=[]; particles=[]; floatingTexts=[]; zones=[]; corpses=[];
   oldRank=getRank(profile.trophies||0).name;
   spawnCharacters(fighter);
@@ -725,8 +741,63 @@ function startGame(fighter){
   updateAmmoUI(); updateSuperUI();
   lastT=performance.now(); requestAnimationFrame(loop);
 }
+function startOnlineBattle(){
+  if(!myFighter) return;
+  ensureAudio(); closeLobby(); $('menu').style.display='none';
+  side = myFighter.side; gameActive=true; pvpMode=true;
+  battleKK=0; battleTrophies=0; battleKills=0; superCharge=0; superActive=false;
+  ammo=MAX_AMMO; ammoTimer=0; bullets=[]; particles=[]; floatingTexts=[]; zones=[]; corpses=[];
+  genArenaDecor();
+  const pStats=getFighterStats(myFighter);
+  player.fighter=myFighter; player.stats=pStats;
+  player.x=0; player.z=14; player.hp=pStats.hp; player.maxHp=pStats.hp; player.dead=false;
+  player.wasAiming=false; player.recoil=0; aimX=0; aimZ=-1;
+  allies=[];
+  opponent = null;
+  if(opponentFighter){
+    const oStats = getFighterStats(opponentFighter);
+    opponent = { x:0, z:-14, hp:oStats.hp, maxHp:oStats.hp, fighter:opponentFighter, stats:oStats, walkPhase:0, dead:false, lastShot:0, shield:0, recoil:0, aimX:0, aimZ:1 };
+  }
+  enemies=[];
+  if(ws && ws.readyState===1) ws.send(JSON.stringify({ type:'pvp-fighter', payload:{ fighterId: myFighter.id } }));
+  buildTeamsBar();
+  $('hud').style.display='flex'; $('ammoBox').style.display='flex'; $('leave').style.display='block';
+  $('respawnOverlay').style.display='none'; $('msg').style.display='none';
+  $('leftZone').style.display='block'; $('attackZone').style.display='block'; $('superZone').style.display='block';
+  $('joyL').style.display='block'; $('joyAttack').style.display='block'; $('joySuper').style.display='block';
+  camera2D.x=player.x; camera2D.z=player.z;
+  updateAmmoUI(); updateSuperUI();
+  lastT=performance.now(); requestAnimationFrame(loop);
+}
+function endPvP(win){
+  if(!pvpMode) return;
+  pvpMode = false;
+  gameActive = false;
+  if(win) sndWin(); else sndLose();
+  profile.games = (profile.games||0) + 1;
+  profile.trophies = (profile.trophies||0) + (win?10:-5);
+  if(profile.trophies < 0) profile.trophies = 0;
+  profile.kk += (win?50:20);
+  if(win) profile.wins = (profile.wins||0) + 1; else profile.losses = (profile.losses||0) + 1;
+  saveProfile(); updateProfileUI();
+  const m=$('msg');
+  m.textContent = win ? '🏆 ПОБЕДА!' : '💀 ПОРАЖЕНИЕ';
+  m.style.color = win ? '#7cf86b' : '#ff2e8a';
+  m.style.display = 'block';
+  setTimeout(()=>{
+    m.style.display='none';
+    $('hud').style.display='none'; $('ammoBox').style.display='none';
+    $('leftZone').style.display='none'; $('attackZone').style.display='none'; $('superZone').style.display='none';
+    $('joyL').style.display='none'; $('joyAttack').style.display='none'; $('joySuper').style.display='none';
+    $('leave').style.display='none'; $('teamsBar').style.display='none';
+    $('respawnOverlay').style.display='none';
+    $('playerAimRay').style.display='none'; $('playerAimDot').style.display='none';
+    opponent = null;
+    goToMenu();
+  }, 2500);
+}
 function endGame(win){
-  if(!gameActive) return;
+  if(!gameActive || pvpMode) return;
   gameActive=false;
   if(win) sndWin(); else sndLose();
   profile.kk+=battleKK+(win?50:0);
@@ -769,24 +840,26 @@ bindJoystick($('attackZone'),$('joyAttack'),touch.attack);
 bindJoystick($('superZone'),$('joySuper'),touch.super);
 function openOnlineRoom(){ $('onlineLobby').classList.add('show'); resetLobby(); }
 function resetLobby(){ $('lobbyStatus').textContent='Выбери действие'; $('lobbyStatus').classList.remove('err'); $('lobbyHost1').style.display='block'; $('lobbyHost2').style.display='none'; $('lobbyJoin1').style.display='block'; $('lobbyPickStep').style.display='none'; }
-function closeLobby(){ $('onlineLobby').classList.remove('show'); if(ws){ try{ ws.close(); }catch(e){} ws=null; } opponentFighter=null; myFighter=null; }
+function closeLobby(){ $('onlineLobby').classList.remove('show'); opponentFighter=null; myFighter=null; }
 let ws=null, opponentFighter=null, myFighter=null;
 function connectWS(){ return new Promise((resolve,reject)=>{ const proto=location.protocol==='https:'?'wss:':'ws:'; ws=new WebSocket(proto+'//'+location.host); ws.onopen=()=>resolve(ws); ws.onerror=(e)=>reject(e); ws.onmessage=(e)=>{ let msg; try{ msg=JSON.parse(e.data); }catch(_){ return; } handleWsMessage(msg); }; ws.onclose=()=>{ $('lobbyStatus').textContent='Соединение потеряно'; $('lobbyStatus').classList.add('err'); }; }); }
 async function handleWsMessage(msg){
   switch(msg.type){
-    case 'friend-invite': {
-      if(confirm('🎮 '+msg.from+' приглашает в бой! Присоединиться?')){
-        $('onlineLobby').classList.add('show'); resetLobby();
-        try{ if(!ws) await connectWS(); }catch(e){}
-        setTimeout(()=>{ if(ws && ws.readyState===1) ws.send(JSON.stringify({type:'join-room',roomId:msg.roomId,username:nickname||'Гость'})); }, 300);
-      }
-      break;
-    }
+    case 'friend-invite': { if(confirm('🎮 '+msg.from+' приглашает в бой! Присоединиться?')){ $('onlineLobby').classList.add('show'); resetLobby(); try{ if(!ws) await connectWS(); }catch(e){} setTimeout(()=>{ if(ws && ws.readyState===1) ws.send(JSON.stringify({type:'join-room',roomId:msg.roomId,username:nickname||'Гость'})); }, 300); } break; }
     case 'room-created': $('lobbyHostCode').textContent=msg.roomId; $('lobbyHost1').style.display='none'; $('lobbyJoin1').style.display='none'; $('lobbyHost2').style.display='block'; $('lobbyStatus').textContent='Ждём гостя...'; break;
     case 'joined-room': $('lobbyStatus').textContent='Подключено к '+msg.hostUsername; showPickStep(); refreshFriends(); break;
     case 'opponent-joined': $('lobbyStatus').textContent=msg.username+' подключился!'; showPickStep(); break;
     case 'opponent-left': $('lobbyStatus').textContent='Противник вышел'; $('lobbyStatus').classList.add('err'); setTimeout(closeLobby,1500); break;
     case 'relay': if(msg.payload&&msg.payload.type==='fighter-picked'){ opponentFighter=FIGHTERS[msg.payload.fighterId]; if(myFighter) startOnlineBattle(); } break;
+    case 'pvp-opp-state': {
+      if(!opponent){ const p = msg.payload; opponent = { x:p.x, z:p.z, hp:p.hp, maxHp:p.maxHp, fighter:opponentFighter||FIGHTERS['plant_0'], stats:getFighterStats(opponentFighter||FIGHTERS['plant_0']), walkPhase:p.walkPhase, dead:p.dead, shield:p.shield, recoil:p.recoil, aimX:p.aimX, aimZ:p.aimZ }; }
+      else { const p = msg.payload; opponent.x=p.x; opponent.z=p.z; opponent.hp=p.hp; opponent.maxHp=p.maxHp; opponent.walkPhase=p.walkPhase; opponent.dead=p.dead; opponent.shield=p.shield; opponent.recoil=p.recoil; opponent.aimX=p.aimX; opponent.aimZ=p.aimZ; }
+      break;
+    }
+    case 'pvp-opp-shot': { const p = msg.payload; bullets.push({ x:p.x, z:p.z, dx:p.dx, dz:p.dz, speed:30, fromPlayer:false, fromAlly:false, fromOpponent:true, baseDmg:p.dmg, radius:6, color:'#ff2e8a', life:2.5, attack:p.attack }); break; }
+    case 'pvp-opp-hit': { const p = msg.payload; player.hp=Math.max(0, player.hp - p.dmg); shakeAmount=8; sndHit(); spawnParticles(player.x, player.z, '#ff2e8a', 6, 6); if(player.hp<=0 && !player.dead){ player.dead=true; sndDie(); if(ws&&ws.readyState===1) ws.send(JSON.stringify({type:'pvp-dead',payload:{}})); endPvP(false); } break; }
+    case 'pvp-opp-dead': { endPvP(true); break; }
+    case 'pvp-opp-fighter': { const f = FIGHTERS[msg.payload.fighterId]; if(f){ opponentFighter=f; if(opponent){ opponent.fighter=f; opponent.stats=getFighterStats(f); opponent.hp=opponent.stats.hp; opponent.maxHp=opponent.stats.hp; } } break; }
     case 'error': $('lobbyStatus').textContent=msg.message; $('lobbyStatus').classList.add('err'); break;
   }
 }
@@ -796,26 +869,6 @@ function showPickStep(){
   const row=$('lobbyPickRow'); row.innerHTML='';
   const ids=Object.keys(FIGHTERS).filter(isUnlocked);
   ids.forEach(id=>{ const f=FIGHTERS[id]; const el=document.createElement('div'); el.className='mini-fighter'+(f.side==='enemy'?' enemy':''); const cv=document.createElement('canvas'); el.appendChild(cv); el.onclick=()=>{ myFighter=f; row.querySelectorAll('.mini-fighter').forEach(x=>x.classList.remove('selected')); el.classList.add('selected'); if(ws&&ws.readyState===1) ws.send(JSON.stringify({type:'relay',payload:{type:'fighter-picked',fighterId:f.id}})); if(opponentFighter) startOnlineBattle(); }; row.appendChild(el); setTimeout(()=>drawPortrait(cv,f),20); });
-}
-function startOnlineBattle(){
-  if(!myFighter||!opponentFighter) return;
-  ensureAudio(); closeLobby(); $('menu').style.display='none';
-  side=myFighter.side; gameActive=true; battleKK=0; battleTrophies=0; battleKills=0; superCharge=0; ammo=MAX_AMMO; ammoTimer=0;
-  bullets=[]; particles=[]; floatingTexts=[]; zones=[]; corpses=[]; genArenaDecor();
-  const pStats=getFighterStats(myFighter);
-  player.fighter=myFighter; player.stats=pStats;
-  player.x=0; player.z=14; player.hp=pStats.hp; player.maxHp=pStats.hp; player.dead=false;
-  allies=[];
-  const oStats=getFighterStats(opponentFighter);
-  enemies=[{x:0,z:-16,hp:oStats.hp,maxHp:oStats.hp,fighter:opponentFighter,stats:{hp:oStats.hp,dmg:oStats.dmg,speed:oStats.speed,fireRate:oStats.fireRate,level:1},isBoss:true,ai:{cooldown:1,moveTimer:0,mdx:0,mdz:0},ammo:3,ammoTimer:0,walkPhase:0}];
-  buildTeamsBar();
-  $('hud').style.display='flex'; $('ammoBox').style.display='flex'; $('leave').style.display='block';
-  $('leftZone').style.display='block'; $('attackZone').style.display='block'; $('superZone').style.display='block';
-  $('joyL').style.display='block'; $('joyAttack').style.display='block'; $('joySuper').style.display='block';
-  player.wasAiming=false; player.recoil=0; aimX=0; aimZ=-1;
-  camera2D.x=player.x; camera2D.z=player.z;
-  updateAmmoUI(); updateSuperUI();
-  lastT=performance.now(); requestAnimationFrame(loop);
 }
 $('lobbyBtnCreate').onclick=async ()=>{ $('lobbyStatus').textContent='Создание...'; try{ if(!ws) await connectWS(); ws.send(JSON.stringify({type:'create-room',username:nickname||'Хост'})); }catch(e){ $('lobbyStatus').textContent='Ошибка'; $('lobbyStatus').classList.add('err'); } };
 $('lobbyBtnJoinAccept').onclick=async ()=>{ const code=$('lobbyJoinOfferIn').value.trim(); if(!/^\d{6}$/.test(code)){ $('lobbyStatus').textContent='Код — 6 цифр'; $('lobbyStatus').classList.add('err'); return; } $('lobbyStatus').textContent='Подключение...'; try{ if(!ws) await connectWS(); ws.send(JSON.stringify({type:'join-room',roomId:code,username:nickname||'Гость'})); }catch(e){ $('lobbyStatus').textContent='Ошибка'; $('lobbyStatus').classList.add('err'); } };
@@ -857,12 +910,8 @@ $('nickLabel').onclick=()=>{ if(token) showAuth(); };
 $('logoutBtn').onclick=()=>{ if(!confirm('Выйти из аккаунта?')) return; token=''; nickname=''; try{ localStorage.removeItem(TOKEN_KEY); localStorage.removeItem(NICK_KEY); localStorage.removeItem(SAVE_KEY); }catch(e){} location.reload(); };
 async function checkDaily(){
   if(!token){ $('dailyBtn').classList.remove('show'); return; }
-  try{
-    const r = await fetch('/api/me',{headers:{'X-Token':token}});
-    const data = await r.json();
-    if(data.ok && data.player){
-      const today=new Date().toISOString().slice(0,10);
-      const claimed=data.player.daily_last===today;
+  try{ const r = await fetch('/api/me',{headers:{'X-Token':token}}); const data = await r.json();
+    if(data.ok && data.player){ const today=new Date().toISOString().slice(0,10); const claimed=data.player.daily_last===today;
       $('dailyBtn').classList.add('show');
       if(claimed){ $('dailyBtn').textContent='✅ БОНУС ЗАБРАН'; $('dailyBtn').classList.add('claimed'); }
       else { $('dailyBtn').textContent='🎁 ЗАБРАТЬ +100 KK'; $('dailyBtn').classList.remove('claimed'); }
@@ -872,30 +921,18 @@ async function checkDaily(){
 $('dailyBtn').onclick=async ()=>{
   if(!token) return;
   if($('dailyBtn').classList.contains('claimed')) return;
-  try{
-    const r = await fetch('/api/daily',{method:'POST',headers:{'Content-Type':'application/json','X-Token':token},body:'{}'});
+  try{ const r = await fetch('/api/daily',{method:'POST',headers:{'Content-Type':'application/json','X-Token':token},body:'{}'});
     const data = await r.json();
-    if(data.ok && data.claimed){
-      profile.kk=data.player.kk;
-      try{ localStorage.setItem(SAVE_KEY,JSON.stringify(profile)); }catch(e){}
-      updateProfileUI(); sndDaily();
-      $('dailyBtn').textContent='✅ БОНУС ЗАБРАН';
-      $('dailyBtn').classList.add('claimed');
-      alert('+100 KK получено!');
-    }
+    if(data.ok && data.claimed){ profile.kk=data.player.kk; try{ localStorage.setItem(SAVE_KEY,JSON.stringify(profile)); }catch(e){} updateProfileUI(); sndDaily();
+      $('dailyBtn').textContent='✅ БОНУС ЗАБРАН'; $('dailyBtn').classList.add('claimed'); alert('+100 KK получено!'); }
   }catch(e){ alert('Ошибка'); }
 };
 async function init(){
   updateProfileUI();
   switchMainTab('play');
   setTimeout(()=>{ const f=FIGHTERS[profile.selected.plant]; if(f) pickFighter(f); },50);
-  if(token){
-    const ok = await loadMe();
-    if(ok){ updateProfileUI(); checkDaily(); try{ if(ws && ws.readyState===1) ws.send(JSON.stringify({type:'identify',nickname})); }catch(e){} }
-    else { showAuth(); }
-  } else {
-    showAuth();
-  }
+  if(token){ const ok = await loadMe(); if(ok){ updateProfileUI(); checkDaily(); try{ if(ws && ws.readyState===1) ws.send(JSON.stringify({type:'identify',nickname})); }catch(e){} } else { showAuth(); } }
+  else { showAuth(); }
 }
 init();
 </script>

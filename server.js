@@ -18,55 +18,18 @@ const wsNickname = new Map();
 
 if (process.env.DATABASE_URL) {
   try {
-    pool = new Pool({
-      connectionString: process.env.DATABASE_URL,
-      ssl: false,
-      max: 5,
-      idleTimeoutMillis: 30000,
-      connectionTimeoutMillis: 5000
-    });
+    pool = new Pool({ connectionString: process.env.DATABASE_URL, ssl: false, max: 5, idleTimeoutMillis: 30000, connectionTimeoutMillis: 5000 });
     pool.on('error', (err) => console.error('[pg pool]', err.message));
     initDB().catch(err => console.error('[DB init]', err.message));
-  } catch (e) {
-    console.error('[pg create]', e.message);
-  }
-} else {
-  console.warn('⚠️ DATABASE_URL не задан');
-}
+  } catch (e) { console.error('[pg create]', e.message); }
+} else { console.warn('⚠️ DATABASE_URL не задан'); }
 
 async function initDB(){
-  await pool.query(`
-    CREATE TABLE IF NOT EXISTS players (
-      id SERIAL PRIMARY KEY,
-      nickname TEXT UNIQUE NOT NULL,
-      kk INTEGER DEFAULT 200,
-      trophies INTEGER DEFAULT 0,
-      wins INTEGER DEFAULT 0,
-      losses INTEGER DEFAULT 0,
-      kills INTEGER DEFAULT 0,
-      games INTEGER DEFAULT 0,
-      unlocked JSONB DEFAULT '{"plant_0":true,"plant_1":true,"plant_2":true,"inv_0":true}'::jsonb,
-      levels JSONB DEFAULT '{}'::jsonb,
-      selected JSONB DEFAULT '{"plant":"plant_0","enemy":"inv_0"}'::jsonb,
-      daily_last TEXT DEFAULT '',
-      created_at TIMESTAMPTZ DEFAULT NOW(),
-      updated_at TIMESTAMPTZ DEFAULT NOW()
-    )
-  `);
+  await pool.query(`CREATE TABLE IF NOT EXISTS players (id SERIAL PRIMARY KEY, nickname TEXT UNIQUE NOT NULL, kk INTEGER DEFAULT 200, trophies INTEGER DEFAULT 0, wins INTEGER DEFAULT 0, losses INTEGER DEFAULT 0, kills INTEGER DEFAULT 0, games INTEGER DEFAULT 0, unlocked JSONB DEFAULT '{"plant_0":true,"plant_1":true,"plant_2":true,"inv_0":true}'::jsonb, levels JSONB DEFAULT '{}'::jsonb, selected JSONB DEFAULT '{"plant":"plant_0","enemy":"inv_0"}'::jsonb, daily_last TEXT DEFAULT '', created_at TIMESTAMPTZ DEFAULT NOW(), updated_at TIMESTAMPTZ DEFAULT NOW())`);
   await pool.query('CREATE INDEX IF NOT EXISTS idx_trophies ON players(trophies DESC)');
   await pool.query('ALTER TABLE players ADD COLUMN IF NOT EXISTS password_hash TEXT');
   await pool.query('ALTER TABLE players ADD COLUMN IF NOT EXISTS password_salt TEXT');
-  await pool.query(`
-    CREATE TABLE IF NOT EXISTS friendships (
-      id SERIAL PRIMARY KEY,
-      player1 TEXT NOT NULL,
-      player2 TEXT NOT NULL,
-      status TEXT DEFAULT 'pending',
-      requested_by TEXT NOT NULL,
-      created_at TIMESTAMPTZ DEFAULT NOW(),
-      UNIQUE(player1, player2)
-    )
-  `);
+  await pool.query(`CREATE TABLE IF NOT EXISTS friendships (id SERIAL PRIMARY KEY, player1 TEXT NOT NULL, player2 TEXT NOT NULL, status TEXT DEFAULT 'pending', requested_by TEXT NOT NULL, created_at TIMESTAMPTZ DEFAULT NOW(), UNIQUE(player1, player2))`);
   await pool.query('CREATE INDEX IF NOT EXISTS idx_friend_p1 ON friendships(player1)');
   await pool.query('CREATE INDEX IF NOT EXISTS idx_friend_p2 ON friendships(player2)');
   dbReady = true;
@@ -81,12 +44,10 @@ async function registerPlayer(nickname, password){
   const existing = await pool.query('SELECT id, password_hash FROM players WHERE nickname = $1', [nickname]);
   if (existing.rows.length > 0) {
     if (existing.rows[0].password_hash) throw new Error('Ник занят');
-    const salt = genSalt();
-    const hash = hashPassword(password, salt);
+    const salt = genSalt(); const hash = hashPassword(password, salt);
     await pool.query('UPDATE players SET password_hash = $1, password_salt = $2 WHERE id = $3', [hash, salt, existing.rows[0].id]);
   } else {
-    const salt = genSalt();
-    const hash = hashPassword(password, salt);
+    const salt = genSalt(); const hash = hashPassword(password, salt);
     await pool.query('INSERT INTO players (nickname, password_hash, password_salt) VALUES ($1, $2, $3)', [nickname, hash, salt]);
   }
   const token = genToken();
@@ -114,10 +75,7 @@ function authByToken(token){
   return s.nickname;
 }
 
-async function getPlayer(nickname){
-  const r = await pool.query('SELECT nickname, kk, trophies, wins, losses, kills, games, unlocked, levels, selected, daily_last FROM players WHERE nickname = $1', [nickname]);
-  return r.rows[0] || null;
-}
+async function getPlayer(nickname){ const r = await pool.query('SELECT nickname, kk, trophies, wins, losses, kills, games, unlocked, levels, selected, daily_last FROM players WHERE nickname = $1', [nickname]); return r.rows[0] || null; }
 
 async function updatePlayer(nickname, data){
   const fields = []; const values = []; let i = 1;
@@ -131,10 +89,7 @@ async function updatePlayer(nickname, data){
   return r.rows[0] || null;
 }
 
-async function leaderboard(limit = 20){
-  const r = await pool.query('SELECT nickname, trophies, wins, losses, kills, games FROM players ORDER BY trophies DESC LIMIT $1', [limit]);
-  return r.rows;
-}
+async function leaderboard(limit = 20){ const r = await pool.query('SELECT nickname, trophies, wins, losses, kills, games FROM players ORDER BY trophies DESC LIMIT $1', [limit]); return r.rows; }
 
 function pairKey(a, b){ return a < b ? [a, b] : [b, a]; }
 
@@ -191,156 +146,95 @@ const server = http.createServer(async (req, res) => {
     res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
     res.setHeader('Access-Control-Allow-Headers', 'Content-Type, X-Token');
     if (req.method === 'OPTIONS') { res.writeHead(204); res.end(); return; }
-
     const url = new URL(req.url, 'http://localhost');
     const pathname = url.pathname;
     console.log(`[${req.method}] ${pathname}`);
-
     function sendJSON(code, obj){ res.writeHead(code, { 'Content-Type': 'application/json; charset=utf-8' }); res.end(JSON.stringify(obj)); }
-
     if (pathname === '/health') { sendJSON(200, { ok: true, db: dbReady, time: Date.now() }); return; }
-
-    if (pathname === '/api/leaderboard' && req.method === 'GET') {
-      try { sendJSON(200, { ok: true, rows: await leaderboard(20) }); }
-      catch (e) { sendJSON(500, { ok: false, error: e.message }); }
-      return;
-    }
-
+    if (pathname === '/api/leaderboard' && req.method === 'GET') { try { sendJSON(200, { ok: true, rows: await leaderboard(20) }); } catch (e) { sendJSON(500, { ok: false, error: e.message }); } return; }
     if (pathname === '/api/register' && req.method === 'POST') {
       let body = ''; req.on('data', c => body += c);
-      req.on('end', async () => {
-        try {
-          const { nickname, password } = JSON.parse(body);
-          if (!nickname || nickname.length < 3 || nickname.length > 16) throw new Error('Ник 3-16 символов');
-          if (!/^[a-zA-Z0-9_]+$/.test(nickname)) throw new Error('Ник: буквы, цифры, _');
-          if (!password || password.length < 4) throw new Error('Пароль минимум 4 символа');
-          if (!dbReady) throw new Error('БД недоступна');
-          const token = await registerPlayer(nickname, password);
-          const player = await getPlayer(nickname);
-          sendJSON(200, { ok: true, token, player });
-        } catch (e) { console.error('[register]', e.message); sendJSON(400, { ok: false, error: e.message }); }
-      });
+      req.on('end', async () => { try {
+        const { nickname, password } = JSON.parse(body);
+        if (!nickname || nickname.length < 3 || nickname.length > 16) throw new Error('Ник 3-16 символов');
+        if (!/^[a-zA-Z0-9_]+$/.test(nickname)) throw new Error('Ник: буквы, цифры, _');
+        if (!password || password.length < 4) throw new Error('Пароль минимум 4 символа');
+        if (!dbReady) throw new Error('БД недоступна');
+        const token = await registerPlayer(nickname, password);
+        const player = await getPlayer(nickname);
+        sendJSON(200, { ok: true, token, player });
+      } catch (e) { sendJSON(400, { ok: false, error: e.message }); } });
       return;
     }
-
     if (pathname === '/api/login' && req.method === 'POST') {
       let body = ''; req.on('data', c => body += c);
-      req.on('end', async () => {
-        try {
-          const { nickname, password } = JSON.parse(body);
-          if (!nickname || !password) throw new Error('Заполни все поля');
-          if (!dbReady) throw new Error('БД недоступна');
-          const token = await loginPlayer(nickname, password);
-          const player = await getPlayer(nickname);
-          sendJSON(200, { ok: true, token, player });
-        } catch (e) { console.error('[login]', e.message); sendJSON(401, { ok: false, error: e.message }); }
-      });
+      req.on('end', async () => { try {
+        const { nickname, password } = JSON.parse(body);
+        if (!nickname || !password) throw new Error('Заполни все поля');
+        const token = await loginPlayer(nickname, password);
+        const player = await getPlayer(nickname);
+        sendJSON(200, { ok: true, token, player });
+      } catch (e) { sendJSON(401, { ok: false, error: e.message }); } });
       return;
     }
-
     if (pathname === '/api/me' && req.method === 'GET') {
       const nickname = authByToken(req.headers['x-token']);
       if (!nickname) { sendJSON(401, { ok: false, error: 'Не авторизован' }); return; }
-      try { sendJSON(200, { ok: true, player: await getPlayer(nickname) }); }
-      catch (e) { sendJSON(500, { ok: false, error: e.message }); }
+      try { sendJSON(200, { ok: true, player: await getPlayer(nickname) }); } catch (e) { sendJSON(500, { ok: false, error: e.message }); }
       return;
     }
-
     if (pathname === '/api/save' && req.method === 'POST') {
       const nickname = authByToken(req.headers['x-token']);
       if (!nickname) { sendJSON(401, { ok: false, error: 'Не авторизован' }); return; }
       let body = ''; req.on('data', c => body += c);
-      req.on('end', async () => {
-        try {
-          const data = JSON.parse(body);
-          const p = await updatePlayer(nickname, data);
-          sendJSON(200, { ok: true, player: p });
-        } catch (e) { sendJSON(500, { ok: false, error: e.message }); }
-      });
+      req.on('end', async () => { try { const data = JSON.parse(body); const p = await updatePlayer(nickname, data); sendJSON(200, { ok: true, player: p }); } catch (e) { sendJSON(500, { ok: false, error: e.message }); } });
       return;
     }
-
     if (pathname === '/api/daily' && req.method === 'POST') {
       const nickname = authByToken(req.headers['x-token']);
       if (!nickname) { sendJSON(401, { ok: false, error: 'Не авторизован' }); return; }
-      try {
-        const p = await getPlayer(nickname);
-        const today = new Date().toISOString().slice(0, 10);
+      try { const p = await getPlayer(nickname); const today = new Date().toISOString().slice(0, 10);
         if (p.daily_last === today) { sendJSON(200, { ok: true, claimed: false, player: p }); return; }
         const updated = await updatePlayer(nickname, { kk: p.kk + 100, daily_last: today });
         sendJSON(200, { ok: true, claimed: true, reward: 100, player: updated });
       } catch (e) { sendJSON(500, { ok: false, error: e.message }); }
       return;
     }
-
     if (pathname === '/api/friends' && req.method === 'GET') {
       const nickname = authByToken(req.headers['x-token']);
       if (!nickname) { sendJSON(401, { ok: false, error: 'Не авторизован' }); return; }
-      try { const data = await getFriendsData(nickname); sendJSON(200, { ok: true, ...data }); }
-      catch (e) { sendJSON(500, { ok: false, error: e.message }); }
+      try { const data = await getFriendsData(nickname); sendJSON(200, { ok: true, ...data }); } catch (e) { sendJSON(500, { ok: false, error: e.message }); }
       return;
     }
-
     if (pathname === '/api/friends/add' && req.method === 'POST') {
       const nickname = authByToken(req.headers['x-token']);
       if (!nickname) { sendJSON(401, { ok: false, error: 'Не авторизован' }); return; }
       let body = ''; req.on('data', c => body += c);
-      req.on('end', async () => {
-        try {
-          const { friend } = JSON.parse(body);
-          if (!friend) throw new Error('Укажи ник');
-          const result = await sendFriendRequest(nickname, friend);
-          sendJSON(200, { ok: true, ...result });
-        } catch (e) { sendJSON(400, { ok: false, error: e.message }); }
-      });
+      req.on('end', async () => { try { const { friend } = JSON.parse(body); const result = await sendFriendRequest(nickname, friend); sendJSON(200, { ok: true, ...result }); } catch (e) { sendJSON(400, { ok: false, error: e.message }); } });
       return;
     }
-
     if (pathname === '/api/friends/accept' && req.method === 'POST') {
       const nickname = authByToken(req.headers['x-token']);
       if (!nickname) { sendJSON(401, { ok: false, error: 'Не авторизован' }); return; }
       let body = ''; req.on('data', c => body += c);
-      req.on('end', async () => {
-        try {
-          const { friend } = JSON.parse(body);
-          await acceptFriendRequest(nickname, friend);
-          sendJSON(200, { ok: true });
-        } catch (e) { sendJSON(400, { ok: false, error: e.message }); }
-      });
+      req.on('end', async () => { try { const { friend } = JSON.parse(body); await acceptFriendRequest(nickname, friend); sendJSON(200, { ok: true }); } catch (e) { sendJSON(400, { ok: false, error: e.message }); } });
       return;
     }
-
     if (pathname === '/api/friends/remove' && req.method === 'POST') {
       const nickname = authByToken(req.headers['x-token']);
       if (!nickname) { sendJSON(401, { ok: false, error: 'Не авторизован' }); return; }
       let body = ''; req.on('data', c => body += c);
-      req.on('end', async () => {
-        try {
-          const { friend } = JSON.parse(body);
-          await removeFriend(nickname, friend);
-          sendJSON(200, { ok: true });
-        } catch (e) { sendJSON(400, { ok: false, error: e.message }); }
-      });
+      req.on('end', async () => { try { const { friend } = JSON.parse(body); await removeFriend(nickname, friend); sendJSON(200, { ok: true }); } catch (e) { sendJSON(400, { ok: false, error: e.message }); } });
       return;
     }
-
     if (pathname === '/api/friends/invite' && req.method === 'POST') {
       const nickname = authByToken(req.headers['x-token']);
       if (!nickname) { sendJSON(401, { ok: false, error: 'Не авторизован' }); return; }
       let body = ''; req.on('data', c => body += c);
-      req.on('end', () => {
-        try {
-          const { friend, roomId } = JSON.parse(body);
-          const sockets = onlineUsers.get(friend);
-          if (sockets) for (const s of sockets) send(s, { type: 'friend-invite', from: nickname, roomId });
-          sendJSON(200, { ok: true, delivered: !!sockets });
-        } catch (e) { sendJSON(400, { ok: false, error: e.message }); }
-      });
+      req.on('end', () => { try { const { friend, roomId } = JSON.parse(body); const sockets = onlineUsers.get(friend); if (sockets) for (const s of sockets) send(s, { type: 'friend-invite', from: nickname, roomId }); sendJSON(200, { ok: true, delivered: !!sockets }); } catch (e) { sendJSON(400, { ok: false, error: e.message }); } });
       return;
     }
-
     if (pathname.startsWith('/api/')) { sendJSON(404, { ok: false, error: 'API route not found' }); return; }
-
     let filePath = pathname === '/' ? '/index.html' : pathname;
     filePath = path.join(__dirname, filePath);
     fs.readFile(filePath, (err, data) => {
@@ -350,10 +244,7 @@ const server = http.createServer(async (req, res) => {
       res.writeHead(200, { 'Content-Type': types[ext] || 'application/octet-stream' });
       res.end(data);
     });
-  } catch (e) {
-    console.error('[server]', e.message);
-    try { res.writeHead(500); res.end('Server error'); } catch(_){}
-  }
+  } catch (e) { console.error('[server]', e.message); try { res.writeHead(500); res.end('Server error'); } catch(_){} }
 });
 
 const wss = new WebSocketServer({ server });
@@ -366,65 +257,26 @@ wss.on('connection', (ws) => {
   ws.on('message', (raw) => {
     let msg; try { msg = JSON.parse(raw.toString()); } catch (e) { return; }
     switch (msg.type) {
-      case 'identify': {
-        const nick = msg.nickname;
-        if (nick) {
-          wsNickname.set(ws, nick);
-          if (!onlineUsers.has(nick)) onlineUsers.set(nick, new Set());
-          onlineUsers.get(nick).add(ws);
-          console.log('[online]', nick);
-        }
-        break;
-      }
-      case 'create-room': {
-        let id = genRoomId();
-        while (rooms.has(id)) id = genRoomId();
-        rooms.set(id, { host: ws, guest: null });
-        ws.roomId = id; ws.role = 'host'; ws.username = msg.username || 'Хост';
-        send(ws, { type: 'room-created', roomId: id });
-        break;
-      }
-      case 'join-room': {
-        const room = rooms.get(msg.roomId);
-        if (!room) { send(ws, { type: 'error', message: 'Комната не найдена' }); return; }
-        if (room.guest) { send(ws, { type: 'error', message: 'Комната полна' }); return; }
-        room.guest = ws; ws.roomId = msg.roomId; ws.role = 'guest'; ws.username = msg.username || 'Гость';
-        send(room.host, { type: 'opponent-joined', username: ws.username });
-        send(ws, { type: 'joined-room', roomId: msg.roomId, hostUsername: room.host.username });
-        break;
-      }
-      case 'relay': {
-        const room = rooms.get(ws.roomId);
-        if (!room) return;
-        const target = ws.role === 'host' ? room.guest : room.host;
-        if (target && target.readyState === 1) send(target, { type: 'relay', payload: msg.payload });
-        break;
-      }
+      case 'identify': { const nick = msg.nickname; if (nick) { wsNickname.set(ws, nick); if (!onlineUsers.has(nick)) onlineUsers.set(nick, new Set()); onlineUsers.get(nick).add(ws); console.log('[online]', nick); } break; }
+      case 'create-room': { let id = genRoomId(); while (rooms.has(id)) id = genRoomId(); rooms.set(id, { host: ws, guest: null }); ws.roomId = id; ws.role = 'host'; ws.username = msg.username || 'Хост'; send(ws, { type: 'room-created', roomId: id }); break; }
+      case 'join-room': { const room = rooms.get(msg.roomId); if (!room) { send(ws, { type: 'error', message: 'Комната не найдена' }); return; } if (room.guest) { send(ws, { type: 'error', message: 'Комната полна' }); return; } room.guest = ws; ws.roomId = msg.roomId; ws.role = 'guest'; ws.username = msg.username || 'Гость'; send(room.host, { type: 'opponent-joined', username: ws.username }); send(ws, { type: 'joined-room', roomId: msg.roomId, hostUsername: room.host.username }); break; }
+      case 'relay': { const room = rooms.get(ws.roomId); if (!room) return; const target = ws.role === 'host' ? room.guest : room.host; if (target && target.readyState === 1) send(target, { type: 'relay', payload: msg.payload }); break; }
+      case 'pvp-state': { const room = rooms.get(ws.roomId); if (!room) return; const target = ws.role === 'host' ? room.guest : room.host; if (target && target.readyState === 1) send(target, { type: 'pvp-opp-state', payload: msg.payload }); break; }
+      case 'pvp-shot': { const room = rooms.get(ws.roomId); if (!room) return; const target = ws.role === 'host' ? room.guest : room.host; if (target && target.readyState === 1) send(target, { type: 'pvp-opp-shot', payload: msg.payload }); break; }
+      case 'pvp-hit': { const room = rooms.get(ws.roomId); if (!room) return; const target = ws.role === 'host' ? room.guest : room.host; if (target && target.readyState === 1) send(target, { type: 'pvp-opp-hit', payload: msg.payload }); break; }
+      case 'pvp-dead': { const room = rooms.get(ws.roomId); if (!room) return; const target = ws.role === 'host' ? room.guest : room.host; if (target && target.readyState === 1) send(target, { type: 'pvp-opp-dead', payload: msg.payload }); break; }
+      case 'pvp-fighter': { const room = rooms.get(ws.roomId); if (!room) return; const target = ws.role === 'host' ? room.guest : room.host; if (target && target.readyState === 1) send(target, { type: 'pvp-opp-fighter', payload: msg.payload }); break; }
       case 'ping': send(ws, { type: 'pong' }); break;
     }
   });
   ws.on('close', () => {
     const nick = wsNickname.get(ws);
-    if (nick) {
-      const set = onlineUsers.get(nick);
-      if (set) { set.delete(ws); if (set.size === 0) onlineUsers.delete(nick); }
-      wsNickname.delete(ws);
-    }
-    if (ws.roomId) {
-      const room = rooms.get(ws.roomId);
-      if (room) {
-        const other = ws.role === 'host' ? room.guest : room.host;
-        if (other && other.readyState === 1) send(other, { type: 'opponent-left' });
-        rooms.delete(ws.roomId);
-      }
-    }
+    if (nick) { const set = onlineUsers.get(nick); if (set) { set.delete(ws); if (set.size === 0) onlineUsers.delete(nick); } wsNickname.delete(ws); }
+    if (ws.roomId) { const room = rooms.get(ws.roomId); if (room) { const other = ws.role === 'host' ? room.guest : room.host; if (other && other.readyState === 1) send(other, { type: 'opponent-left' }); rooms.delete(ws.roomId); } }
   });
   ws.on('error', (err) => console.error('WS error:', err.message));
 });
 
-server.listen(PORT, '0.0.0.0', () => {
-  console.log('🚀 Digital Style on port', PORT, '| БД:', dbReady ? 'OK' : 'FAIL');
-});
-
+server.listen(PORT, '0.0.0.0', () => { console.log('🚀 Digital Style on port', PORT, '| БД:', dbReady ? 'OK' : 'FAIL'); });
 process.on('uncaughtException', (err) => console.error('[uncaughtException]', err.message));
 process.on('unhandledRejection', (err) => console.error('[unhandledRejection]', err && err.message));
