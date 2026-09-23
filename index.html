@@ -772,6 +772,7 @@ function refreshCollection(){
     const nm = document.createElement('div'); nm.className = 'name'; nm.textContent = isUnlocked(id) ? f.name : '???';
     card.appendChild(nm);
     if (!isUnlocked(id)){ const lock = document.createElement('div'); lock.className = 'lock'; lock.textContent = '🔒'; card.appendChild(lock); }
+    card.addEventListener('click', () => openFighterCard(f.id, 'collection'));
     grid.appendChild(card);
     setTimeout(() => drawPortrait(cv, f), 10);
   });
@@ -789,8 +790,7 @@ function refreshUpgrade(){
     const lvl = document.createElement('div'); lvl.className = 'lvl'; lvl.textContent = 'L' + getLevel(id); card.appendChild(lvl);
     const cv = document.createElement('canvas'); card.appendChild(cv);
     const nm = document.createElement('div'); nm.className = 'name'; nm.textContent = f.name; card.appendChild(nm);
-    card.addEventListener('click', () => { upgradeSelectedId = id; refreshUpgrade(); });
-    grid.appendChild(card);
+    card.addEventListener('click', () => openFighterCard(f.id, 'upgrade'));    grid.appendChild(card);
     setTimeout(() => drawPortrait(cv, f), 10);
   });
   const detail = $('upgradeDetail');
