@@ -439,7 +439,7 @@ function drawFighterShape(ctx, fighter, x, y, size, angle, isDead, walkPhase){
   const wobble = walkPhase ? Math.sin(walkPhase) * 0.05 : 0;
   ctx.translate(0, wobble * size);
   const c = fighter.color;
-  if (fighter.side === 'enemy'){ ctx.shadowColor = c; ctx.shadowBlur = size * 0.3; }
+  if (fighter.side === 'enemy'){ ctx.shadowColor = c; ctx.shadowBlur = 0; }
   ctx.lineWidth = size * 0.12; ctx.strokeStyle = '#05070d'; ctx.lineJoin = 'round';
   switch (fighter.shape){
     case 'blob': drawBlob(ctx, size, c); break;
@@ -1134,10 +1134,8 @@ function drawArena(){
   g.addColorStop(0, currentMap.bg); g.addColorStop(1, shade(currentMap.bg, -20));
   ctx.fillStyle = g; ctx.fillRect(cx-halfPx, cy-halfPx, halfPx*2, halfPx*2);
   ctx.strokeStyle = currentMap.grid; ctx.lineWidth = 1;
-  const step = 2*ZOOM; const sX = cx-halfPx, sY = cy-halfPx;
-  for (let i = 0; i <= ARENA/2; i++){ ctx.beginPath(); ctx.moveTo(sX+i*step, sY); ctx.lineTo(sX+i*step, sY+halfPx*2); ctx.stroke(); ctx.beginPath(); ctx.moveTo(sX, sY+i*step); ctx.lineTo(sX+halfPx*2, sY+i*step); ctx.stroke(); }
-  ctx.strokeStyle = currentMap.border; ctx.lineWidth = 8; ctx.shadowColor = currentMap.border; ctx.shadowBlur = 20;
-  ctx.strokeRect(cx-halfPx, cy-halfPx, halfPx*2, halfPx*2); ctx.shadowBlur = 0;
+  const step = 4*ZOOM; const sX = cx-halfPx, sY = cy-halfPx;
+for (let i = 0; i <= ARENA/4; i++){ ctx.beginPath(); ctx.moveTo(sX+i*step, sY); ctx.lineTo(sX+i*step, sY+halfPx*2); ctx.stroke(); ctx.beginPath(); ctx.moveTo(sX, sY+i*step); ctx.lineTo(sX+halfPx*2, sY+i*step); ctx.stroke(); } ctx.shadowBlur = 0;
   for (const ob of obstacles){ const p = worldToScreen(ob[0], ob[1]); const r = ob[2]*ZOOM; ctx.fillStyle = shade(currentMap.border, -50); ctx.globalAlpha = 0.5; ctx.beginPath(); ctx.arc(p.x, p.y, r, 0, Math.PI*2); ctx.fill(); ctx.globalAlpha = 1; ctx.strokeStyle = currentMap.border; ctx.lineWidth = 3; ctx.stroke(); }
 }
 function drawBullet(b){ const p = worldToScreen(b.x, b.z); const r = b.radius; const g = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, r*2); g.addColorStop(0, b.color); g.addColorStop(0.5, b.color); g.addColorStop(1, 'transparent'); ctx.fillStyle = g; ctx.beginPath(); ctx.arc(p.x, p.y, r*2, 0, Math.PI*2); ctx.fill(); }
