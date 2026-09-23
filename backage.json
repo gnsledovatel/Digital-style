@@ -1,6 +1,6 @@
 {
   "name": "digital-style",
-  "version": "1.0.0",
+  "version": "1.0.0", 
   "type": "module",
   "main": "server.js",
   "engines": {
