@@ -141,6 +141,7 @@ html,body{width:100%;height:100%;overflow:hidden;background:#000;font-family:-ap
 #authModal button{padding:14px;background:linear-gradient(180deg,#2cff5e,#16a34a);border:none;color:#04141d;font-weight:900;font-size:14px;border-radius:12px;cursor:pointer;width:100%;max-width:320px}
 #authModal .hint{font-size:12px;color:#9fd7ff;text-align:center;max-width:320px;line-height:1.4}
 #authModal .err{color:#ff2e8a;font-weight:800;font-size:13px;text-align:center;min-height:18px}
+#authEmail{display:none}
 </style>
 </head>
 <body>
@@ -215,10 +216,11 @@ html,body{width:100%;height:100%;overflow:hidden;background:#000;font-family:-ap
   <div class="logo">Digital Style</div>
   <div class="authTabs"><div class="authTab active" id="tabLogin">ВХОД</div><div class="authTab" id="tabRegister">РЕГИСТРАЦИЯ</div></div>
   <input id="authNick" maxlength="16" placeholder="Ник" autocomplete="username">
+  <input id="authEmail" type="email" maxlength="64" placeholder="Почта" autocomplete="email">
   <input id="authPass" type="password" maxlength="32" placeholder="Пароль" autocomplete="current-password">
   <div class="err" id="authErr"></div>
   <button id="authBtn">ВОЙТИ</button>
-  <div class="hint">Ник: 3-16 символов, буквы/цифры/_. Пароль: минимум 4 символа.</div>
+  <div class="hint">Ник: 3-16 символов, буквы/цифры/_. Пароль: минимум 4 символа. Почта обязательна при регистрации.</div>
 </div>
 <script type="module">
 const $ = id => document.getElementById(id);
@@ -253,9 +255,11 @@ for (let i = 0; i < 3; i++) RARITIES.push('legend');
 const INVADER_RARITIES = ['rare','rare','rare','rare','rare','epic','epic','epic','legend','legend'];
 const FIGHTERS = {};
 for (let i = 0; i < 40; i++){ const id = 'plant_' + i; FIGHTERS[id] = { id, side:'plant', name: PLANT_NAMES[i], hp: 100 + (i*3)%140, dmg: 8 + (i*2)%16, speed: 6 + ((i*7)%40)/10, fireRate: 0.22 + ((i*3)%40)/100, color: PLANT_COLORS[i], shape:'blob', attack: PLANT_ATTACKS[i%10], super: PLANT_SUPERS[i%10], rarity: RARITIES[i] }; }
-for (let i = 0; i < 10; i++){ const id = 'inv_' + i; FIGHTERS[id] = { id, side:'enemy', name: INVADER_NAMES[i], hp: 300 + i*40, dmg: 15 + i*3, speed: 6.5 + (i%5)*0.7, fireRate: 0.22 + (i%5)*0.1, color: INVADER_COLORS[i], shape:'drone', attack: INVADER_ATTACKS[i], super: INVADER_SUPERS[i], rarity: INVADER_RARITIES[i] }; }
+// === УСИЛЕННЫЕ ЗАХВАТЧИКИ ===
+for (let i = 0; i < 10; i++){ const id = 'inv_' + i; FIGHTERS[id] = { id, side:'enemy', name: INVADER_NAMES[i], hp: 420 + i*55, dmg: 22 + i*4, speed: 7.2 + (i%5)*0.8, fireRate: 0.18 + (i%5)*0.08, color: INVADER_COLORS[i], shape:'drone', attack: INVADER_ATTACKS[i], super: INVADER_SUPERS[i], rarity: INVADER_RARITIES[i] }; }
 function getFighterStats(fighter){ const lvl = getLevel(fighter.id); const mult = 1 + (lvl-1) * 0.08; return { hp: Math.round(fighter.hp * mult), dmg: Math.round(fighter.dmg * mult * 100)/100, speed: fighter.speed * (1 + (lvl-1) * 0.02), fireRate: fighter.fireRate * (1 - (lvl-1) * 0.015), level: lvl }; }
-const ENEMY_BOSS_BUFF = { hp: 1.4, dmg: 1.4, speed: 1.15, fireRate: 0.85 };
+// === УСИЛЕННЫЙ БОСС ===
+const ENEMY_BOSS_BUFF = { hp: 1.7, dmg: 1.7, speed: 1.25, fireRate: 0.75 };
 const RESPAWN_TIME = 5.0;
 let chosenFighter = null, pickSide = 'plant';
 let battleKills = 0;
@@ -407,6 +411,9 @@ const touch={ move:{active:false,id:null,dx:0,dy:0,cx:0,cy:0,r:65}, attack:{acti
 const player={ x:0, z:14, hp:100, maxHp:100, fighter:null, walkPhase:0, shield:0, velX:0, velZ:0, respawnTimer:0, dead:false, stats:null };
 let opponent=null, pvpMode=false, pvpSendTimer=0;
 let aimX=0, aimZ=-1;
+// === АВТОАТАКА ===
+let autoAtkCD=0;
+const AUTO_ATK_RANGE=18;
 function worldToScreen(wx,wz){ return { x:W/2+(wx-camera2D.x)*ZOOM, y:H*0.68+(wz-camera2D.z)*ZOOM }; }
 function spawnCharacters(myFighter){
   const playerIsEnemy=(myFighter.side==='enemy');
@@ -422,7 +429,7 @@ function spawnCharacters(myFighter){
     const eFighter=FIGHTERS[enemyKeys[Math.floor(Math.random()*enemyKeys.length)]];
     const eStats=getFighterStats(eFighter);
     const bossHp=Math.round(eStats.hp*ENEMY_BOSS_BUFF.hp);
-    enemies.push({ x:0, z:-16, hp:bossHp, maxHp:bossHp, fighter:eFighter, stats:{hp:bossHp,dmg:eStats.dmg*1.4,speed:eStats.speed*1.15,fireRate:eStats.fireRate*0.85,level:eStats.level}, isBoss:true, ai:{cooldown:1.5,moveTimer:0,mdx:0,mdz:0,focusTimer:0,dodgeTimer:0}, ammo:3, ammoTimer:0, walkPhase:0, target:null, velX:0, velZ:0 });
+    enemies.push({ x:0, z:-16, hp:bossHp, maxHp:bossHp, fighter:eFighter, stats:{hp:bossHp,dmg:eStats.dmg*ENEMY_BOSS_BUFF.dmg,speed:eStats.speed*ENEMY_BOSS_BUFF.speed,fireRate:eStats.fireRate*ENEMY_BOSS_BUFF.fireRate,level:eStats.level}, isBoss:true, ai:{cooldown:1.5,moveTimer:0,mdx:0,mdz:0,focusTimer:0,dodgeTimer:0}, ammo:3, ammoTimer:0, walkPhase:0, target:null, velX:0, velZ:0 });
   } else {
     const eg=[[0,-16],[-9,-14],[9,-14],[-5,-19],[5,-19]];
     for(let i=0;i<5;i++){ const f=FIGHTERS[plantKeys[Math.floor(Math.random()*plantKeys.length)]]; enemies.push({ x:eg[i][0], z:eg[i][1], hp:150, maxHp:150, fighter:f, stats:{hp:150,dmg:12,speed:6,fireRate:0.7,level:1}, isBoss:false, ai:{cooldown:0.6+Math.random()*2,moveTimer:0,mdx:0,mdz:0,focusTimer:0,dodgeTimer:0}, ammo:3, ammoTimer:0, walkPhase:Math.random()*10, target:null, velX:0, velZ:0 }); }
@@ -488,7 +495,7 @@ function updateAIUnit(unit,dt,allUnits,isEnemy){
   if(ml>0){ mx/=ml; mz/=ml; const baseSpeed=unit.stats?unit.stats.speed:(unit.fighter?unit.fighter.speed:6); const spd=isEnemy?baseSpeed*(unit.isBoss?1.15:1):6; const oldX=unit.x,oldZ=unit.z; unit.x+=mx*spd*0.7*dt; unit.z+=mz*spd*0.7*dt; unit.velX=(unit.x-oldX)/dt; unit.velZ=(unit.z-oldZ)/dt; unit.walkPhase+=dt*8; } else { unit.velX=0; unit.velZ=0; }
   unit.x=Math.max(-ARENA/2+1,Math.min(ARENA/2-1,unit.x)); unit.z=Math.max(-ARENA/2+1,Math.min(ARENA/2-1,unit.z));
   ai.cooldown-=dt;
-  if(ai.cooldown<=0&&dist<20&&unit.ammo>0){ let aimX2=tx,aimZ2=tz; const velX=target.ref.velX||0,velZ=target.ref.velZ||0; const timeToHit=dist/28; aimX2+=velX*timeToHit*0.8; aimZ2+=velZ*timeToHit*0.8; const adx=aimX2-unit.x,adz=aimZ2-unit.z; const al=Math.hypot(adx,adz)||1; const dmg=isEnemy?(unit.isBoss?24:18):12; performAttack(unit,adx/al,adz/al,isEnemy,false,!isEnemy,dmg); unit.ammo--; ai.cooldown=(unit.stats?unit.stats.fireRate:0.6); }
+  if(ai.cooldown<=0&&dist<20&&unit.ammo>0){ let aimX2=tx,aimZ2=tz; const velX=target.ref.velX||0,velZ=target.ref.velZ||0; const timeToHit=dist/28; aimX2+=velX*timeToHit*0.8; aimZ2+=velZ*timeToHit*0.8; const adx=aimX2-unit.x,adz=aimZ2-unit.z; const al=Math.hypot(adx,adz)||1; const dmg=isEnemy?(unit.isBoss?34:26):12; performAttack(unit,adx/al,adz/al,isEnemy,false,!isEnemy,dmg); unit.ammo--; ai.cooldown=(unit.stats?unit.stats.fireRate:0.6); }
 }
 function explodeGrenade(b){ spawnParticles(b.x,b.z,b.color,30,15); spawnParticles(b.x,b.z,'#ffd54f',15,10); shakeAmount=8; const r=b.explodeRadius||2.5; const isFriendly = b.fromPlayer || b.fromAlly; if(isFriendly){ for(const e of enemies){ if(e.hp<=0) continue; if(Math.hypot(e.x-b.x,e.z-b.z)<r){ e.hp=Math.max(0,e.hp-b.baseDmg); if(b.fromPlayer) addSuperCharge(b.baseDmg); if(e.hp<=0){ battleKK+=10; battleTrophies+=2; battleKills++; } } } } else { if(!player.dead&&Math.hypot(player.x-b.x,player.z-b.z)<r){ const d=b.baseDmg*(player.shield>0?0.3:1); player.hp=Math.max(0,player.hp-d); if(player.hp<=0) killPlayer(); } for(const a of allies){ if(a.hp<=0) continue; if(Math.hypot(a.x-b.x,a.z-b.z)<r) a.hp=Math.max(0,a.hp-b.baseDmg); } } }
 function updateBullets(dt){
@@ -544,6 +551,33 @@ function updateZones(dt){ for(const z of zones){ if(z.type==='roots'){ for(const
 function render(){ ctx.fillStyle='#05070d'; ctx.fillRect(0,0,W,H); if(!gameActive) return; drawArena(); renderZones(); bullets.forEach(b=>{ const p=worldToScreen(b.x,b.z); const r=b.radius; const g=ctx.createRadialGradient(p.x,p.y,0,p.x,p.y,r*2); g.addColorStop(0,b.color); g.addColorStop(0.5,b.color); g.addColorStop(1,'transparent'); ctx.fillStyle=g; ctx.beginPath(); ctx.arc(p.x,p.y,r*2,0,Math.PI*2); ctx.fill(); }); const all=[]; if(!player.dead&&player.hp>0) all.push({type:'player',ref:player}); allies.forEach(a=>{ if(a.hp>0) all.push({type:'ally',ref:a}); }); enemies.forEach(e=>{ if(e.hp>0) all.push({type:'enemy',ref:e}); }); if(pvpMode&&opponent&&!opponent.dead) all.push({type:'opponent',ref:opponent}); all.sort((a,b)=>a.ref.z-b.ref.z); all.forEach(u=>{ const p=worldToScreen(u.ref.x,u.ref.z); let angle; if(u.type==='player') angle=yaw; else if(u.type==='enemy'||u.type==='opponent'){ const t=u.ref.target&&u.ref.target.ref; if(t) angle=Math.atan2(t.x-u.ref.x,t.z-u.ref.z); else if(!player.dead) angle=Math.atan2(player.x-u.ref.x,player.z-u.ref.z); else angle=0; } else { const t=u.ref.target&&u.ref.target.ref; if(t) angle=Math.atan2(t.x-u.ref.x,t.z-u.ref.z); else angle=0; } const size=1.8*ZOOM; if(u.type==='player'){ ctx.fillStyle='rgba(124,248,107,.25)'; ctx.beginPath(); ctx.arc(p.x,p.y,size*0.7,0,Math.PI*2); ctx.fill(); } drawFighterShape(ctx,u.ref.fighter,p.x,p.y,size,angle,false,u.ref.walkPhase||0); if(u.ref===player&&player.shield>0){ ctx.strokeStyle='rgba(254,243,199,.8)'; ctx.lineWidth=4; ctx.beginPath(); ctx.arc(p.x,p.y,size*0.7,0,Math.PI*2); ctx.stroke(); } if(u.ref.hp<u.ref.maxHp){ const bw=size*0.9,bh=5; const bx=p.x-bw/2,by=p.y-size*0.75; ctx.fillStyle='rgba(0,0,0,.7)'; roundRect(ctx,bx-1,by-1,bw+2,bh+2,3); ctx.fill(); ctx.fillStyle=u.ref.fighter.side==='enemy'?'#00e5ff':'#7cf86b'; roundRect(ctx,bx,by,bw*(u.ref.hp/u.ref.maxHp),bh,2); ctx.fill(); } }); particles.forEach(p2=>{ const p=worldToScreen(p2.x,p2.z); ctx.globalAlpha=p2.life/p2.maxLife; ctx.fillStyle=p2.color; ctx.beginPath(); ctx.arc(p.x,p.y,p2.size,0,Math.PI*2); ctx.fill(); }); ctx.globalAlpha=1; floatingTexts.forEach(t=>{ const p=worldToScreen(t.x,t.z); ctx.globalAlpha=t.life/t.maxLife; ctx.fillStyle=t.color; ctx.font='bold 20px sans-serif'; ctx.textAlign='center'; ctx.strokeStyle='#000'; ctx.lineWidth=3; ctx.strokeText(t.text,p.x,p.y); ctx.fillText(t.text,p.x,p.y); }); ctx.globalAlpha=1; }
 let superShootCD=0;
 let lastT=performance.now();
+// === АВТОАТАКА: игрок стреляет сам в ближайшего врага, если не двигается и есть патроны ===
+function tryAutoAttack(dt){
+  if(!gameActive||player.dead||!player.fighter) return;
+  if(ammo<=0) return;
+  autoAtkCD-=dt;
+  if(autoAtkCD>0) return;
+  // если игрок активно двигается — не автоатакуем (пусть сам целится)
+  const m=touch.move;
+  const moving=m.active&&Math.hypot(m.dx,m.dy)>0.2;
+  const atk=touch.attack;
+  const manualAiming=atk.active&&Math.hypot(atk.dx,atk.dy)>0.15;
+  if(moving||manualAiming) return;
+  // ищем ближайшего врага в радиусе
+  let best=null,bd=AUTO_ATK_RANGE;
+  if(pvpMode&&opponent&&!opponent.dead){ const d=Math.hypot(opponent.x-player.x,opponent.z-player.z); if(d<bd){ bd=d; best=opponent; } }
+  for(const e of enemies){ if(e.hp<=0) continue; const d=Math.hypot(e.x-player.x,e.z-player.z); if(d<bd){ bd=d; best=e; } }
+  if(!best) return;
+  const dx=best.x-player.x,dz=best.z-player.z;
+  const dl=Math.hypot(dx,dz)||1;
+  const dirX=dx/dl,dirZ=dz/dl;
+  yaw=Math.atan2(dirX,dirZ);
+  const dmg=player.stats?player.stats.dmg:player.fighter.dmg;
+  performAttack(player,dirX,dirZ,side==='enemy',true,false,dmg);
+  if(pvpMode&&ws&&ws.readyState===1){ ws.send(JSON.stringify({type:'pvp-shot',payload:{x:player.x,z:player.z,dx:dirX,dz:dirZ,dmg}})); }
+  ammo--; updateAmmoUI();
+  autoAtkCD=player.stats?player.stats.fireRate:0.4;
+}
 function update(dt){
   if(shakeAmount>0) shakeAmount=Math.max(0,shakeAmount-dt*40);
   if(!gameActive) return;
@@ -574,6 +608,7 @@ function update(dt){
   if(superActive&&!player.dead){ superTimer-=dt; if(player.fighter.super==='burst'){ superShootCD-=dt; if(superShootCD<=0){ for(let ang=0;ang<Math.PI*2;ang+=Math.PI/6){ const a2=yaw+ang+Math.random()*0.5; bullets.push({x:player.x,z:player.z,dx:Math.sin(a2),dz:Math.cos(a2),speed:25,fromPlayer:true,fromAlly:false,isSuper:true,baseDmg:player.stats.dmg,life:1.5,radius:5,color:'#ec4899'}); } superShootCD=0.15; } } if(player.fighter.super==='swarm'){ superShootCD-=dt; if(superShootCD<=0){ for(let ang=0;ang<Math.PI*2;ang+=Math.PI/8){ const a2=yaw+ang; bullets.push({x:player.x,z:player.z,dx:Math.sin(a2),dz:Math.cos(a2),speed:30,fromPlayer:true,fromAlly:false,isSuper:true,baseDmg:player.stats.dmg,life:1.5,radius:5,color:'#a855f7'}); } superShootCD=0.2; } } if(superTimer<=0){ superActive=false; updateSuperUI(); } }
   allies.forEach(al=>{ if(al.hp>0) updateAIUnit(al,dt,allies,false); });
   enemies.forEach(en=>{ if(en.hp>0&&!(pvpMode&&en===opponent)) updateAIUnit(en,dt,enemies,true); });
+  tryAutoAttack(dt);
   updateBullets(dt); updateEffects(dt); updateHUD();
 }
 function getCenter(el){ const r=el.getBoundingClientRect(); return {x:r.left+r.width/2,y:r.top+r.height/2}; }
@@ -581,7 +616,7 @@ function bindFixedJoy(zoneEl,state,joyEl,knobEl,mode){
   const R=65;
   function start(e){ if(state.active) return; const t=e.changedTouches?e.changedTouches[0]:e; const c=getCenter(joyEl); state.active=true; state.id=(t.identifier!==undefined)?t.identifier:'mouse'; state.cx=c.x; state.cy=c.y; state.dx=0; state.dy=0; if(e.preventDefault) e.preventDefault(); }
   function move(e){ if(!state.active) return; const list=e.changedTouches||[e]; for(const t of list){ const id=(t.identifier!==undefined)?t.identifier:'mouse'; if(id!==state.id) continue; const dx=t.clientX-state.cx,dy=t.clientY-state.cy; const len=Math.hypot(dx,dy); let kx=dx,ky=dy; if(len>R){ kx=dx/len*R; ky=dy/len*R; } state.dx=kx/R; state.dy=ky/R; knobEl.style.transform='translate(calc(-50% + '+kx+'px), calc(-50% + '+ky+'px))'; } if(e.preventDefault) e.preventDefault(); }
-  function end(e){ if(!state.active) return; const list=e.changedTouches||[e]; for(const t of list){ const id=(t.identifier!==undefined)?t.identifier:'mouse'; if(id!==state.id) continue; if(player.dead){ state.active=false; state.dx=0; state.dy=0; knobEl.style.transform='translate(-50%,-50%)'; if(e.preventDefault) e.preventDefault(); continue; } const mag=Math.hypot(state.dx,state.dy); const isTap=mag<0.15; if(mode==='attack'){ if(ammo>0){ let dirX,dirZ; if(isTap){ dirX=Math.sin(yaw); dirZ=Math.cos(yaw); } else { const newYaw=Math.atan2(state.dx,state.dy); dirX=Math.sin(newYaw); dirZ=Math.cos(newYaw); yaw=newYaw; } const dmg=player.stats?player.stats.dmg:player.fighter.dmg; performAttack(player,dirX,dirZ,side==='enemy',true,false,dmg); if(pvpMode&&ws&&ws.readyState===1){ ws.send(JSON.stringify({type:'pvp-shot',payload:{x:player.x,z:player.z,dx:dirX,dz:dirZ,dmg}})); } ammo--; updateAmmoUI(); } } else if(mode==='super'){ if(superCharge>=SUPER_MAX&&!superActive){ let dirX,dirZ; if(isTap){ dirX=Math.sin(yaw); dirZ=Math.cos(yaw); } else { const newYaw=Math.atan2(state.dx,state.dy); dirX=Math.sin(newYaw); dirZ=Math.cos(newYaw); yaw=newYaw; } fireSuperAimed(dirX,dirZ); } } state.active=false; state.dx=0; state.dy=0; knobEl.style.transform='translate(-50%,-50%)'; } if(e.preventDefault) e.preventDefault(); }
+  function end(e){ if(!state.active) return; const list=e.changedTouches||[e]; for(const t of list){ const id=(t.identifier!==undefined)?t.identifier:'mouse'; if(id!==state.id) continue; if(player.dead){ state.active=false; state.dx=0; state.dy=0; knobEl.style.transform='translate(-50%,-50%)'; if(e.preventDefault) e.preventDefault(); continue; } const mag=Math.hypot(state.dx,state.dy); const isTap=mag<0.15; if(mode==='attack'){ if(ammo>0){ let dirX,dirZ; if(isTap){ dirX=Math.sin(yaw); dirZ=Math.cos(yaw); } else { const newYaw=Math.atan2(state.dx,state.dy); dirX=Math.sin(newYaw); dirZ=Math.cos(newYaw); yaw=newYaw; } const dmg=player.stats?player.stats.dmg:player.fighter.dmg; performAttack(player,dirX,dirZ,side==='enemy',true,false,dmg); if(pvpMode&&ws&&ws.readyState===1){ ws.send(JSON.stringify({type:'pvp-shot',payload:{x:player.x,z:player.z,dx:dirX,dz:dirZ,dmg}})); } ammo--; updateAmmoUI(); autoAtkCD=0.3; } } else if(mode==='super'){ if(superCharge>=SUPER_MAX&&!superActive){ let dirX,dirZ; if(isTap){ dirX=Math.sin(yaw); dirZ=Math.cos(yaw); } else { const newYaw=Math.atan2(state.dx,state.dy); dirX=Math.sin(newYaw); dirZ=Math.cos(newYaw); yaw=newYaw; } fireSuperAimed(dirX,dirZ); } } state.active=false; state.dx=0; state.dy=0; knobEl.style.transform='translate(-50%,-50%)'; } if(e.preventDefault) e.preventDefault(); }
   zoneEl.addEventListener('touchstart',start,{passive:false});
   zoneEl.addEventListener('touchmove',move,{passive:false});
   zoneEl.addEventListener('touchend',end,{passive:false});
@@ -606,7 +641,7 @@ function startGame(myFighter){
   yaw=0; camera2D.x=0; camera2D.z=14;
   superCharge=0; superActive=false; superTimer=0; shakeAmount=0;
   battleKK=0; battleTrophies=0; battleKills=0;
-  ammo=MAX_AMMO; ammoTimer=0;
+  ammo=MAX_AMMO; ammoTimer=0; autoAtkCD=0;
   updateSuperUI(); updateAmmoUI();
   spawnCharacters(myFighter);
   buildTeamsBar();
@@ -686,7 +721,7 @@ function startOnlineBattle(){
   closeLobby(); $('menu').style.display='none';
   side=myFighter.side; gameActive=true; pvpMode=true;
   battleKK=0; battleTrophies=0; battleKills=0; superCharge=0; superActive=false;
-  ammo=MAX_AMMO; ammoTimer=0; bullets=[]; particles=[]; floatingTexts=[]; zones=[];
+  ammo=MAX_AMMO; ammoTimer=0; autoAtkCD=0; bullets=[]; particles=[]; floatingTexts=[]; zones=[];
   const pStats=getFighterStats(myFighter);
   player.fighter=myFighter; player.stats=pStats;
   player.x=0; player.z=14; player.hp=pStats.hp; player.maxHp=pStats.hp; player.dead=false;
@@ -707,20 +742,26 @@ $('lobbyBtnJoinAccept').onclick=async ()=>{ const code=$('lobbyJoinOfferIn').val
 $('lobbyBtnStartGame').onclick=()=>{ if(myFighter&&opponentFighter) startOnlineBattle(); else $('lobbyStatus').textContent='Ждём противника...'; };
 $('lobbyBtnCancel').onclick=closeLobby;
 let authMode='login';
-function showAuth(){ $('authModal').classList.add('show'); $('authNick').value=''; $('authPass').value=''; $('authErr').textContent=''; }
+function showAuth(){ $('authModal').classList.add('show'); $('authNick').value=''; $('authEmail').value=''; $('authPass').value=''; $('authErr').textContent=''; toggleEmailField(); }
 function hideAuth(){ $('authModal').classList.remove('show'); }
-$('tabLogin').onclick=()=>{ authMode='login'; $('tabLogin').classList.add('active'); $('tabRegister').classList.remove('active'); $('authBtn').textContent='ВОЙТИ'; $('authErr').textContent=''; };
-$('tabRegister').onclick=()=>{ authMode='register'; $('tabRegister').classList.add('active'); $('tabLogin').classList.remove('active'); $('authBtn').textContent='СОЗДАТЬ АККАУНТ'; $('authErr').textContent=''; };
+function toggleEmailField(){ const em=$('authEmail'); if(!em) return; em.style.display = (authMode==='register') ? 'block' : 'none'; }
+$('tabLogin').onclick=()=>{ authMode='login'; $('tabLogin').classList.add('active'); $('tabRegister').classList.remove('active'); $('authBtn').textContent='ВОЙТИ'; $('authErr').textContent=''; toggleEmailField(); };
+$('tabRegister').onclick=()=>{ authMode='register'; $('tabRegister').classList.add('active'); $('tabLogin').classList.remove('active'); $('authBtn').textContent='СОЗДАТЬ АККАУНТ'; $('authErr').textContent=''; toggleEmailField(); };
 $('authBtn').onclick=async ()=>{
-  const n=$('authNick').value.trim(); const p=$('authPass').value;
+  const n=$('authNick').value.trim(); const p=$('authPass').value; const em=$('authEmail').value.trim();
   $('authErr').textContent='';
   if(n.length<3||n.length>16){ $('authErr').textContent='Ник 3-16 символов'; return; }
   if(!/^[a-zA-Z0-9_]+$/.test(n)){ $('authErr').textContent='Ник: буквы, цифры, _'; return; }
+  if(authMode==='register'){
+    if(!em){ $('authErr').textContent='Введи почту'; return; }
+    if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(em)){ $('authErr').textContent='Почта некорректна'; return; }
+  }
   if(p.length<4){ $('authErr').textContent='Пароль минимум 4 символа'; return; }
   $('authBtn').textContent='Подожди...'; $('authBtn').disabled=true;
   try{
     const url=authMode==='login'?'/api/login':'/api/register';
-    const r=await fetch(url,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({nickname:n,password:p})});
+    const body = authMode==='login' ? {nickname:n,password:p} : {nickname:n,password:p,email:em};
+    const r=await fetch(url,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
     const data=await r.json();
     if(!data.ok){ $('authErr').textContent=data.error||'Ошибка'; $('authBtn').textContent=authMode==='login'?'ВОЙТИ':'СОЗДАТЬ АККАУНТ'; $('authBtn').disabled=false; return; }
     token=data.token; nickname=n;
