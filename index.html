@@ -217,6 +217,27 @@ html,body{width:100%;height:100%;overflow:hidden;background:#000;font-family:-ap
 #trophyToast{position:absolute;top:32%;left:50%;transform:translateX(-50%);font-size:clamp(20px,6vw,36px);font-weight:900;color:#ffd54f;display:none;z-index:31;text-align:center;pointer-events:none}
 #leave{position:absolute;top:calc(env(safe-area-inset-top) + 6px);right:8px;width:32px;height:32px;border-radius:50%;background:rgba(255,46,138,.25);border:2px solid #ff2e8a;color:#ff2e8a;font-size:15px;font-weight:900;line-height:28px;text-align:center;display:none;pointer-events:auto;cursor:pointer;z-index:20}
 #soundBtn{position:fixed;top:calc(env(safe-area-inset-top) + 6px);right:48px;width:32px;height:32px;border-radius:50%;background:rgba(0,229,255,.2);border:2px solid #00e5ff;color:#00e5ff;font-size:15px;line-height:28px;text-align:center;display:none;pointer-events:auto;cursor:pointer;z-index:20}
+
+/* ===== ЭКРАН ПОБЕДЫ/ПОРАЖЕНИЯ ===== */
+#victoryScreen{position:fixed;inset:0;z-index:400;display:none;flex-direction:column;align-items:center;justify-content:center;background:radial-gradient(circle at 50% 40%,rgba(28,61,31,.97) 0%,rgba(5,7,13,.99) 80%);pointer-events:auto;text-align:center;padding:20px}
+#victoryScreen.show{display:flex;animation:vsIn .45s ease}
+#victoryScreen.lose{background:radial-gradient(circle at 50% 40%,rgba(58,10,26,.97) 0%,rgba(5,7,13,.99) 80%)}
+@keyframes vsIn{0%{opacity:0}100%{opacity:1}}
+#victoryScreen .vs-icon{font-size:clamp(48px,16vw,84px);margin-bottom:8px;filter:drop-shadow(0 0 24px #7cf86b)}
+#victoryScreen.lose .vs-icon{filter:drop-shadow(0 0 24px #ff2e8a)}
+#victoryScreen .vs-title{font-size:clamp(34px,12vw,72px);font-weight:900;letter-spacing:6px;color:#7cf86b;text-shadow:0 0 30px #2cff5e,0 0 80px #2cff5e;margin-bottom:22px;animation:vsPulse 1.4s ease-in-out infinite alternate}
+#victoryScreen.lose .vs-title{color:#ff2e8a;text-shadow:0 0 30px #ff2e8a,0 0 80px #ff2e8a}
+@keyframes vsPulse{0%{transform:scale(1)}100%{transform:scale(1.05)}}
+#victoryScreen .vs-rewards{background:rgba(0,0,0,.6);border:2px solid #2cff5e;border-radius:14px;padding:14px 26px;margin-bottom:16px;display:flex;flex-direction:column;gap:8px;min-width:230px}
+#victoryScreen.lose .vs-rewards{border-color:#ff2e8a}
+#victoryScreen .vs-row{display:flex;justify-content:space-between;gap:22px;font-size:17px;font-weight:900}
+#victoryScreen .vs-row .lbl{color:#9fd7ff}
+#victoryScreen .vs-row .val.kk{color:#ffb300}
+#victoryScreen .vs-row .val.tr{color:#ffd54f}
+#victoryScreen .vs-kills{font-size:13px;color:#9fd7ff;font-weight:700;margin-bottom:22px;letter-spacing:1px}
+#victoryScreen .vs-btn{padding:15px 44px;background:linear-gradient(180deg,#7cf86b,#2cff5e);border:2px solid #a8ffa0;color:#05070d;font-weight:900;font-size:16px;letter-spacing:1.5px;border-radius:12px;cursor:pointer;pointer-events:auto;box-shadow:0 0 24px rgba(124,248,107,.45)}
+#victoryScreen.lose .vs-btn{background:linear-gradient(180deg,#ff2e8a,#c21560);border-color:#ff8fbc;color:#fff;box-shadow:0 0 24px rgba(255,46,138,.45)}
+#victoryScreen .vs-btn:active{transform:scale(.96)}
 </style>
 </head>
 <body>
@@ -301,6 +322,17 @@ html,body{width:100%;height:100%;overflow:hidden;background:#000;font-family:-ap
   <div id="msg"></div><div id="trophyToast"></div>
 </div>
 
+<div id="victoryScreen">
+  <div class="vs-icon" id="vsIcon">🏆</div>
+  <div class="vs-title" id="vsTitle">ПОБЕДА!</div>
+  <div class="vs-rewards">
+    <div class="vs-row"><span class="lbl">💾 Куски кода</span><span class="val kk" id="vsKk">+0</span></div>
+    <div class="vs-row"><span class="lbl">🏆 Трофеи</span><span class="val tr" id="vsTr">+0</span></div>
+  </div>
+  <div class="vs-kills" id="vsKills"></div>
+  <button class="vs-btn" id="vsBtn">В МЕНЮ</button>
+</div>
+
 <div id="fighterCard">
   <div class="fc-top">
     <div class="fc-portrait" id="fcPortrait"><canvas id="fcCanvas" width="88" height="88"></canvas></div>
@@ -336,7 +368,6 @@ html,body{width:100%;height:100%;overflow:hidden;background:#000;font-family:-ap
 </div>
 
 <script type="module">
-/* Debug-лог теперь только в console, никакой надписи на экране */
 const DBG = { log: (...args) => { try { console.log('[DS]', ...args); } catch(e){} }, show: () => {} };
 DBG.log('boot');
 window.addEventListener('error', e => { try { console.error('[DS] ERR:', e.message, e.filename, e.lineno); } catch(_){} });
@@ -582,11 +613,10 @@ function triggerGlitch(d){ const g = $('glitchOverlay'); g.classList.add('on'); 
 function triggerFlash(d){ const f = $('flash'); f.classList.add('on'); csSet(() => f.classList.remove('on'), d || 150); }
 
 async function playCutscene(){
-  DBG.log('playCutscene start, cs_seen=', String(profile.cs_seen));
   csEnded = false; csToken = 0; csSkipAll = null; csClearTimers();
   if (csWatchdog) clearTimeout(csWatchdog);
-  csWatchdog = setTimeout(() => { if (!$('cutscene').classList.contains('hidden')){ DBG.log('watchdog fired'); endCutscene(); } }, 30000);
-  if (profile.cs_seen === true){ DBG.log('cs_seen=true, skip'); endCutscene(); return; }
+  csWatchdog = setTimeout(() => { if (!$('cutscene').classList.contains('hidden')){ endCutscene(); } }, 30000);
+  if (profile.cs_seen === true){ endCutscene(); return; }
   clearSceneExtras();
   ['bg1','bg2','bg3','bg4','bg5'].forEach(id => $(id).classList.remove('active'));
   $('csText').classList.remove('show'); $('csTitle').classList.remove('show'); $('csLogo').classList.remove('show');
@@ -796,7 +826,6 @@ function refreshUpgrade(){
   });
 }
 function goToMenu(){
-  DBG.log('goToMenu');
   $('menu').style.display = 'flex';
   updateProfileUI();
   try { switchMainTab('play'); } catch(e){ DBG.log('switchMainTab err', e.message||String(e)); }
@@ -866,6 +895,7 @@ let arenaDirty = true;
 function resize(){ dpr = Math.min(devicePixelRatio, 1.5); W = innerWidth; H = innerHeight; canvas.width = W*dpr; canvas.height = H*dpr; canvas.style.width = W+'px'; canvas.style.height = H+'px'; ctx.setTransform(dpr, 0, 0, dpr, 0, 0); arenaDirty = true; }
 addEventListener('resize', resize); resize();
 let gameActive = false, side = null;
+let gameEnding = false;
 let allies = [], enemies = [], bullets = [], particles = [], floatingTexts = [], zones = [], obstacles = [];
 let keys = {}, yaw = 0, camera2D = { x: 0, z: 0 }, shakeAmount = 0, shakeX = 0, shakeY = 0;
 let ARENA = 40;
@@ -1025,12 +1055,19 @@ function updateBullets(dt){
     for (const ob of obstacles){ if (Math.hypot(b.x-ob[0], b.z-ob[1]) < ob[2]){ if (b.grenade) explodeGrenade(b); dead = true; break; } }
     if (Math.abs(b.x) > ARENA/2 || Math.abs(b.z) > ARENA/2){ if (b.grenade) explodeGrenade(b); dead = true; }
     const hitR = b.radius/6;
-    if (b.fromPlayer || b.fromAlly){ for (let j = 0; j < enemies.length; j++){ const e = enemies[j]; if (e.hp <= 0) continue; if (Math.hypot(e.x-b.x, e.z-b.z) < hitR){ if (b.grenade){ explodeGrenade(b); dead = true; break; } e.hp = Math.max(0, e.hp-b.baseDmg); if (b.fromPlayer){ addSuperCharge(b.baseDmg); playSound('hit'); } if (e.hp <= 0){ battleKK += 10; battleTrophies += 2; battleKills++; if (e.isBoss){ endGame(true); return; } } if (!b.pierce) dead = true; if (dead) break; } } }
+    if (b.fromPlayer || b.fromAlly){ for (let j = 0; j < enemies.length; j++){ const e = enemies[j]; if (e.hp <= 0) continue; if (Math.hypot(e.x-b.x, e.z-b.z) < hitR){ if (b.grenade){ explodeGrenade(b); dead = true; break; } e.hp = Math.max(0, e.hp-b.baseDmg); if (b.fromPlayer){ addSuperCharge(b.baseDmg); playSound('hit'); } if (e.hp <= 0){ battleKK += 10; battleTrophies += 2; battleKills++; if (e.isBoss){ bossDeathEffect(e.x, e.z); endGame(true); return; } } if (!b.pierce) dead = true; if (dead) break; } } }
     else { if (!player.dead && Math.hypot(player.x-b.x, player.z-b.z) < hitR){ if (b.grenade){ explodeGrenade(b); } else { const d = b.baseDmg*(player.shield>0?0.3:1); player.hp = Math.max(0, player.hp-d); shakeAmount = 6; playSound('hit'); if (player.hp <= 0) killPlayer(); } dead = true; } else { for (let j = 0; j < allies.length; j++){ const a = allies[j]; if (a.hp <= 0) continue; if (Math.hypot(a.x-b.x, a.z-b.z) < hitR){ if (b.grenade) explodeGrenade(b); else a.hp = Math.max(0, a.hp-b.baseDmg); dead = true; break; } } } }
     if (dead){ spawnParticles(b.x, b.z, b.color, 3, 4); bullets.splice(i, 1); } }
   if (currentMode === MODES.classic){ if (enemies.every(e => e.hp <= 0) && gameActive) endGame(true); if (gameActive && player.dead && allies.length > 0 && allies.every(a => a.hp <= 0)) endGame(false); }
   if (currentMode === MODES.deathmatch){ if (battleKills >= DM_KILLS_TO_WIN && gameActive) endGame(true); if (battleDeaths >= DM_KILLS_TO_WIN && gameActive) endGame(false); }
   if (currentMode === MODES.defense){ if (enemies.every(e => e.hp <= 0) && gameActive){ if (defenseWave >= DEFENSE_WAVES){ endGame(true); return; } defenseWave++; setTimeout(() => { if (gameActive) spawnDefenseWave(); updateHUD(); }, 1500); } if (gameActive && player.dead && allies.every(a => a.hp <= 0)) endGame(false); }
+}
+function bossDeathEffect(x, z){
+  shakeAmount = 30;
+  spawnParticles(x, z, '#ffd54f', 60, 22);
+  spawnParticles(x, z, '#ff2e8a', 40, 18);
+  spawnParticles(x, z, '#7cf86b', 30, 15);
+  const f = $('flash'); if (f){ f.classList.add('on'); setTimeout(() => f.classList.remove('on'), 220); }
 }
 function killPlayer(){ player.dead = true; player.respawnTimer = RESPAWN_TIME; player.hp = 0; battleDeaths++; spawnParticles(player.x, player.z, '#ff2e8a', 20, 15); shakeAmount = 15; $('respawnOverlay').style.display = 'flex'; if (currentMode === MODES.deathmatch){ setTimeout(() => { if (gameActive) respawnPlayer(); }, 3000); } }
 function respawnPlayer(){ let safeX = 0, safeZ = 12; const alive = allies.filter(a => a.hp > 0); if (alive.length > 0){ const a = alive[Math.floor(Math.random()*alive.length)]; safeX = a.x + (Math.random()-0.5)*4; safeZ = a.z + (Math.random()-0.5)*4; } player.x = Math.max(-ARENA/2+1, Math.min(ARENA/2-1, safeX)); player.z = Math.max(-ARENA/2+1, Math.min(ARENA/2-1, safeZ)); player.hp = player.maxHp; player.dead = false; player.respawnTimer = 0; ammo = MAX_AMMO; ammoTimer = 0; $('respawnOverlay').style.display = 'none'; spawnParticles(player.x, player.z, '#7cf86b', 15, 12); }
@@ -1152,179 +1189,27 @@ function drawAim(){
   const color    = isEnemy ? '#00e5ff' : '#7cf86b';
   const colorDim = isEnemy ? 'rgba(0,229,255,0.35)' : 'rgba(124,248,107,0.35)';
   const kind = player.fighter.attack || 'single';
-
   const RANGE = { single:3.0, triple:3.2, shotgun:2.2, long:4.6, rapid:2.6, pierce:3.6, grenade:3.0, homing:3.4, wave:2.6, spiral:2.8 }[kind] || 3.0;
   const len = ZOOM * RANGE;
-
   ctx.save();
-  ctx.lineCap = 'round';
-  ctx.lineJoin = 'round';
-
+  ctx.lineCap = 'round'; ctx.lineJoin = 'round';
   const mx = p.x + Math.sin(ang) * len;
   const my = p.y + Math.cos(ang) * len;
-
-  const line = (x1, y1, x2, y2, w, col, dash) => {
-    ctx.strokeStyle = col; ctx.lineWidth = w;
-    if (dash) ctx.setLineDash(dash); else ctx.setLineDash([]);
-    ctx.beginPath(); ctx.moveTo(x1, y1); ctx.lineTo(x2, y2); ctx.stroke();
-    ctx.setLineDash([]);
-  };
-  const circle = (x, y, r, col, w, fill) => {
-    ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI * 2);
-    if (fill){ ctx.fillStyle = col; ctx.fill(); }
-    else { ctx.strokeStyle = col; ctx.lineWidth = w; ctx.stroke(); }
-  };
-  const cross = (x, y, size, col, w) => {
-    ctx.strokeStyle = col; ctx.lineWidth = w;
-    ctx.beginPath();
-    ctx.moveTo(x - size, y); ctx.lineTo(x - size * 0.4, y);
-    ctx.moveTo(x + size * 0.4, y); ctx.lineTo(x + size, y);
-    ctx.moveTo(x, y - size); ctx.lineTo(x, y - size * 0.4);
-    ctx.moveTo(x, y + size * 0.4); ctx.lineTo(x, y + size);
-    ctx.stroke();
-  };
-
+  const line = (x1, y1, x2, y2, w, col, dash) => { ctx.strokeStyle = col; ctx.lineWidth = w; if (dash) ctx.setLineDash(dash); else ctx.setLineDash([]); ctx.beginPath(); ctx.moveTo(x1, y1); ctx.lineTo(x2, y2); ctx.stroke(); ctx.setLineDash([]); };
+  const circle = (x, y, r, col, w, fill) => { ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI * 2); if (fill){ ctx.fillStyle = col; ctx.fill(); } else { ctx.strokeStyle = col; ctx.lineWidth = w; ctx.stroke(); } };
+  const cross = (x, y, size, col, w) => { ctx.strokeStyle = col; ctx.lineWidth = w; ctx.beginPath(); ctx.moveTo(x - size, y); ctx.lineTo(x - size * 0.4, y); ctx.moveTo(x + size * 0.4, y); ctx.lineTo(x + size, y); ctx.moveTo(x, y - size); ctx.lineTo(x, y - size * 0.4); ctx.moveTo(x, y + size * 0.4); ctx.lineTo(x, y + size); ctx.stroke(); };
   switch (kind) {
-    case 'single': {
-      line(p.x, p.y, mx, my, 2, colorDim, [8, 6]);
-      cross(mx, my, 12, color, 2.5);
-      circle(mx, my, 5, color, 1.5);
-      break;
-    }
-    case 'triple': {
-      const off = 12;
-      const nx = Math.cos(ang) * off;
-      const ny = -Math.sin(ang) * off;
-      line(p.x + nx, p.y + ny, mx + nx, my + ny, 2, color, null);
-      line(p.x, p.y, mx, my, 2.4, color, null);
-      line(p.x - nx, p.y - ny, mx - nx, my - ny, 2, color, null);
-      circle(mx, my, 7, color, 2, false);
-      circle(mx, my, 2, color, 0, true);
-      break;
-    }
-    case 'shotgun': {
-      const spread = 0.32;
-      for (let i = -2; i <= 2; i++){
-        const a = ang + i * (spread / 2);
-        const ex = p.x + Math.sin(a) * len;
-        const ey = p.y + Math.cos(a) * len;
-        line(p.x, p.y, ex, ey, i === 0 ? 2.4 : 1.4, i === 0 ? color : colorDim, i === 0 ? null : [4, 4]);
-      }
-      ctx.strokeStyle = color; ctx.lineWidth = 2;
-      ctx.beginPath();
-      ctx.arc(p.x, p.y, len * 0.9, ang - Math.PI/2 - spread, ang - Math.PI/2 + spread);
-      ctx.stroke();
-      break;
-    }
-    case 'long': {
-      line(p.x, p.y, mx, my, 1.6, colorDim, [10, 8]);
-      line(p.x + Math.sin(ang) * (len * 0.6), p.y + Math.cos(ang) * (len * 0.6), mx, my, 1, color, null);
-      circle(mx, my, 3, color, 0, true);
-      circle(mx, my, 8, color, 1.5, false);
-      break;
-    }
-    case 'rapid': {
-      line(p.x, p.y, mx, my, 2, colorDim, [5, 4]);
-      const off = 6;
-      const nx = Math.cos(ang) * off, ny = -Math.sin(ang) * off;
-      line(p.x + nx, p.y + ny, mx + nx, my + ny, 1.2, colorDim, [5, 4]);
-      cross(mx, my, 10, color, 2);
-      circle(mx, my, 6, color, 1.5);
-      break;
-    }
-    case 'pierce': {
-      line(p.x, p.y, mx, my, 2.4, color, null);
-      const hx = mx, hy = my;
-      const back = 14;
-      const bx = hx - Math.sin(ang) * back;
-      const by = hy - Math.cos(ang) * back;
-      const px = Math.cos(ang) * 10, py = -Math.sin(ang) * 10;
-      ctx.strokeStyle = color; ctx.lineWidth = 2.5;
-      ctx.beginPath();
-      ctx.moveTo(hx, hy); ctx.lineTo(bx + px, by + py);
-      ctx.moveTo(hx, hy); ctx.lineTo(bx - px, by - py);
-      ctx.stroke();
-      ctx.globalAlpha = 0.55;
-      const hx2 = hx - Math.sin(ang) * 10;
-      const hy2 = hy - Math.cos(ang) * 10;
-      const bx2 = hx2 - Math.sin(ang) * back * 0.7;
-      const by2 = hy2 - Math.cos(ang) * back * 0.7;
-      ctx.beginPath();
-      ctx.moveTo(hx2, hy2); ctx.lineTo(bx2 + px * 0.7, by2 + py * 0.7);
-      ctx.moveTo(hx2, hy2); ctx.lineTo(bx2 - px * 0.7, by2 - py * 0.7);
-      ctx.stroke();
-      ctx.globalAlpha = 1;
-      break;
-    }
-    case 'grenade': {
-      ctx.strokeStyle = colorDim; ctx.lineWidth = 2; ctx.setLineDash([6, 6]);
-      ctx.beginPath();
-      const steps = 16;
-      for (let i = 0; i <= steps; i++){
-        const t = i / steps;
-        const px2 = p.x + Math.sin(ang) * len * t;
-        const py2 = p.y + Math.cos(ang) * len * t - Math.sin(t * Math.PI) * 18;
-        if (i === 0) ctx.moveTo(px2, py2); else ctx.lineTo(px2, py2);
-      }
-      ctx.stroke();
-      ctx.setLineDash([]);
-      const pulse = 1 + 0.35 * Math.sin(performance.now() * 0.006);
-      circle(mx, my, 10 * pulse, color, 2);
-      circle(mx, my, 4, color, 0, true);
-      break;
-    }
-    case 'homing': {
-      circle(mx, my, 14, color, 2);
-      circle(mx, my, 4, color, 0, true);
-      const r1 = 14, r2 = 22;
-      for (let i = 0; i < 4; i++){
-        const a = ang + Math.PI/4 + i * Math.PI/2;
-        ctx.strokeStyle = color; ctx.lineWidth = 2;
-        ctx.beginPath();
-        ctx.moveTo(mx + Math.cos(a) * r1, my + Math.sin(a) * r1);
-        ctx.lineTo(mx + Math.cos(a) * r2, my + Math.sin(a) * r2);
-        ctx.stroke();
-      }
-      line(p.x, p.y, mx, my, 1.4, colorDim, [4, 6]);
-      break;
-    }
-    case 'wave': {
-      for (let i = 1; i <= 3; i++){
-        const r = (len * 0.35) * i;
-        ctx.strokeStyle = color;
-        ctx.globalAlpha = 0.7 - i * 0.18;
-        ctx.lineWidth = 2.4;
-        ctx.beginPath();
-        ctx.arc(p.x, p.y, r, ang - Math.PI/2 - 0.5, ang - Math.PI/2 + 0.5);
-        ctx.stroke();
-      }
-      ctx.globalAlpha = 1;
-      break;
-    }
-    case 'spiral': {
-      const turns = 2;
-      const pts = 36;
-      ctx.strokeStyle = color; ctx.lineWidth = 2;
-      ctx.beginPath();
-      for (let i = 0; i <= pts; i++){
-        const t = i / pts;
-        const a = ang + t * Math.PI * 2 * turns;
-        const r = t * len;
-        const x = p.x + Math.sin(a) * r;
-        const y = p.y + Math.cos(a) * r;
-        if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
-      }
-      ctx.stroke();
-      const hx = p.x + Math.sin(ang + Math.PI * 2 * turns) * len;
-      const hy = p.y + Math.cos(ang + Math.PI * 2 * turns) * len;
-      circle(hx, hy, 4, color, 0, true);
-      break;
-    }
-    default: {
-      line(p.x, p.y, mx, my, 2, colorDim, [8, 6]);
-      cross(mx, my, 12, color, 2.5);
-      circle(mx, my, 5, color, 1.5);
-    }
+    case 'single': { line(p.x, p.y, mx, my, 2, colorDim, [8, 6]); cross(mx, my, 12, color, 2.5); circle(mx, my, 5, color, 1.5); break; }
+    case 'triple': { const off = 12; const nx = Math.cos(ang) * off; const ny = -Math.sin(ang) * off; line(p.x + nx, p.y + ny, mx + nx, my + ny, 2, color, null); line(p.x, p.y, mx, my, 2.4, color, null); line(p.x - nx, p.y - ny, mx - nx, my - ny, 2, color, null); circle(mx, my, 7, color, 2, false); circle(mx, my, 2, color, 0, true); break; }
+    case 'shotgun': { const spread = 0.32; for (let i = -2; i <= 2; i++){ const a = ang + i * (spread / 2); const ex = p.x + Math.sin(a) * len; const ey = p.y + Math.cos(a) * len; line(p.x, p.y, ex, ey, i === 0 ? 2.4 : 1.4, i === 0 ? color : colorDim, i === 0 ? null : [4, 4]); } ctx.strokeStyle = color; ctx.lineWidth = 2; ctx.beginPath(); ctx.arc(p.x, p.y, len * 0.9, ang - Math.PI/2 - spread, ang - Math.PI/2 + spread); ctx.stroke(); break; }
+    case 'long': { line(p.x, p.y, mx, my, 1.6, colorDim, [10, 8]); line(p.x + Math.sin(ang) * (len * 0.6), p.y + Math.cos(ang) * (len * 0.6), mx, my, 1, color, null); circle(mx, my, 3, color, 0, true); circle(mx, my, 8, color, 1.5, false); break; }
+    case 'rapid': { line(p.x, p.y, mx, my, 2, colorDim, [5, 4]); const off = 6; const nx = Math.cos(ang) * off, ny = -Math.sin(ang) * off; line(p.x + nx, p.y + ny, mx + nx, my + ny, 1.2, colorDim, [5, 4]); cross(mx, my, 10, color, 2); circle(mx, my, 6, color, 1.5); break; }
+    case 'pierce': { line(p.x, p.y, mx, my, 2.4, color, null); const hx = mx, hy = my; const back = 14; const bx = hx - Math.sin(ang) * back; const by = hy - Math.cos(ang) * back; const px = Math.cos(ang) * 10, py = -Math.sin(ang) * 10; ctx.strokeStyle = color; ctx.lineWidth = 2.5; ctx.beginPath(); ctx.moveTo(hx, hy); ctx.lineTo(bx + px, by + py); ctx.moveTo(hx, hy); ctx.lineTo(bx - px, by - py); ctx.stroke(); ctx.globalAlpha = 0.55; const hx2 = hx - Math.sin(ang) * 10; const hy2 = hy - Math.cos(ang) * 10; const bx2 = hx2 - Math.sin(ang) * back * 0.7; const by2 = hy2 - Math.cos(ang) * back * 0.7; ctx.beginPath(); ctx.moveTo(hx2, hy2); ctx.lineTo(bx2 + px * 0.7, by2 + py * 0.7); ctx.moveTo(hx2, hy2); ctx.lineTo(bx2 - px * 0.7, by2 - py * 0.7); ctx.stroke(); ctx.globalAlpha = 1; break; }
+    case 'grenade': { ctx.strokeStyle = colorDim; ctx.lineWidth = 2; ctx.setLineDash([6, 6]); ctx.beginPath(); const steps = 16; for (let i = 0; i <= steps; i++){ const t = i / steps; const px2 = p.x + Math.sin(ang) * len * t; const py2 = p.y + Math.cos(ang) * len * t - Math.sin(t * Math.PI) * 18; if (i === 0) ctx.moveTo(px2, py2); else ctx.lineTo(px2, py2); } ctx.stroke(); ctx.setLineDash([]); const pulse = 1 + 0.35 * Math.sin(performance.now() * 0.006); circle(mx, my, 10 * pulse, color, 2); circle(mx, my, 4, color, 0, true); break; }
+    case 'homing': { circle(mx, my, 14, color, 2); circle(mx, my, 4, color, 0, true); const r1 = 14, r2 = 22; for (let i = 0; i < 4; i++){ const a = ang + Math.PI/4 + i * Math.PI/2; ctx.strokeStyle = color; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(mx + Math.cos(a) * r1, my + Math.sin(a) * r1); ctx.lineTo(mx + Math.cos(a) * r2, my + Math.sin(a) * r2); ctx.stroke(); } line(p.x, p.y, mx, my, 1.4, colorDim, [4, 6]); break; }
+    case 'wave': { for (let i = 1; i <= 3; i++){ const r = (len * 0.35) * i; ctx.strokeStyle = color; ctx.globalAlpha = 0.7 - i * 0.18; ctx.lineWidth = 2.4; ctx.beginPath(); ctx.arc(p.x, p.y, r, ang - Math.PI/2 - 0.5, ang - Math.PI/2 + 0.5); ctx.stroke(); } ctx.globalAlpha = 1; break; }
+    case 'spiral': { const turns = 2; const pts = 36; ctx.strokeStyle = color; ctx.lineWidth = 2; ctx.beginPath(); for (let i = 0; i <= pts; i++){ const t = i / pts; const a = ang + t * Math.PI * 2 * turns; const r = t * len; const x = p.x + Math.sin(a) * r; const y = p.y + Math.cos(a) * r; if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y); } ctx.stroke(); const hx = p.x + Math.sin(ang + Math.PI * 2 * turns) * len; const hy = p.y + Math.cos(ang + Math.PI * 2 * turns) * len; circle(hx, hy, 4, color, 0, true); break; }
+    default: { line(p.x, p.y, mx, my, 2, colorDim, [8, 6]); cross(mx, my, 12, color, 2.5); circle(mx, my, 5, color, 1.5); }
   }
   ctx.restore();
 }
@@ -1384,6 +1269,8 @@ function updateHUD(){
 function startGame(myFighter){
   side = myFighter.side;
   ARENA = currentMap.size;
+  gameEnding = false;
+  $('victoryScreen').classList.remove('show');
   $('teamsBar').style.display = 'flex'; $('hud').style.display = 'flex';
   $('leftZone').style.display = 'block'; $('attackZone').style.display = 'block'; $('superZone').style.display = 'block';
   $('leave').style.display = 'block'; $('soundBtn').style.display = 'block'; $('ammoBox').style.display = 'flex';
@@ -1403,14 +1290,19 @@ function startGame(myFighter){
 }
 function leaveToMenu(){
   gameActive = false;
+  gameEnding = false;
+  $('victoryScreen').classList.remove('show');
   ['teamsBar','hud','leftZone','attackZone','superZone','leave','soundBtn','ammoBox','joyL','joyAttack','joySuper','respawnOverlay'].forEach(id => { const el = $(id); if (el) el.style.display = 'none'; });
   touch.move.active = false; touch.attack.active = false; touch.super.active = false;
   saveProfile(); updateProfileUI();
   $('menu').style.display = 'flex';
   switchMainTab('play');
 }
-$('leave').addEventListener('click', leaveToMenu);
+$('leave').addEventListener('click', () => { if (!gameActive && !gameEnding) return; leaveToMenu(); });
+
 function endGame(win){
+  if (gameEnding) return;
+  gameEnding = true;
   gameActive = false;
   playSound(win ? 'win' : 'lose');
   let kkReward = battleKK, trophyReward = battleTrophies;
@@ -1423,13 +1315,21 @@ function endGame(win){
   profile.kills = (profile.kills||0) + battleKills;
   if (win) profile.wins = (profile.wins||0) + 1; else profile.losses = (profile.losses||0) + 1;
   saveProfile();
-  const m = $('msg'); m.style.display = 'block'; m.textContent = win ? 'ПОБЕДА!' : 'ПОРАЖЕНИЕ';
-  m.style.color = win ? '#7cf86b' : '#ff2e8a';
-  const toast = $('trophyToast'); toast.style.display = 'block';
-  const sign = trophyReward >= 0 ? '+' : '';
-  toast.innerHTML = '🏆 ' + sign + trophyReward + '<br>💾 +' + kkReward;
-  setTimeout(() => { m.style.display = 'none'; toast.style.display = 'none'; leaveToMenu(); }, 2600);
+
+  const vs = $('victoryScreen');
+  vs.classList.toggle('lose', !win);
+  $('vsIcon').textContent = win ? '🏆' : '💀';
+  $('vsTitle').textContent = win ? 'ПОБЕДА!' : 'ПОРАЖЕНИЕ';
+  $('vsKk').textContent = (kkReward >= 0 ? '+' : '') + kkReward;
+  $('vsTr').textContent = (trophyReward >= 0 ? '+' : '') + trophyReward;
+  $('vsKills').textContent = 'Убийств: ' + battleKills + '   ·   Смертей: ' + battleDeaths;
+  vs.classList.add('show');
 }
+$('vsBtn').addEventListener('click', () => {
+  $('victoryScreen').classList.remove('show');
+  leaveToMenu();
+});
+
 function getCenter(el){ const r = el.getBoundingClientRect(); return { x: r.left + r.width/2, y: r.top + r.height/2 }; }
 function bindFixedJoy(zoneEl, state, joyEl, knobEl, mode){
   const R = 65;
