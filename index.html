@@ -125,6 +125,26 @@ html,body{width:100%;height:100%;overflow:hidden;background:#000;font-family:-ap
 #authModal button{padding:14px;background:linear-gradient(180deg,#2cff5e,#16a34a);border:none;color:#04141d;font-weight:900;font-size:14px;border-radius:12px;cursor:pointer;width:100%;max-width:320px}
 #authModal .hint{font-size:12px;color:#9fd7ff;text-align:center;max-width:320px;line-height:1.4}
 #authModal .err{color:#ff2e8a;font-weight:800;font-size:13px;text-align:center;min-height:18px}
+
+/* ===== Друзья ===== */
+#friendsAdd{display:flex;gap:6px;width:100%;max-width:440px}
+#friendsAdd input{flex:1;padding:12px;background:rgba(255,255,255,.08);border:2px solid #00e5ff;border-radius:10px;color:#fff;font-size:15px;outline:none;text-align:center;pointer-events:auto}
+#friendsAdd input:focus{border-color:#7cf86b}
+#friendsAdd button{padding:12px 14px;background:linear-gradient(180deg,#00e5ff,#0891b2);border:none;color:#04141d;font-weight:900;font-size:13px;border-radius:10px;cursor:pointer;pointer-events:auto}
+.friend-row{width:100%;display:flex;align-items:center;gap:8px;padding:8px 10px;background:rgba(0,0,0,.45);border:2px solid #2cff5e;border-radius:10px}
+.friend-row.offline{border-color:#475569;opacity:.7}
+.friend-dot{width:10px;height:10px;border-radius:50%;background:#22c55e;box-shadow:0 0 8px #22c55e;flex-shrink:0}
+.friend-row.offline .friend-dot{background:#64748b;box-shadow:none}
+.friend-info{flex:1;min-width:0}
+.friend-nick{font-weight:900;font-size:13px;color:#eaffea;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.friend-stats{font-size:10px;color:#9fd7ff;font-weight:700;margin-top:2px}
+.friend-btns{display:flex;gap:4px;flex-shrink:0}
+.friend-btn{padding:6px 9px;font-size:11px;font-weight:900;border-radius:8px;cursor:pointer;pointer-events:auto;border:2px solid}
+.friend-btn.duel{background:linear-gradient(180deg,#2cff5e,#16a34a);border-color:#a8ffa0;color:#04141d}
+.friend-btn.remove{background:rgba(255,46,138,.2);border-color:#ff2e8a;color:#ff2e8a}
+.friend-btn:disabled{opacity:.4;cursor:default}
+#friendsEmpty{color:#9fd7ff;font-size:12px;text-align:center;padding:16px 8px}
+
 #fighterCard{position:fixed;inset:0;z-index:300;background:rgba(5,7,13,.97);display:none;flex-direction:column;align-items:center;padding:16px;padding-top:calc(env(safe-area-inset-top) + 16px);gap:10px;overflow-y:auto;pointer-events:auto}
 #fighterCard.show{display:flex}
 #fighterCard .fc-top{width:100%;max-width:440px;display:flex;gap:10px;align-items:center}
@@ -233,6 +253,7 @@ html,body{width:100%;height:100%;overflow:hidden;background:#000;font-family:-ap
       <div class="mainTab" id="mtBoxes">📦 Боксы</div>
       <div class="mainTab" id="mtCollection">👥 Бойцы</div>
       <div class="mainTab" id="mtUpgrade">⬆ Прокачка</div>
+      <div class="mainTab" id="mtFriends">🤝 Друзья</div>
     </div>
     <div class="screen active" id="scPlay">
       <h2>Выбери режим и бойца</h2>
@@ -258,6 +279,15 @@ html,body{width:100%;height:100%;overflow:hidden;background:#000;font-family:-ap
     </div>
     <div class="screen" id="scCollection"><h2>👥 Твоя коллекция</h2><div class="collection-grid" id="collectionGrid"></div></div>
     <div class="screen" id="scUpgrade"><h2>⬆ Прокачай бойца</h2><div class="collection-grid" id="upgradeGrid"></div></div>
+    <div class="screen" id="scFriends">
+      <h2>🤝 Друзья <span id="friendsOnlineBadge" style="color:#7cf86b"></span></h2>
+      <div id="friendsAdd">
+        <input id="friendNickInput" maxlength="16" placeholder="Ник друга" autocomplete="off">
+        <button id="friendAddBtn">ДОБАВИТЬ</button>
+      </div>
+      <div id="friendsList" style="width:100%;max-width:440px;display:flex;flex-direction:column;gap:6px"></div>
+      <div id="friendsEmpty">Войди в аккаунт, чтобы добавлять друзей и видеть, кто онлайн.</div>
+    </div>
     <div id="playBtn">ВЫБЕРИ БОЙЦА</div>
   </div>
   <div id="boxOpening"><div class="box-anim" id="boxAnim">📦</div><div class="result" id="boxResult"><div class="result-card" id="boxResultCard"><canvas id="boxResultCanvas" width="80" height="80"></canvas><div class="rname" id="boxResultName">—</div><div class="rtype" id="boxResultType">—</div></div><div class="tap-hint">ТАП ЗАКРЫТЬ</div></div></div>
@@ -328,7 +358,7 @@ function saveProfile(){
 async function syncToServer(){
   if (!token) return;
   try {
-    await fetch('/api/save', { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-Token': token }, body: JSON.stringify({ kk: profile.kk, trophies: profile.trophies, wins: profile.wins||0, losses: profile.losses||0, kills: profile.kills||0, games: profile.games||0, unlocked: profile.unlocked, levels: profile.levels, selected: profile.selected }) });
+    await fetch('/api/save', { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-Token': token }, body: JSON.stringify({ kk: profile.kk, trophies: profile.trophies, wins: profile.wins||0, losses: profile.losses||0, kills: profile.kills||0, games: profile.games||0, unlocked: profile.unlocked, levels: profile.levels, selected: profile.selected, lastSeen: Date.now() }) });
   } catch(e){}
 }
 async function loadMe(){
@@ -355,6 +385,104 @@ async function loadMe(){
 function getLevel(id){ return profile.levels[id] || 1; }
 const MAX_LEVEL = 10;
 function getUpgradeCost(level){ return 100 * level * level; }
+const RESPAWN_TIME = 5;
+
+/* ================== ДРУЗЬЯ ================== */
+let friends = [];              // [{ nickname, online, trophies, kk }]
+let friendsPollTimer = null;
+let friendsPollBusy = false;
+const FRIENDS_POLL_MS = 15000;
+
+async function fetchFriends(){
+  if (!token) { friends = []; renderFriends(); return; }
+  if (friendsPollBusy) return;
+  friendsPollBusy = true;
+  try {
+    const r = await fetch('/api/friends', { headers: { 'X-Token': token } });
+    if (r.ok){
+      const data = await r.json();
+      if (data && data.ok && Array.isArray(data.friends)) friends = data.friends;
+    }
+  } catch(e){}
+  friendsPollBusy = false;
+  renderFriends();
+}
+function renderFriends(){
+  const list = $('friendsList'); const empty = $('friendsEmpty'); const badge = $('friendsOnlineBadge');
+  if (!list) return;
+  list.innerHTML = '';
+  if (!token){
+    empty.style.display = 'block';
+    empty.textContent = 'Войди в аккаунт, чтобы добавлять друзей и видеть, кто онлайн.';
+    if (badge) badge.textContent = '';
+    return;
+  }
+  if (friends.length === 0){
+    empty.style.display = 'block';
+    empty.textContent = 'Пока никого. Добавь друга по нику выше.';
+    if (badge) badge.textContent = '';
+    return;
+  }
+  empty.style.display = 'none';
+  const onlineCount = friends.filter(f => f.online).length;
+  if (badge) badge.textContent = '· онлайн ' + onlineCount + '/' + friends.length;
+  friends.slice().sort((a,b) => (b.online?1:0) - (a.online?1:0) || (b.trophies||0) - (a.trophies||0)).forEach(f => {
+    const row = document.createElement('div');
+    row.className = 'friend-row' + (f.online ? '' : ' offline');
+    const dot = document.createElement('div'); dot.className = 'friend-dot';
+    const info = document.createElement('div'); info.className = 'friend-info';
+    const nick = document.createElement('div'); nick.className = 'friend-nick'; nick.textContent = f.nickname;
+    const stats = document.createElement('div'); stats.className = 'friend-stats';
+    stats.textContent = (f.online ? '● в сети' : '○ оффлайн') + ' · 🏆 ' + (f.trophies||0);
+    info.appendChild(nick); info.appendChild(stats);
+    const btns = document.createElement('div'); btns.className = 'friend-btns';
+    const duel = document.createElement('button'); duel.className = 'friend-btn duel'; duel.textContent = 'ВЫЗВАТЬ';
+    duel.disabled = !f.online;
+    duel.addEventListener('click', () => inviteFriendToDuel(f.nickname));
+    const rm = document.createElement('button'); rm.className = 'friend-btn remove'; rm.textContent = '✕';
+    rm.addEventListener('click', () => removeFriend(f.nickname));
+    btns.appendChild(duel); btns.appendChild(rm);
+    row.appendChild(dot); row.appendChild(info); row.appendChild(btns);
+    list.appendChild(row);
+  });
+}
+async function addFriend(){
+  const input = $('friendNickInput');
+  const nick = (input.value || '').trim();
+  if (!/^[a-zA-Z0-9_]{3,16}$/.test(nick)){ alert('Ник: 3-16 символов, буквы/цифры/_'); return; }
+  if (!token){ showAuth(); return; }
+  try {
+    const r = await fetch('/api/friends/add', { method:'POST', headers: { 'Content-Type':'application/json', 'X-Token': token }, body: JSON.stringify({ nickname: nick }) });
+    const data = await r.json().catch(() => ({}));
+    if (!data.ok){ alert(data.error || 'Не удалось добавить'); return; }
+    input.value = '';
+    await fetchFriends();
+  } catch(e){ alert('Ошибка сети'); }
+}
+async function removeFriend(nick){
+  if (!confirm('Удалить ' + nick + ' из друзей?')) return;
+  try {
+    await fetch('/api/friends/remove', { method:'POST', headers: { 'Content-Type':'application/json', 'X-Token': token }, body: JSON.stringify({ nickname: nick }) });
+  } catch(e){}
+  friends = friends.filter(f => f.nickname !== nick);
+  renderFriends();
+}
+async function inviteFriendToDuel(nick){
+  try {
+    const r = await fetch('/api/friends/duel', { method:'POST', headers: { 'Content-Type':'application/json', 'X-Token': token }, body: JSON.stringify({ nickname: nick }) });
+    const data = await r.json().catch(() => ({}));
+    if (!data.ok){ alert(data.error || 'Не удалось отправить вызов'); return; }
+    alert('Вызов отправлен: ' + nick);
+  } catch(e){ alert('Ошибка сети'); }
+}
+function startFriendsPolling(){
+  if (friendsPollTimer) clearInterval(friendsPollTimer);
+  fetchFriends();
+  friendsPollTimer = setInterval(() => {
+    if ($('scFriends').classList.contains('active')) fetchFriends();
+  }, FRIENDS_POLL_MS);
+}
+function stopFriendsPolling(){ if (friendsPollTimer){ clearInterval(friendsPollTimer); friendsPollTimer = null; } }
 
 /* ================== ЗВУК ================== */
 let audioCtx = null;
@@ -400,7 +528,7 @@ function rollRandomMap(){ currentMap = MAPS[Math.floor(Math.random()*MAPS.length
 /* ================== РЕЖИМЫ ================== */
 const MODES = { classic:{ id:'classic', name:'КЛАССИКА' }, deathmatch:{ id:'deathmatch', name:'МЯСОРУБКА' }, defense:{ id:'defense', name:'ОБОРОНА' } };
 let currentMode = MODES.classic;
-const INVADER_BUFF = { classic:{ hp:8.0, dmg:7.5, speed:1.8, fireRate:0.30 }, deathmatch:{ hp:1.0, dmg:1.0, speed:1.0, fireRate:1.00 }, defense:{ hp:1.3, dmg:1.2, speed:1.0, fireRate:0.95 } };
+const INVADER_BUFF = { classic:{ hp:2.2, dmg:1.6, speed:1.3, fireRate:0.55 }, deathmatch:{ hp:1.0, dmg:1.0, speed:1.0, fireRate:1.00 }, defense:{ hp:1.3, dmg:1.2, speed:1.0, fireRate:0.95 } };
 const DEFENSE_WAVES = 5;
 const DM_KILLS_TO_WIN = 20;
 
@@ -485,8 +613,9 @@ function drawTank(ctx, s, c){ ctx.fillStyle = '#0f172a'; roundRect(ctx, -s*0.55,
 function drawSniper(ctx, s, c){ const g = ctx.createRadialGradient(-s*0.1, -s*0.1, 0, 0, 0, s*0.4); g.addColorStop(0, shade(c, 50)); g.addColorStop(1, shade(c, -20)); ctx.fillStyle = g; ctx.beginPath(); ctx.arc(0, 0, s*0.35, 0, Math.PI*2); ctx.fill(); ctx.stroke(); ctx.fillStyle = '#312e81'; roundRect(ctx, -s*0.08, -s*0.8, s*0.16, s*0.6, s*0.04); ctx.fill(); }
 function drawBug(ctx, s, c){ ctx.strokeStyle = '#05070d'; ctx.lineWidth = s*0.09; for (let i = 0; i < 3; i++){ ctx.beginPath(); ctx.moveTo(-s*0.3, -s*0.2 + i*s*0.2); ctx.lineTo(-s*0.55, -s*0.35 + i*s*0.28); ctx.stroke(); ctx.beginPath(); ctx.moveTo(s*0.3, -s*0.2 + i*s*0.2); ctx.lineTo(s*0.55, -s*0.35 + i*s*0.28); ctx.stroke(); } const g = ctx.createRadialGradient(-s*0.1, -s*0.15, 0, 0, 0, s*0.5); g.addColorStop(0, shade(c, 60)); g.addColorStop(1, shade(c, -25)); ctx.fillStyle = g; ctx.beginPath(); ctx.ellipse(0, 0, s*0.35, s*0.45, 0, 0, Math.PI*2); ctx.fill(); ctx.stroke(); }
 function drawGhost(ctx, s, c){ ctx.globalAlpha *= 0.85; const g = ctx.createRadialGradient(0, -s*0.15, 0, 0, 0, s*0.5); g.addColorStop(0, '#fff'); g.addColorStop(1, c); ctx.fillStyle = g; ctx.beginPath(); ctx.arc(0, -s*0.05, s*0.4, Math.PI, 0); ctx.lineTo(s*0.4, s*0.3); for (let i = 4; i >= 0; i--){ ctx.lineTo(-s*0.4 + (i/4)*s*0.8, s*0.15 + (i%2===0 ? s*0.18 : -s*0.05)); } ctx.closePath(); ctx.fill(); ctx.stroke(); ctx.globalAlpha /= 0.85; }
-function drawPortrait(canvas, fighter){ const ctx = canvas.getContext('2d'); const dpr = Math.min(devicePixelRatio, 2); const size = canvas.clientWidth || 100; canvas.width = size*dpr; canvas.height = size*dpr; ctx.scale(dpr, dpr); ctx.clearRect(0, 0, size, size); drawFighterShape(ctx, fighter, size/2, size/2, size*0.85, -Math.PI/2, false, 0); }
-  /* ================== КАТ-СЦЕНА ================== */
+function drawPortrait(canvas, fighter){ const ctx = canvas.getContext('2d'); const dpr = Math.min(devicePixelRatio, 1.5); const size = canvas.clientWidth || 100; canvas.width = size*dpr; canvas.height = size*dpr; ctx.setTransform(1,0,0,1,0,0); ctx.scale(dpr, dpr); ctx.clearRect(0, 0, size, size); drawFighterShape(ctx, fighter, size/2, size/2, size*0.85, -Math.PI/2, false, 0); }
+
+/* ================== КАТ-СЦЕНА ================== */
 let csSkipResolve = null;
 function wait(ms){ return new Promise(r => { const t = setTimeout(() => { if (csSkipResolve === r) csSkipResolve = null; r('timeout'); }, ms); csSkipResolve = (reason) => { clearTimeout(t); csSkipResolve = null; r(reason); }; }); }
 function cancelCutscene(){ if (csSkipResolve) csSkipResolve('skip'); }
@@ -573,11 +702,13 @@ function switchMainTab(tabId){
   if (tabId === 'boxes') refreshBoxes();
   if (tabId === 'collection') refreshCollection();
   if (tabId === 'upgrade') refreshUpgrade();
+  if (tabId === 'friends'){ renderFriends(); fetchFriends(); }
 }
 $('mtPlay').addEventListener('click', () => switchMainTab('play'));
 $('mtBoxes').addEventListener('click', () => switchMainTab('boxes'));
 $('mtCollection').addEventListener('click', () => switchMainTab('collection'));
 $('mtUpgrade').addEventListener('click', () => switchMainTab('upgrade'));
+$('mtFriends').addEventListener('click', () => switchMainTab('friends'));
 $('modeClassic').addEventListener('click', () => { currentMode = MODES.classic; $('modeClassic').classList.add('active'); $('modeDeathmatch').classList.remove('active'); $('modeDefense').classList.remove('active'); });
 $('modeDeathmatch').addEventListener('click', () => { currentMode = MODES.deathmatch; $('modeDeathmatch').classList.add('active'); $('modeClassic').classList.remove('active'); $('modeDefense').classList.remove('active'); });
 $('modeDefense').addEventListener('click', () => { currentMode = MODES.defense; $('modeDefense').classList.add('active'); $('modeClassic').classList.remove('active'); $('modeDeathmatch').classList.remove('active'); });
@@ -603,6 +734,8 @@ function refreshPick(){
 $('tabPlant').addEventListener('click', () => { pickSide = 'plant'; $('tabPlant').style.border = '2px solid #7cf86b'; $('tabPlant').style.background = 'linear-gradient(180deg,#1c3d1f,#0e2410)'; $('tabEnemy').style.border = '2px solid transparent'; $('tabEnemy').style.background = 'rgba(255,255,255,.06)'; refreshPick(); });
 $('tabEnemy').addEventListener('click', () => { pickSide = 'enemy'; $('tabEnemy').style.border = '2px solid #00e5ff'; $('tabEnemy').style.background = 'linear-gradient(180deg,#0b2b3d,#04141d)'; $('tabPlant').style.border = '2px solid transparent'; $('tabPlant').style.background = 'rgba(255,255,255,.06)'; refreshPick(); });
 $('playBtn').addEventListener('click', () => { if (!chosenFighter || !isUnlocked(chosenFighter.id)) return; rollRandomMap(); $('menu').style.display = 'none'; startGame(chosenFighter); });
+$('friendAddBtn').addEventListener('click', addFriend);
+$('friendNickInput').addEventListener('keydown', e => { if (e.key === 'Enter') addFriend(); });
 
 /* ================== БОКСЫ + АКЦИИ ================== */
 const BOXES = [
@@ -744,7 +877,7 @@ function refreshUpgrade(){
     setTimeout(() => drawPortrait(cv, f), 10);
   });
 }
-function goToMenu(){ $('menu').style.display = 'flex'; updateProfileUI(); switchMainTab('play'); if (!token) showAuth(); }
+function goToMenu(){ $('menu').style.display = 'flex'; updateProfileUI(); switchMainTab('play'); if (!token) showAuth(); if (token) startFriendsPolling(); }
 
 /* ================== КАРТОЧКА БОЙЦА ================== */
 let currentCardFighter = null;
@@ -788,7 +921,7 @@ function openFighterCard(fighterId){
   $('fighterCard').classList.add('show');
   setTimeout(() => {
     const cv = $('fcCanvas');
-    const dpr = Math.min(devicePixelRatio, 2);
+    const dpr = Math.min(devicePixelRatio, 1.5);
     const size = 88;
     cv.width = size*dpr; cv.height = size*dpr;
     const c = cv.getContext('2d');
@@ -821,11 +954,13 @@ $('fcFightBtn').addEventListener('click', () => {
   rollRandomMap();
   $('menu').style.display = 'none';
   startGame(f);
-});/* ================== ИГРА ================== */
+});
+
+/* ================== ИГРА ================== */
 const canvas = $('game');
 const ctx = canvas.getContext('2d');
 let W = 0, H = 0, dpr = 1;
-function resize(){ dpr = Math.min(devicePixelRatio, 2); W = innerWidth; H = innerHeight; canvas.width = W*dpr; canvas.height = H*dpr; canvas.style.width = W+'px'; canvas.style.height = H+'px'; ctx.setTransform(dpr, 0, 0, dpr, 0, 0); }
+function resize(){ dpr = Math.min(devicePixelRatio, 1.5); W = innerWidth; H = innerHeight; canvas.width = W*dpr; canvas.height = H*dpr; canvas.style.width = W+'px'; canvas.style.height = H+'px'; ctx.setTransform(dpr, 0, 0, dpr, 0, 0); arenaDirty = true; }
 addEventListener('resize', resize); resize();
 let gameActive = false, side = null;
 let allies = [], enemies = [], bullets = [], particles = [], floatingTexts = [], zones = [], obstacles = [];
@@ -848,6 +983,35 @@ const touch = {
 const player = { x: 0, z: 14, hp: 100, maxHp: 100, fighter: null, walkPhase: 0, shield: 0, velX: 0, velZ: 0, respawnTimer: 0, dead: false, stats: null };
 function worldToScreen(wx, wz){ return { x: W/2 + (wx-camera2D.x)*ZOOM + shakeX, y: H*0.68 + (wz-camera2D.z)*ZOOM + shakeY }; }
 
+/* ===== Статичный слой арены — рисуется один раз и кэшируется ===== */
+const arenaCanvas = document.createElement('canvas');
+let arenaDirty = true;
+function buildArenaCache(){
+  const sizePx = Math.ceil(ARENA * ZOOM);
+  arenaCanvas.width = sizePx;
+  arenaCanvas.height = sizePx;
+  const c = arenaCanvas.getContext('2d');
+  c.clearRect(0, 0, sizePx, sizePx);
+  const g = c.createRadialGradient(sizePx/2, sizePx/2, 0, sizePx/2, sizePx/2, sizePx/2);
+  g.addColorStop(0, currentMap.bg); g.addColorStop(1, shade(currentMap.bg, -20));
+  c.fillStyle = g; c.fillRect(0, 0, sizePx, sizePx);
+  c.strokeStyle = currentMap.grid; c.lineWidth = 1;
+  const step = 4*ZOOM;
+  for (let i = 0; i <= ARENA/4; i++){
+    c.beginPath(); c.moveTo(i*step, 0); c.lineTo(i*step, sizePx); c.stroke();
+    c.beginPath(); c.moveTo(0, i*step); c.lineTo(sizePx, i*step); c.stroke();
+  }
+  c.strokeStyle = currentMap.border; c.lineWidth = 8;
+  c.strokeRect(0, 0, sizePx, sizePx);
+  for (const ob of obstacles){
+    const ox = (ob[0] + ARENA/2)*ZOOM, oy = (ob[1] + ARENA/2)*ZOOM, r = ob[2]*ZOOM;
+    c.fillStyle = shade(currentMap.border, -50); c.globalAlpha = 0.5;
+    c.beginPath(); c.arc(ox, oy, r, 0, Math.PI*2); c.fill(); c.globalAlpha = 1;
+    c.strokeStyle = currentMap.border; c.lineWidth = 3; c.stroke();
+  }
+  arenaDirty = false;
+}
+
 function spawnCharacters(myFighter){
   const playerIsEnemy = (myFighter.side === 'enemy');
   const pStats = getFighterStats(myFighter);
@@ -866,7 +1030,7 @@ function spawnCharacters(myFighter){
       const eF = FIGHTERS[enemyKeys[Math.floor(Math.random()*enemyKeys.length)]];
       const eS = getFighterStats(eF);
       const hp = Math.round(eS.hp * 1.7 * buff.hp);
-      enemies.push({ x: 0, z: -16, hp: hp, maxHp: hp, fighter: eF, stats: { hp: hp, dmg: eS.dmg * 1.7 * buff.dmg, speed: eS.speed * 1.25 * buff.speed, fireRate: eS.fireRate * 0.75 * buff.fireRate, level: eS.level }, isBoss: true, ai: { cooldown: 1.5, moveTimer: 0, mdx: 0, mdz: 0, focusTimer: 0, dodgeTimer: 0 }, ammo: 3, ammoTimer: 0, walkPhase: 0, target: null, velX: 0, velZ: 0 });
+      enemies.push({ x: 0, z: -16, hp: hp, maxHp: hp, fighter: eF, stats: { hp: hp, dmg: eS.dmg * 1.4 * buff.dmg, speed: eS.speed * 1.15 * buff.speed, fireRate: eS.fireRate * 0.9 * buff.fireRate, level: eS.level }, isBoss: true, ai: { cooldown: 1.5, moveTimer: 0, mdx: 0, mdz: 0, focusTimer: 0, dodgeTimer: 0 }, ammo: 3, ammoTimer: 0, walkPhase: 0, target: null, velX: 0, velZ: 0 });
     } else {
       const eg = [[0,-16],[-9,-14],[9,-14],[-5,-19],[5,-19]];
       for (let i = 0; i < 5; i++){ const f = FIGHTERS[plantKeys[Math.floor(Math.random()*plantKeys.length)]]; enemies.push({ x: eg[i][0], z: eg[i][1], hp: 150, maxHp: 150, fighter: f, stats: { hp: 150, dmg: 12, speed: 6, fireRate: 0.7, level: 1 }, isBoss: false, ai: { cooldown: 0.6+Math.random()*2, moveTimer: 0, mdx: 0, mdz: 0, focusTimer: 0, dodgeTimer: 0 }, ammo: 3, ammoTimer: 0, walkPhase: Math.random()*10, target: null, velX: 0, velZ: 0 }); }
@@ -875,6 +1039,8 @@ function spawnCharacters(myFighter){
     const sides = ['plant','enemy','plant','enemy'];
     for (let i = 0; i < 4; i++){ const sk = sides[i]; const keys2 = Object.keys(FIGHTERS).filter(k => FIGHTERS[k].side === sk); const f = FIGHTERS[keys2[Math.floor(Math.random()*keys2.length)]]; const angle = (i/4)*Math.PI*2; const dist = ARENA/2 - 5; enemies.push({ x: Math.cos(angle)*dist, z: Math.sin(angle)*dist, hp: 200, maxHp: 200, fighter: f, stats: { hp: 200, dmg: 15, speed: 6.5, fireRate: 0.6, level: 1 }, isBoss: false, ai: { cooldown: 1+Math.random()*2, moveTimer: 0, mdx: 0, mdz: 0, focusTimer: 0, dodgeTimer: 0 }, ammo: 3, ammoTimer: 0, walkPhase: Math.random()*10, target: null, velX: 0, velZ: 0 }); }
   } else if (currentMode === MODES.defense){ defenseWave = 1; spawnDefenseWave(); }
+  arenaDirty = true;
+  buildArenaCache();
 }
 function spawnDefenseWave(){
   const wave = defenseWave;
@@ -912,7 +1078,7 @@ function performAttack(shooter, dirX, dirZ, isEnemy, fromPlayer, fromAlly, baseD
     default: spawnBullet(shooter, Math.sin(baseAngle), Math.cos(baseAngle), 30, baseDmg, 6, color, fromPlayer, fromAlly, null, 'single');
   }
 }
-function spawnBullet(shooter, dx, dz, speed, dmg, radius, color, fromPlayer, fromAlly, extra, kind){ bullets.push(Object.assign({ x: shooter.x, z: shooter.z, dx, dz, speed, fromPlayer, fromAlly, isSuper: false, baseDmg: dmg, radius, color, kind: kind||'single', life: 2.5 }, extra||{})); spawnParticles(shooter.x + dx*1, shooter.z + dz*1, color, 3, 3); }
+function spawnBullet(shooter, dx, dz, speed, dmg, radius, color, fromPlayer, fromAlly, extra, kind){ bullets.push(Object.assign({ x: shooter.x, z: shooter.z, dx, dz, speed, fromPlayer, fromAlly, isSuper: false, baseDmg: dmg, radius, color, kind: kind||'single', life: 2.5 }, extra||{})); spawnParticles(shooter.x + dx*1, shooter.z + dz*1, color, 2, 3); }
 function getOptimalRange(unit){ const t = unit.fighter.attack; if (t==='long') return 14; if (t==='shotgun') return 5; if (t==='wave') return 8; if (t==='grenade') return 11; if (t==='pierce') return 10; if (t==='rapid') return 7; if (t==='homing') return 9; return 9; }
 function findBestTarget(unit, isEnemy){
   const candidates = [];
@@ -950,10 +1116,11 @@ function updateAIUnit(unit, dt, allUnits, isEnemy){
   for (const ob of obstacles){ const ddx = unit.x - ob[0], ddz = unit.z - ob[1]; const dd = Math.hypot(ddx, ddz); if (dd < ob[2]+0.8 && dd > 0.01){ unit.x = ob[0] + (ddx/dd)*(ob[2]+0.8); unit.z = ob[1] + (ddz/dd)*(ob[2]+0.8); } }
   unit.x = Math.max(-ARENA/2+1, Math.min(ARENA/2-1, unit.x)); unit.z = Math.max(-ARENA/2+1, Math.min(ARENA/2-1, unit.z));
   ai.cooldown -= dt;
-  if (ai.cooldown <= 0 && dist < 20 && unit.ammo > 0){ let aimX = tx, aimZ = tz; const velX = target.ref.velX||0, velZ = target.ref.velZ||0; const timeToHit = dist/28; aimX += velX*timeToHit*0.8; aimZ += velZ*timeToHit*0.8; const adx = aimX - unit.x, adz = aimZ - unit.z; const al = Math.hypot(adx, adz) || 1; let dmg = isEnemy ? (unit.isBoss ? 34 : 26) : 12; dmg *= damageBoost; performAttack(unit, adx/al, adz/al, isEnemy, false, !isEnemy, dmg); unit.ammo--; ai.cooldown = (unit.stats ? unit.stats.fireRate : 0.6); }
+  if (ai.cooldown <= 0 && dist < 20 && unit.ammo > 0){ let aimX = tx, aimZ = tz; const velX = target.ref.velX||0, velZ = target.ref.velZ||0; const timeToHit = dist/28; aimX += velX*timeToHit*0.8; aimZ += velZ*timeToHit*0.8; const adx = aimX - unit.x, adz = aimZ - unit.z; const al = Math.hypot(adx, adz) || 1; let dmg = isEnemy ? (unit.isBoss ? 26 : 18) : 12; if (isEnemy && side !== 'enemy') dmg *= damageBoost; performAttack(unit, adx/al, adz/al, isEnemy, false, !isEnemy, dmg); unit.ammo--; ai.cooldown = (unit.stats ? unit.stats.fireRate : 0.6); }
 }
 function explodeGrenade(b){
-  spawnParticles(b.x, b.z, b.color, 30, 15); spawnParticles(b.x, b.z, '#ffd54f', 15, 10);
+  spawnParticles(b.x, b.z, b.color, 18, 15);
+  spawnParticles(b.x, b.z, '#ffd54f', 8, 10);
   shakeAmount = 8;
   const r = b.explodeRadius || 2.5;
   if (b.fromPlayer || b.fromAlly){ for (const e of enemies){ if (e.hp <= 0) continue; if (Math.hypot(e.x-b.x, e.z-b.z) < r){ e.hp = Math.max(0, e.hp-b.baseDmg); if (b.fromPlayer) addSuperCharge(b.baseDmg); if (e.hp <= 0){ battleKK += 10; battleTrophies += 2; battleKills++; } } } }
@@ -962,7 +1129,7 @@ function explodeGrenade(b){
 function updateBullets(dt){
   for (let i = bullets.length - 1; i >= 0; i--){
     const b = bullets[i];
-    if (b.homing){ let target = null, bd = 999; const targets = (b.fromPlayer||b.fromAlly) ? enemies : [player].concat(allies).filter(t => t && t.hp > 0 && !t.dead); for (const t of targets){ if (!t || t.hp <= 0 || t.dead) continue; const d = Math.hypot(t.x-b.x, t.z-b.z); if (d < bd){ bd = d; target = t; } } if (target){ const tx = target.x-b.x, tz = target.z-b.z; const tl = Math.hypot(tx, tz)||1; b.dx = b.dx*0.94 + (tx/tl)*0.06; b.dz = b.dz*0.94 + (tz/tl)*0.06; const nl = Math.hypot(b.dx, b.dz)||1; b.dx /= nl; b.dz /= nl; } }
+    if (b.homing){ let target = null, bd = 999; const targets = (b.fromPlayer||b.fromAlly) ? enemies : (player.dead ? allies : [player].concat(allies)); for (const t of targets){ if (!t || t.hp <= 0 || t.dead) continue; const d = Math.hypot(t.x-b.x, t.z-b.z); if (d < bd){ bd = d; target = t; } } if (target){ const tx = target.x-b.x, tz = target.z-b.z; const tl = Math.hypot(tx, tz)||1; b.dx = b.dx*0.94 + (tx/tl)*0.06; b.dz = b.dz*0.94 + (tz/tl)*0.06; const nl = Math.hypot(b.dx, b.dz)||1; b.dx /= nl; b.dz /= nl; } }
     b.x += b.dx*b.speed*dt; b.z += b.dz*b.speed*dt; b.life -= dt;
     let dead = b.life <= 0;
     for (const ob of obstacles){ if (Math.hypot(b.x-ob[0], b.z-ob[1]) < ob[2]){ if (b.grenade) explodeGrenade(b); dead = true; break; } }
@@ -970,13 +1137,16 @@ function updateBullets(dt){
     const hitR = b.radius/6;
     if (b.fromPlayer || b.fromAlly){ for (let j = 0; j < enemies.length; j++){ const e = enemies[j]; if (e.hp <= 0) continue; if (Math.hypot(e.x-b.x, e.z-b.z) < hitR){ if (b.grenade){ explodeGrenade(b); dead = true; break; } e.hp = Math.max(0, e.hp-b.baseDmg); if (b.fromPlayer){ addSuperCharge(b.baseDmg); playSound('hit'); } if (e.hp <= 0){ battleKK += 10; battleTrophies += 2; battleKills++; if (e.isBoss){ endGame(true); return; } } if (!b.pierce) dead = true; if (dead) break; } } }
     else { if (!player.dead && Math.hypot(player.x-b.x, player.z-b.z) < hitR){ if (b.grenade){ explodeGrenade(b); } else { const d = b.baseDmg*(player.shield>0?0.3:1); player.hp = Math.max(0, player.hp-d); shakeAmount = 6; playSound('hit'); if (player.hp <= 0) killPlayer(); } dead = true; } else { for (let j = 0; j < allies.length; j++){ const a = allies[j]; if (a.hp <= 0) continue; if (Math.hypot(a.x-b.x, a.z-b.z) < hitR){ if (b.grenade) explodeGrenade(b); else a.hp = Math.max(0, a.hp-b.baseDmg); dead = true; break; } } } }
-    if (dead){ spawnParticles(b.x, b.z, b.color, 4, 4); bullets.splice(i, 1); } }
-  if (currentMode === MODES.classic){ if (enemies.every(e => e.hp <= 0) && gameActive) endGame(true); if (gameActive && player.dead && allies.every(a => a.hp <= 0)) endGame(false); }
+    if (dead){ spawnParticles(b.x, b.z, b.color, 3, 4); bullets.splice(i, 1); } }
+  if (currentMode === MODES.classic){
+    if (enemies.every(e => e.hp <= 0) && gameActive) endGame(true);
+    if (gameActive && player.dead && allies.length > 0 && allies.every(a => a.hp <= 0)) endGame(false);
+  }
   if (currentMode === MODES.deathmatch){ if (battleKills >= DM_KILLS_TO_WIN && gameActive) endGame(true); if (battleDeaths >= DM_KILLS_TO_WIN && gameActive) endGame(false); }
   if (currentMode === MODES.defense){ if (enemies.every(e => e.hp <= 0) && gameActive){ if (defenseWave >= DEFENSE_WAVES){ endGame(true); return; } defenseWave++; setTimeout(() => { if (gameActive) spawnDefenseWave(); updateHUD(); }, 1500); } if (gameActive && player.dead && allies.every(a => a.hp <= 0)) endGame(false); }
 }
-function killPlayer(){ player.dead = true; player.respawnTimer = RESPAWN_TIME; player.hp = 0; battleDeaths++; spawnParticles(player.x, player.z, '#ff2e8a', 40, 15); shakeAmount = 15; $('respawnOverlay').style.display = 'flex'; if (currentMode === MODES.deathmatch){ setTimeout(() => { if (gameActive) respawnPlayer(); }, 3000); } }
-function respawnPlayer(){ let safeX = 0, safeZ = 12; const alive = allies.filter(a => a.hp > 0); if (alive.length > 0){ const a = alive[Math.floor(Math.random()*alive.length)]; safeX = a.x + (Math.random()-0.5)*4; safeZ = a.z + (Math.random()-0.5)*4; } player.x = Math.max(-ARENA/2+1, Math.min(ARENA/2-1, safeX)); player.z = Math.max(-ARENA/2+1, Math.min(ARENA/2-1, safeZ)); player.hp = player.maxHp; player.dead = false; player.respawnTimer = 0; ammo = MAX_AMMO; ammoTimer = 0; $('respawnOverlay').style.display = 'none'; spawnParticles(player.x, player.z, '#7cf86b', 30, 12); }
+function killPlayer(){ player.dead = true; player.respawnTimer = RESPAWN_TIME; player.hp = 0; battleDeaths++; spawnParticles(player.x, player.z, '#ff2e8a', 20, 15); shakeAmount = 15; $('respawnOverlay').style.display = 'flex'; if (currentMode === MODES.deathmatch){ setTimeout(() => { if (gameActive) respawnPlayer(); }, 3000); } }
+function respawnPlayer(){ let safeX = 0, safeZ = 12; const alive = allies.filter(a => a.hp > 0); if (alive.length > 0){ const a = alive[Math.floor(Math.random()*alive.length)]; safeX = a.x + (Math.random()-0.5)*4; safeZ = a.z + (Math.random()-0.5)*4; } player.x = Math.max(-ARENA/2+1, Math.min(ARENA/2-1, safeX)); player.z = Math.max(-ARENA/2+1, Math.min(ARENA/2-1, safeZ)); player.hp = player.maxHp; player.dead = false; player.respawnTimer = 0; ammo = MAX_AMMO; ammoTimer = 0; $('respawnOverlay').style.display = 'none'; spawnParticles(player.x, player.z, '#7cf86b', 15, 12); }
 function updateEffects(dt){
   for (let i = particles.length - 1; i >= 0; i--){ const p = particles[i]; p.x += p.vx*dt; p.z += p.vz*dt; p.vx *= 0.92; p.vz *= 0.92; p.life -= dt; if (p.life <= 0) particles.splice(i, 1); }
   for (let i = floatingTexts.length - 1; i >= 0; i--){ const t = floatingTexts[i]; t.z -= dt*3; t.life -= dt; if (t.life <= 0) floatingTexts.splice(i, 1); }
@@ -992,11 +1162,11 @@ function fireSuperAimed(aimDirX, aimDirZ){
   const s = player.fighter.super; superActive = true; superCharge = 0; superTimer = 0; updateSuperUI();
   const a = Math.atan2(aimDirX, aimDirZ); const dmgBase = player.stats.dmg;
   switch (s) {
-    case 'heal': { player.hp = Math.min(player.maxHp, player.hp+80); allies.forEach(x => { if (x.hp > 0) x.hp = Math.min(x.maxHp, x.hp+80); }); spawnParticles(player.x, player.z, '#7cf86b', 30, 12); superTimer = 0.5; break; }
+    case 'heal': { player.hp = Math.min(player.maxHp, player.hp+80); allies.forEach(x => { if (x.hp > 0) x.hp = Math.min(x.maxHp, x.hp+80); }); spawnParticles(player.x, player.z, '#7cf86b', 20, 12); superTimer = 0.5; break; }
     case 'spikes': { superTimer = 1.5; for (let ang = 0; ang < Math.PI*2; ang += Math.PI/8) bullets.push({ x: player.x, z: player.z, dx: Math.sin(ang), dz: Math.cos(ang), speed: 20, fromPlayer: true, fromAlly: false, isSuper: true, baseDmg: dmgBase*1.5, life: 1.5, radius: 7, color: '#4ade80' }); shakeAmount = 8; break; }
     case 'laser': { superTimer = 1.2; for (let i = 0; i < 8; i++) setTimeout(() => { if (!gameActive) return; bullets.push({ x: player.x, z: player.z, dx: Math.sin(a), dz: Math.cos(a), speed: 45, fromPlayer: true, fromAlly: false, isSuper: true, baseDmg: dmgBase*1.2, life: 1.5, radius: 8, color: '#f472b6' }); }, i*80); break; }
-    case 'roots': { superTimer = 1; spawnParticles(player.x, player.z, '#166534', 20, 8); break; }
-    case 'poison': { superTimer = 1; spawnParticles(player.x, player.z, '#a855f7', 20, 8); break; }
+    case 'roots': { superTimer = 1; spawnParticles(player.x, player.z, '#166534', 14, 8); break; }
+    case 'poison': { superTimer = 1; spawnParticles(player.x, player.z, '#a855f7', 14, 8); break; }
     case 'burst': { superTimer = 1.5; break; }
     case 'walls': { superTimer = 0.5; break; }
     case 'shield': { superTimer = 5; player.shield = 5; break; }
@@ -1015,7 +1185,7 @@ function createMiniAvatar(fighter, isPlayer, sideClass){
   const cv = document.createElement('canvas'); wrap.appendChild(cv);
   const timer = document.createElement('div'); timer.className = 'timer'; timer.style.display = 'none'; wrap.appendChild(timer);
   const hpMini = document.createElement('div'); hpMini.className = 'hp-mini'; hpMini.innerHTML = '<div class="fill"></div>'; wrap.appendChild(hpMini);
-  setTimeout(() => { const dpr = Math.min(devicePixelRatio, 2); const size = 30; cv.width = size*dpr; cv.height = size*dpr; const c = cv.getContext('2d'); c.scale(dpr, dpr); c.clearRect(0, 0, size, size); drawFighterShape(c, fighter, size/2, size/2, size*0.9, -Math.PI/2, false, 0); }, 30);
+  setTimeout(() => { const dpr = Math.min(devicePixelRatio, 1.5); const size = 30; cv.width = size*dpr; cv.height = size*dpr; const c = cv.getContext('2d'); c.scale(dpr, dpr); c.clearRect(0, 0, size, size); drawFighterShape(c, fighter, size/2, size/2, size*0.9, -Math.PI/2, false, 0); }, 30);
   return wrap;
 }
 function buildTeamsBar(){
@@ -1027,8 +1197,10 @@ function buildTeamsBar(){
   for (let i = 0; i < enemies.length; i++){ const w = createMiniAvatar(enemies[i].fighter, false, side === 'enemy' ? '' : 'enemy'); miniAvatarEls.enemies.push(w); right.appendChild(w); }
   $('teamsBar').style.display = 'flex';
 }
+let hudFrameSkip = 0;
 function updateTeamsBar(){
   if (!gameActive) return;
+  if ((hudFrameSkip++ % 3) !== 0) return;
   function upd(el, unit, isPlayer){
     if (!el || !unit) return;
     const hpFill = el.querySelector('.hp-mini .fill');
@@ -1116,20 +1288,16 @@ function render(){
   ctx.globalAlpha = 1;
 }
 function drawArena(){
+  if (arenaDirty) buildArenaCache();
   const halfPx = (ARENA/2)*ZOOM;
-  const cx = W/2 - camera2D.x*ZOOM, cy = H*0.68 - camera2D.z*ZOOM;
-  const g = ctx.createRadialGradient(cx, cy, 0, cx, cy, halfPx);
-  g.addColorStop(0, currentMap.bg); g.addColorStop(1, shade(currentMap.bg, -20));
-  ctx.fillStyle = g; ctx.fillRect(cx-halfPx, cy-halfPx, halfPx*2, halfPx*2);
-  ctx.strokeStyle = currentMap.grid; ctx.lineWidth = 1;
-  const step = 4*ZOOM; const sX = cx-halfPx, sY = cy-halfPx;
-  for (let i = 0; i <= ARENA/4; i++){ ctx.beginPath(); ctx.moveTo(sX+i*step, sY); ctx.lineTo(sX+i*step, sY+halfPx*2); ctx.stroke(); ctx.beginPath(); ctx.moveTo(sX, sY+i*step); ctx.lineTo(sX+halfPx*2, sY+i*step); ctx.stroke(); }
-  ctx.strokeStyle = currentMap.border; ctx.lineWidth = 8; ctx.shadowColor = currentMap.border; ctx.shadowBlur = 20;
-  ctx.strokeRect(cx-halfPx, cy-halfPx, halfPx*2, halfPx*2); ctx.shadowBlur = 0;
-  for (const ob of obstacles){ const p = worldToScreen(ob[0], ob[1]); const r = ob[2]*ZOOM; ctx.fillStyle = shade(currentMap.border, -50); ctx.globalAlpha = 0.5; ctx.beginPath(); ctx.arc(p.x, p.y, r, 0, Math.PI*2); ctx.fill(); ctx.globalAlpha = 1; ctx.strokeStyle = currentMap.border; ctx.lineWidth = 3; ctx.stroke(); }
+  const cx = W/2 - camera2D.x*ZOOM;
+  const cy = H*0.68 - camera2D.z*ZOOM;
+  ctx.drawImage(arenaCanvas, cx-halfPx, cy-halfPx);
 }
 function drawBullet(b){ const p = worldToScreen(b.x, b.z); ctx.fillStyle = b.color; ctx.globalAlpha = 0.6; ctx.beginPath(); ctx.arc(p.x, p.y, b.radius*2, 0, Math.PI*2); ctx.fill(); ctx.globalAlpha = 1; ctx.fillStyle = '#fff'; ctx.beginPath(); ctx.arc(p.x, p.y, b.radius*0.6, 0, Math.PI*2); ctx.fill(); }
+let hudSkip = 0;
 function updateHUD(){
+  if ((hudSkip++ % 3) !== 0) return;
   const pIcon = (side === 'enemy') ? '💠 ' : '🌿 ';
   const eIcon = (side === 'enemy') ? '🌿 ' : '💠 ';
   $('hpPlayer').textContent = pIcon + Math.max(0, Math.round(player.hp));
@@ -1238,7 +1406,7 @@ $('authBtn').addEventListener('click', async () => {
     profile.levels = pl.levels || {};
     profile.selected = pl.selected || profile.selected;
     try { localStorage.setItem(SAVE_KEY, JSON.stringify(profile)); } catch(e){}
-    hideAuth(); updateProfileUI();
+    hideAuth(); updateProfileUI(); startFriendsPolling();
   } catch(e){ $('authErr').textContent = 'Ошибка сети'; }
   $('authBtn').textContent = authMode==='login'?'ВОЙТИ':'СОЗДАТЬ АККАУНТ';
   $('authBtn').disabled = false;
@@ -1247,8 +1415,9 @@ $('authPass').addEventListener('keydown', e => { if (e.key === 'Enter') $('authB
 $('nickLabel').addEventListener('click', () => { if (token) showAuth(); });
 $('logoutBtn').addEventListener('click', () => {
   if (!confirm('Выйти?')) return;
-  token = ''; nickname = '';
+  token = ''; nickname = ''; friends = [];
   try { localStorage.removeItem(TOKEN_KEY); localStorage.removeItem(NICK_KEY); } catch(e){}
+  stopFriendsPolling(); renderFriends();
   updateProfileUI(); showAuth();
 });
 
@@ -1263,7 +1432,7 @@ function gameLoop(t){
 }
 requestAnimationFrame(gameLoop);
 (async () => {
-  if (token){ const ok = await loadMe(); if (ok) updateProfileUI(); }
+  if (token){ const ok = await loadMe(); if (ok) { updateProfileUI(); startFriendsPolling(); } }
   playCutscene();
 })();
 </script>
