@@ -217,8 +217,6 @@ html,body{width:100%;height:100%;overflow:hidden;background:#000;font-family:-ap
 #trophyToast{position:absolute;top:32%;left:50%;transform:translateX(-50%);font-size:clamp(20px,6vw,36px);font-weight:900;color:#ffd54f;display:none;z-index:31;text-align:center;pointer-events:none}
 #leave{position:absolute;top:calc(env(safe-area-inset-top) + 6px);right:8px;width:32px;height:32px;border-radius:50%;background:rgba(255,46,138,.25);border:2px solid #ff2e8a;color:#ff2e8a;font-size:15px;font-weight:900;line-height:28px;text-align:center;display:none;pointer-events:auto;cursor:pointer;z-index:20}
 #soundBtn{position:fixed;top:calc(env(safe-area-inset-top) + 6px);right:48px;width:32px;height:32px;border-radius:50%;background:rgba(0,229,255,.2);border:2px solid #00e5ff;color:#00e5ff;font-size:15px;line-height:28px;text-align:center;display:none;pointer-events:auto;cursor:pointer;z-index:20}
-#dbg{position:fixed;bottom:0;left:0;right:0;max-height:22vh;overflow:auto;background:rgba(0,0,0,.8);color:#7cf86b;font:11px/1.3 monospace;padding:4px 6px;z-index:999999;display:none;pointer-events:auto;white-space:pre-wrap}
-#dbg.on{display:block}
 </style>
 </head>
 <body>
@@ -303,8 +301,6 @@ html,body{width:100%;height:100%;overflow:hidden;background:#000;font-family:-ap
   <div id="msg"></div><div id="trophyToast"></div>
 </div>
 
-<div id="dbg"></div>
-
 <div id="fighterCard">
   <div class="fc-top">
     <div class="fc-portrait" id="fcPortrait"><canvas id="fcCanvas" width="88" height="88"></canvas></div>
@@ -340,30 +336,11 @@ html,body{width:100%;height:100%;overflow:hidden;background:#000;font-family:-ap
 </div>
 
 <script type="module">
-/* DIAG */
-const DBG = (() => {
-  const el = document.getElementById('dbg');
-  const show = () => { if (el) el.classList.add('on'); };
-  const log = (...args) => {
-    try {
-      const s = args.map(a => typeof a === 'string' ? a : JSON.stringify(a)).join(' ');
-      console.log('[DS]', s);
-      if (el){ el.textContent = (el.textContent + '\n' + s).slice(-2000); show(); }
-    } catch(e){}
-  };
-  return { log, show, el };
-})();
+/* Debug-лог теперь только в console, никакой надписи на экране */
+const DBG = { log: (...args) => { try { console.log('[DS]', ...args); } catch(e){} }, show: () => {} };
 DBG.log('boot');
-window.addEventListener('error', e => {
-  const msg = 'ERR: ' + (e.message || 'unknown') + ' @ ' + (e.filename||'') + ':' + (e.lineno||0);
-  try { document.title = msg; } catch(_){}
-  DBG.log(msg);
-});
-window.addEventListener('unhandledrejection', e => {
-  const msg = 'REJ: ' + ((e.reason && (e.reason.message||e.reason)) || 'unknown');
-  try { document.title = msg; } catch(_){}
-  DBG.log(msg);
-});
+window.addEventListener('error', e => { try { console.error('[DS] ERR:', e.message, e.filename, e.lineno); } catch(_){} });
+window.addEventListener('unhandledrejection', e => { try { console.error('[DS] REJ:', e.reason); } catch(_){} });
 
 const $ = id => document.getElementById(id);
 let pickSide = 'plant';
@@ -647,7 +624,6 @@ async function playCutscene(){
 function endCutscene(){
   if (csEnded) return;
   csEnded = true;
-  DBG.log('endCutscene');
   if (csWatchdog){ clearTimeout(csWatchdog); csWatchdog = null; }
   csClearTimers();
   if (csSkipAll) csSkipAll();
@@ -1177,18 +1153,7 @@ function drawAim(){
   const colorDim = isEnemy ? 'rgba(0,229,255,0.35)' : 'rgba(124,248,107,0.35)';
   const kind = player.fighter.attack || 'single';
 
-  const RANGE = {
-    single:  3.0,
-    triple:  3.2,
-    shotgun: 2.2,
-    long:    4.6,
-    rapid:   2.6,
-    pierce:  3.6,
-    grenade: 3.0,
-    homing:  3.4,
-    wave:    2.6,
-    spiral:  2.8
-  }[kind] || 3.0;
+  const RANGE = { single:3.0, triple:3.2, shotgun:2.2, long:4.6, rapid:2.6, pierce:3.6, grenade:3.0, homing:3.4, wave:2.6, spiral:2.8 }[kind] || 3.0;
   const len = ZOOM * RANGE;
 
   ctx.save();
@@ -1548,12 +1513,11 @@ function startLoop(){
 }
 startLoop();
 
-DBG.log('calling playCutscene');
 playCutscene();
 
 (async () => {
-  if (!token){ DBG.log('no token'); return; }
-  try { const ok = await loadMe(); if (ok){ DBG.log('loadMe ok'); updateProfileUI(); startFriendsPolling(); } else DBG.log('loadMe false'); } catch(e){ DBG.log('loadMe catch', e.message||String(e)); }
+  if (!token) return;
+  try { const ok = await loadMe(); if (ok){ updateProfileUI(); startFriendsPolling(); } } catch(e){ DBG.log('loadMe catch', e.message||String(e)); }
 })();
 </script>
 </body>
