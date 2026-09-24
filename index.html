@@ -125,7 +125,6 @@ html,body{width:100%;height:100%;overflow:hidden;background:#000;font-family:-ap
 #authModal button{padding:14px;background:linear-gradient(180deg,#2cff5e,#16a34a);border:none;color:#04141d;font-weight:900;font-size:14px;border-radius:12px;cursor:pointer;width:100%;max-width:320px}
 #authModal .hint{font-size:12px;color:#9fd7ff;text-align:center;max-width:320px;line-height:1.4}
 #authModal .err{color:#ff2e8a;font-weight:800;font-size:13px;text-align:center;min-height:18px}
-
 #friendsAdd{display:flex;gap:6px;width:100%;max-width:440px}
 #friendsAdd input{flex:1;padding:12px;background:rgba(255,255,255,.08);border:2px solid #00e5ff;border-radius:10px;color:#fff;font-size:15px;outline:none;text-align:center;pointer-events:auto}
 #friendsAdd input:focus{border-color:#7cf86b}
@@ -143,7 +142,6 @@ html,body{width:100%;height:100%;overflow:hidden;background:#000;font-family:-ap
 .friend-btn.remove{background:rgba(255,46,138,.2);border-color:#ff2e8a;color:#ff2e8a}
 .friend-btn:disabled{opacity:.4;cursor:default}
 #friendsEmpty{color:#9fd7ff;font-size:12px;text-align:center;padding:16px 8px}
-
 #fighterCard{position:fixed;inset:0;z-index:300;background:rgba(5,7,13,.97);display:none;flex-direction:column;align-items:center;padding:16px;padding-top:calc(env(safe-area-inset-top) + 16px);gap:10px;overflow-y:auto;pointer-events:auto}
 #fighterCard.show{display:flex}
 #fighterCard .fc-top{width:100%;max-width:440px;display:flex;gap:10px;align-items:center}
@@ -342,9 +340,7 @@ html,body{width:100%;height:100%;overflow:hidden;background:#000;font-family:-ap
 </div>
 
 <script type="module">
-/* ============================================================
-   DIAG: любые ошибки видны сразу и в title, и в плашке #dbg
-   ============================================================ */
+/* DIAG */
 const DBG = (() => {
   const el = document.getElementById('dbg');
   const show = () => { if (el) el.classList.add('on'); };
@@ -374,7 +370,7 @@ const $ = id => document.getElementById(id);
 let pickSide = 'plant';
 let chosenFighter = null;
 
-/* ================== ПРОФИЛЬ + СЕРВЕР ================== */
+/* ===== ПРОФИЛЬ ===== */
 const SAVE_KEY = 'digital_style_save_v18';
 const TOKEN_KEY = 'digital_style_token';
 const NICK_KEY = 'digital_style_nick';
@@ -382,16 +378,8 @@ let token = '', nickname = '';
 try { token = localStorage.getItem(TOKEN_KEY) || ''; nickname = localStorage.getItem(NICK_KEY) || ''; } catch(e){}
 let profile = { kk: 200, trophies: 0, wins: 0, losses: 0, kills: 0, games: 0, unlocked: { plant_0: true, plant_1: true, plant_2: true, inv_0: true }, levels: {}, selected: { plant: 'plant_0', enemy: 'inv_0' }, cs_seen: false, sound: true };
 try { const raw = localStorage.getItem(SAVE_KEY); if (raw) Object.assign(profile, JSON.parse(raw)); } catch(e){}
-function saveProfile(){
-  try { localStorage.setItem(SAVE_KEY, JSON.stringify(profile)); } catch(e){}
-  if (token) syncToServer();
-}
-async function syncToServer(){
-  if (!token) return;
-  try {
-    await fetch('/api/save', { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-Token': token }, body: JSON.stringify({ kk: profile.kk, trophies: profile.trophies, wins: profile.wins||0, losses: profile.losses||0, kills: profile.kills||0, games: profile.games||0, unlocked: profile.unlocked, levels: profile.levels, selected: profile.selected, lastSeen: Date.now() }) });
-  } catch(e){}
-}
+function saveProfile(){ try { localStorage.setItem(SAVE_KEY, JSON.stringify(profile)); } catch(e){} if (token) syncToServer(); }
+async function syncToServer(){ if (!token) return; try { await fetch('/api/save', { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-Token': token }, body: JSON.stringify({ kk: profile.kk, trophies: profile.trophies, wins: profile.wins||0, losses: profile.losses||0, kills: profile.kills||0, games: profile.games||0, unlocked: profile.unlocked, levels: profile.levels, selected: profile.selected, lastSeen: Date.now() }) }); } catch(e){} }
 async function loadMe(){
   if (!token) return false;
   try {
@@ -401,18 +389,7 @@ async function loadMe(){
     clearTimeout(to);
     if (r.status === 401){ token = ''; nickname = ''; try { localStorage.removeItem(TOKEN_KEY); localStorage.removeItem(NICK_KEY); } catch(e){} return false; }
     const data = await r.json();
-    if (data.ok && data.player){
-      const p = data.player;
-      profile.kk = p.kk; profile.trophies = p.trophies;
-      profile.wins = p.wins||0; profile.losses = p.losses||0;
-      profile.kills = p.kills||0; profile.games = p.games||0;
-      profile.unlocked = p.unlocked || profile.unlocked;
-      profile.levels = p.levels || {};
-      profile.selected = p.selected || profile.selected;
-      nickname = p.nickname;
-      try { localStorage.setItem(SAVE_KEY, JSON.stringify(profile)); localStorage.setItem(NICK_KEY, nickname); } catch(e){}
-      return true;
-    }
+    if (data.ok && data.player){ const p = data.player; profile.kk = p.kk; profile.trophies = p.trophies; profile.wins = p.wins||0; profile.losses = p.losses||0; profile.kills = p.kills||0; profile.games = p.games||0; profile.unlocked = p.unlocked || profile.unlocked; profile.levels = p.levels || {}; profile.selected = p.selected || profile.selected; nickname = p.nickname; try { localStorage.setItem(SAVE_KEY, JSON.stringify(profile)); localStorage.setItem(NICK_KEY, nickname); } catch(e){} return true; }
   } catch(e){ DBG.log('loadMe err', e.message||String(e)); }
   return false;
 }
@@ -421,48 +398,24 @@ const MAX_LEVEL = 10;
 function getUpgradeCost(level){ return 100 * level * level; }
 const RESPAWN_TIME = 5;
 
-/* ================== ДРУЗЬЯ ================== */
-let friends = [];
-let friendsPollTimer = null;
-let friendsPollBusy = false;
-const FRIENDS_POLL_MS = 15000;
-
+/* ===== ДРУЗЬЯ ===== */
+let friends = []; let friendsPollTimer = null; let friendsPollBusy = false; const FRIENDS_POLL_MS = 15000;
 async function fetchFriends(){
   if (!token) { friends = []; renderFriends(); return; }
-  if (friendsPollBusy) return;
-  friendsPollBusy = true;
-  try {
-    const r = await fetch('/api/friends', { headers: { 'X-Token': token } });
-    if (r.ok){
-      const data = await r.json();
-      if (data && data.ok && Array.isArray(data.friends)) friends = data.friends;
-    }
-  } catch(e){}
-  friendsPollBusy = false;
-  renderFriends();
+  if (friendsPollBusy) return; friendsPollBusy = true;
+  try { const r = await fetch('/api/friends', { headers: { 'X-Token': token } }); if (r.ok){ const data = await r.json(); if (data && data.ok && Array.isArray(data.friends)) friends = data.friends; } } catch(e){}
+  friendsPollBusy = false; renderFriends();
 }
 function renderFriends(){
-  const list = $('friendsList'); const empty = $('friendsEmpty'); const badge = $('friendsOnlineBadge');
-  if (!list) return;
+  const list = $('friendsList'); const empty = $('friendsEmpty'); const badge = $('friendsOnlineBadge'); if (!list) return;
   list.innerHTML = '';
-  if (!token){
-    empty.style.display = 'block';
-    empty.textContent = 'Войди в аккаунт, чтобы добавлять друзей и видеть, кто онлайн.';
-    if (badge) badge.textContent = '';
-    return;
-  }
-  if (friends.length === 0){
-    empty.style.display = 'block';
-    empty.textContent = 'Пока никого. Добавь друга по нику выше.';
-    if (badge) badge.textContent = '';
-    return;
-  }
+  if (!token){ empty.style.display = 'block'; empty.textContent = 'Войди в аккаунт, чтобы добавлять друзей и видеть, кто онлайн.'; if (badge) badge.textContent = ''; return; }
+  if (friends.length === 0){ empty.style.display = 'block'; empty.textContent = 'Пока никого. Добавь друга по нику выше.'; if (badge) badge.textContent = ''; return; }
   empty.style.display = 'none';
   const onlineCount = friends.filter(f => f.online).length;
   if (badge) badge.textContent = '· онлайн ' + onlineCount + '/' + friends.length;
   friends.slice().sort((a,b) => (b.online?1:0) - (a.online?1:0) || (b.trophies||0) - (a.trophies||0)).forEach(f => {
-    const row = document.createElement('div');
-    row.className = 'friend-row' + (f.online ? '' : ' offline');
+    const row = document.createElement('div'); row.className = 'friend-row' + (f.online ? '' : ' offline');
     const dot = document.createElement('div'); dot.className = 'friend-dot';
     const info = document.createElement('div'); info.className = 'friend-info';
     const nick = document.createElement('div'); nick.className = 'friend-nick'; nick.textContent = f.nickname;
@@ -470,8 +423,7 @@ function renderFriends(){
     stats.textContent = (f.online ? '● в сети' : '○ оффлайн') + ' · 🏆 ' + (f.trophies||0);
     info.appendChild(nick); info.appendChild(stats);
     const btns = document.createElement('div'); btns.className = 'friend-btns';
-    const duel = document.createElement('button'); duel.className = 'friend-btn duel'; duel.textContent = 'ВЫЗВАТЬ';
-    duel.disabled = !f.online;
+    const duel = document.createElement('button'); duel.className = 'friend-btn duel'; duel.textContent = 'ВЫЗВАТЬ'; duel.disabled = !f.online;
     duel.addEventListener('click', () => inviteFriendToDuel(f.nickname));
     const rm = document.createElement('button'); rm.className = 'friend-btn remove'; rm.textContent = '✕';
     rm.addEventListener('click', () => removeFriend(f.nickname));
@@ -481,53 +433,29 @@ function renderFriends(){
   });
 }
 async function addFriend(){
-  const input = $('friendNickInput');
-  const nick = (input.value || '').trim();
+  const input = $('friendNickInput'); const nick = (input.value || '').trim();
   if (!/^[a-zA-Z0-9_]{3,16}$/.test(nick)){ alert('Ник: 3-16 символов, буквы/цифры/_'); return; }
   if (!token){ showAuth(); return; }
-  try {
-    const r = await fetch('/api/friends/add', { method:'POST', headers: { 'Content-Type':'application/json', 'X-Token': token }, body: JSON.stringify({ nickname: nick }) });
-    const data = await r.json().catch(() => ({}));
-    if (!data.ok){ alert(data.error || 'Не удалось добавить'); return; }
-    input.value = '';
-    await fetchFriends();
-  } catch(e){ alert('Ошибка сети'); }
+  try { const r = await fetch('/api/friends/add', { method:'POST', headers: { 'Content-Type':'application/json', 'X-Token': token }, body: JSON.stringify({ nickname: nick }) }); const data = await r.json().catch(() => ({})); if (!data.ok){ alert(data.error || 'Не удалось добавить'); return; } input.value = ''; await fetchFriends(); } catch(e){ alert('Ошибка сети'); }
 }
 async function removeFriend(nick){
   if (!confirm('Удалить ' + nick + ' из друзей?')) return;
-  try {
-    await fetch('/api/friends/remove', { method:'POST', headers: { 'Content-Type':'application/json', 'X-Token': token }, body: JSON.stringify({ nickname: nick }) });
-  } catch(e){}
-  friends = friends.filter(f => f.nickname !== nick);
-  renderFriends();
+  try { await fetch('/api/friends/remove', { method:'POST', headers: { 'Content-Type':'application/json', 'X-Token': token }, body: JSON.stringify({ nickname: nick }) }); } catch(e){}
+  friends = friends.filter(f => f.nickname !== nick); renderFriends();
 }
 async function inviteFriendToDuel(nick){
-  try {
-    const r = await fetch('/api/friends/duel', { method:'POST', headers: { 'Content-Type':'application/json', 'X-Token': token }, body: JSON.stringify({ nickname: nick }) });
-    const data = await r.json().catch(() => ({}));
-    if (!data.ok){ alert(data.error || 'Не удалось отправить вызов'); return; }
-    alert('Вызов отправлен: ' + nick);
-  } catch(e){ alert('Ошибка сети'); }
+  try { const r = await fetch('/api/friends/duel', { method:'POST', headers: { 'Content-Type':'application/json', 'X-Token': token }, body: JSON.stringify({ nickname: nick }) }); const data = await r.json().catch(() => ({})); if (!data.ok){ alert(data.error || 'Не удалось отправить вызов'); return; } alert('Вызов отправлен: ' + nick); } catch(e){ alert('Ошибка сети'); }
 }
-function startFriendsPolling(){
-  if (friendsPollTimer) clearInterval(friendsPollTimer);
-  fetchFriends();
-  friendsPollTimer = setInterval(() => {
-    const s = $('scFriends');
-    if (s && s.classList.contains('active')) fetchFriends();
-  }, FRIENDS_POLL_MS);
-}
+function startFriendsPolling(){ if (friendsPollTimer) clearInterval(friendsPollTimer); fetchFriends(); friendsPollTimer = setInterval(() => { const s = $('scFriends'); if (s && s.classList.contains('active')) fetchFriends(); }, FRIENDS_POLL_MS); }
 function stopFriendsPolling(){ if (friendsPollTimer){ clearInterval(friendsPollTimer); friendsPollTimer = null; } }
 
-/* ================== ЗВУК ================== */
+/* ===== ЗВУК ===== */
 let audioCtx = null;
 function initAudio(){ if (audioCtx) return; try { audioCtx = new (window.AudioContext || window.webkitAudioContext)(); } catch(e){} }
 function playSound(type){
   if (!profile.sound || !audioCtx) return;
   const t = audioCtx.currentTime;
-  const o = audioCtx.createOscillator();
-  const g = audioCtx.createGain();
-  o.connect(g); g.connect(audioCtx.destination);
+  const o = audioCtx.createOscillator(); const g = audioCtx.createGain(); o.connect(g); g.connect(audioCtx.destination);
   switch(type){
     case 'shoot': o.type='square'; o.frequency.setValueAtTime(600,t); o.frequency.exponentialRampToValueAtTime(200,t+0.08); g.gain.setValueAtTime(0.05,t); g.gain.exponentialRampToValueAtTime(0.001,t+0.08); o.start(t); o.stop(t+0.1); break;
     case 'hit': o.type='sawtooth'; o.frequency.setValueAtTime(200,t); o.frequency.exponentialRampToValueAtTime(80,t+0.1); g.gain.setValueAtTime(0.08,t); g.gain.exponentialRampToValueAtTime(0.001,t+0.12); o.start(t); o.stop(t+0.14); break;
@@ -544,7 +472,7 @@ $('soundBtn').addEventListener('click', () => { initAudio(); toggleSound(); });
 document.addEventListener('touchstart', initAudio, {once:true});
 document.addEventListener('mousedown', initAudio, {once:true});
 
-/* ================== КАРТЫ ================== */
+/* ===== КАРТЫ ===== */
 const MAPS = [
   { id:0, name:'Неон-Арена', size:40, bg:'#1a3a22', grid:'rgba(0,229,255,.18)', border:'#2cff5e', theme:'neon', obstacles:[], effects:null },
   { id:1, name:'Джунгли', size:50, bg:'#0f2818', grid:'rgba(124,248,107,.14)', border:'#4ade80', theme:'jungle', obstacles:[[-10,-8,3],[10,8,3],[-15,12,4],[15,-12,4],[0,0,2.5]], effects:null },
@@ -560,14 +488,14 @@ const MAPS = [
 let currentMap = MAPS[0];
 function rollRandomMap(){ currentMap = MAPS[Math.floor(Math.random()*MAPS.length)]; $('mapName').textContent = currentMap.name; $('mapSize').textContent = currentMap.size + '×' + currentMap.size + ' • ' + currentMap.theme; }
 
-/* ================== РЕЖИМЫ ================== */
+/* ===== РЕЖИМЫ ===== */
 const MODES = { classic:{ id:'classic', name:'КЛАССИКА' }, deathmatch:{ id:'deathmatch', name:'МЯСОРУБКА' }, defense:{ id:'defense', name:'ОБОРОНА' } };
 let currentMode = MODES.classic;
 const INVADER_BUFF = { classic:{ hp:2.2, dmg:1.6, speed:1.3, fireRate:0.55 }, deathmatch:{ hp:1.0, dmg:1.0, speed:1.0, fireRate:1.00 }, defense:{ hp:1.3, dmg:1.2, speed:1.0, fireRate:0.95 } };
 const DEFENSE_WAVES = 5;
 const DM_KILLS_TO_WIN = 20;
 
-/* ================== БОЙЦЫ ================== */
+/* ===== БОЙЦЫ ===== */
 const PLANT_NAMES = ['КУСТ','КАКТУС','ЦВЕТОК','ДЕРЕВО','ГРИБ','ЯГОДА','БАМБУК','ЛИЛИЯ','РОЗА','ПАЛЬМА','ЛИАНА','ПАПОРОТНИК','МОХ','ТЮЛЬПАН','МАРГАРИТКА','ЛАВАНДА','СИРЕНЬ','ОРХИДЕЯ','ФИАЛКА','ЛОТОС','КЛЕВЕР','БОНСАЙ','АЛОЭ','МЯТА','БАЗИЛИК','РОМАШКА','ПИОН','ВАСИЛЁК','ЖАСМИН','МАГНОЛИЯ','БЕРЁЗА','ДУБ','КЛЁН','ЕЛЬ','СОСНА','ИВА','ОСИНА','КЕДР','ЛИПА','ТОПОЛЬ'];
 const PLANT_COLORS = ['#7cf86b','#4ade80','#f472b6','#166534','#ef4444','#ec4899','#22c55e','#fef3c7','#dc2626','#10b981','#84cc16','#65a30d','#f97316','#fb923c','#06b6d4','#0891b2','#8b5cf6','#a855f7','#c026d3','#db2777','#059669','#047857','#365314','#4d7c0f','#16a34a','#eab308','#facc15','#fde047','#fbbf24','#f59e0b','#0284c7','#0ea5e9','#38bdf8','#7dd3fc','#a78bfa','#c4b5fd','#e879f9','#f0abfc','#fecaca','#fca5a5'];
 const PLANT_SHAPES = ['blob','cactus','flower','tree','mushroom','berry','bamboo','lily','rose','palm'];
@@ -592,7 +520,7 @@ function isUnlocked(id){ return !!profile.unlocked[id]; }
 const ATTACK_NAMES = { single:'Одиночный', triple:'Тройной', shotgun:'Дробовик', long:'Дальний', rapid:'Скорострельный', pierce:'Пробивающий', grenade:'Граната', homing:'Самонаводка', wave:'Волна', spiral:'Спираль' };
 const SUPER_NAMES = { heal:'Исцеление', spikes:'Шипы', laser:'Лазер', roots:'Корни', poison:'Яд', burst:'Взрыв', walls:'Стены', shield:'Щит', thorns:'Шипастый щит', wave:'Волна', dash:'Рывок', barrage:'Залп', swarm:'Рой', blink:'Прыжок' };
 
-/* ================== РИСОВАНИЕ БОЙЦОВ ================== */
+/* ===== РИСОВАНИЕ ===== */
 function roundRect(ctx, x, y, w, h, r){ ctx.beginPath(); ctx.moveTo(x+r, y); ctx.arcTo(x+w, y, x+w, y+h, r); ctx.arcTo(x+w, y+h, x, y+h, r); ctx.arcTo(x, y+h, x, y, r); ctx.arcTo(x, y, x+w, y, r); ctx.closePath(); }
 function shade(hex, amt){ const n = parseInt(hex.slice(1), 16); let r = (n>>16)+amt, g = ((n>>8)&0xff)+amt, b = (n&0xff)+amt; r = Math.max(0, Math.min(255, r)); g = Math.max(0, Math.min(255, g)); b = Math.max(0, Math.min(255, b)); return '#' + ((r<<16)|(g<<8)|b).toString(16).padStart(6,'0'); }
 function drawFighterShape(ctx, fighter, x, y, size, angle, isDead, walkPhase){
@@ -650,37 +578,23 @@ function drawBug(ctx, s, c){ ctx.strokeStyle = '#05070d'; ctx.lineWidth = s*0.09
 function drawGhost(ctx, s, c){ ctx.globalAlpha *= 0.85; const g = ctx.createRadialGradient(0, -s*0.15, 0, 0, 0, s*0.5); g.addColorStop(0, '#fff'); g.addColorStop(1, c); ctx.fillStyle = g; ctx.beginPath(); ctx.arc(0, -s*0.05, s*0.4, Math.PI, 0); ctx.lineTo(s*0.4, s*0.3); for (let i = 4; i >= 0; i--){ ctx.lineTo(-s*0.4 + (i/4)*s*0.8, s*0.15 + (i%2===0 ? s*0.18 : -s*0.05)); } ctx.closePath(); ctx.fill(); ctx.stroke(); ctx.globalAlpha /= 0.85; }
 function drawPortrait(canvas, fighter){ const ctx = canvas.getContext('2d'); const dpr = Math.min(devicePixelRatio, 1.5); const size = canvas.clientWidth || 100; canvas.width = size*dpr; canvas.height = size*dpr; ctx.setTransform(1,0,0,1,0,0); ctx.scale(dpr, dpr); ctx.clearRect(0, 0, size, size); drawFighterShape(ctx, fighter, size/2, size/2, size*0.85, -Math.PI/2, false, 0); }
 
-/* ================== КАТ-СЦЕНА (HARD FIX) ================== */
+/* ===== КАТ-СЦЕНА ===== */
 let csToken = 0;
 let csSkipAll = null;
 let csEnded = false;
 let csTimers = [];
 let csWatchdog = null;
-
 function csSet(fn, ms){ const id = setTimeout(fn, ms); csTimers.push(id); return id; }
 function csClearTimers(){ csTimers.forEach(clearTimeout); csTimers = []; }
-
 function wait(ms){
   const myToken = ++csToken;
   return new Promise(resolve => {
-    const t = setTimeout(() => {
-      if (myToken !== csToken) return resolve('skip');
-      csSkipAll = null;
-      resolve('timeout');
-    }, ms);
-    csSkipAll = () => {
-      if (myToken !== csToken) return;
-      clearTimeout(t);
-      csToken++;
-      csSkipAll = null;
-      resolve('skip');
-    };
+    const t = setTimeout(() => { if (myToken !== csToken) return resolve('skip'); csSkipAll = null; resolve('timeout'); }, ms);
+    csSkipAll = () => { if (myToken !== csToken) return; clearTimeout(t); csToken++; csSkipAll = null; resolve('skip'); };
   });
 }
 function cancelCutscene(){ if (csSkipAll) csSkipAll(); }
-
 $('skipBtn').addEventListener('pointerdown', e => { e.preventDefault(); cancelCutscene(); }, {passive:false});
-
 function clearSceneExtras(){ document.querySelectorAll('.plant-sprite,.invader-sprite,.note').forEach(e => e.remove()); }
 function spawnPlantsCS(count){ const positions = [[12,62],[32,58],[52,64],[72,58],[86,62],[20,76],[80,78],[42,70],[62,72]]; for (let i = 0; i < count; i++){ const p = positions[i % positions.length]; const el = document.createElement('div'); el.className = 'plant-sprite'; el.style.left = p[0] + '%'; el.style.top = p[1] + '%'; el.style.opacity = '0'; el.style.transform = 'translateY(30px) scale(0.6)'; el.innerHTML = '<div class="head"></div><div class="stem"></div>'; $('cutscene').appendChild(el); csSet(() => { el.style.opacity = '1'; el.style.transform = 'translateY(0) scale(1)'; }, 100 + i*120); } }
 function spawnNoteCS(){ const note = document.createElement('div'); note.className = 'note'; note.textContent = ['♪','♫','♬'][Math.floor(Math.random()*3)]; note.style.left = (20+Math.random()*60)+'%'; note.style.top = (55+Math.random()*15)+'%'; $('cutscene').appendChild(note); csSet(() => note.remove(), 3200); }
@@ -693,27 +607,15 @@ function triggerFlash(d){ const f = $('flash'); f.classList.add('on'); csSet(() 
 
 async function playCutscene(){
   DBG.log('playCutscene start, cs_seen=', String(profile.cs_seen));
-  csEnded = false;
-  csToken = 0;
-  csSkipAll = null;
-  csClearTimers();
+  csEnded = false; csToken = 0; csSkipAll = null; csClearTimers();
   if (csWatchdog) clearTimeout(csWatchdog);
-  csWatchdog = setTimeout(() => {
-    if (!$('cutscene').classList.contains('hidden')){
-      DBG.log('watchdog fired -> endCutscene');
-      endCutscene();
-    }
-  }, 30000);
-
-  if (profile.cs_seen === true){ DBG.log('cs_seen=true, skip to menu'); endCutscene(); return; }
+  csWatchdog = setTimeout(() => { if (!$('cutscene').classList.contains('hidden')){ DBG.log('watchdog fired'); endCutscene(); } }, 30000);
+  if (profile.cs_seen === true){ DBG.log('cs_seen=true, skip'); endCutscene(); return; }
   clearSceneExtras();
   ['bg1','bg2','bg3','bg4','bg5'].forEach(id => $(id).classList.remove('active'));
   $('csText').classList.remove('show'); $('csTitle').classList.remove('show'); $('csLogo').classList.remove('show');
-
   $('cutscene').classList.remove('hidden');
-  // ФОРС-REFLOW: без него на iOS transition не запускается
   void $('cutscene').offsetHeight;
-
   setSceneBg(['bg1']); setProgress(0); $('csTitle').classList.add('show'); spawnPlantsCS(5);
   if (await wait(2000) === 'skip') return endCutscene();
   $('csTitle').classList.remove('show');
@@ -757,7 +659,7 @@ function endCutscene(){
   goToMenu();
 }
 
-/* ================== ПРОФИЛЬ UI ================== */
+/* ===== РАНГИ ===== */
 const RANKS = [
   { t:0, name:'Дерево I', color:'#7cf86b' },{ t:10, name:'Дерево II', color:'#7cf86b' },
   { t:25, name:'Дерево III', color:'#4ade80' },{ t:45, name:'Кристалл I', color:'#22c55e' },
@@ -781,7 +683,7 @@ function updateProfileUI(){
   } catch(e){ DBG.log('updateProfileUI err', e.message||String(e)); }
 }
 
-/* ================== МЕНЮ ================== */
+/* ===== МЕНЮ ===== */
 function switchMainTab(tabId){
   document.querySelectorAll('.mainTab').forEach(t => t.classList.remove('active'));
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
@@ -829,73 +731,39 @@ $('playBtn').addEventListener('click', () => { if (!chosenFighter || !isUnlocked
 $('friendAddBtn').addEventListener('click', addFriend);
 $('friendNickInput').addEventListener('keydown', e => { if (e.key === 'Enter') addFriend(); });
 
-/* ================== БОКСЫ + АКЦИИ ================== */
+/* ===== БОКСЫ ===== */
 const BOXES = [
   { id:'common', name:'ОБЫЧНЫЙ', icon:'📦', price:50, color:'common', weights: { common: 0.7, rare: 0.25, epic: 0.045, legend: 0.005 }, kkBack: 20 },
   { id:'rare', name:'РЕДКИЙ', icon:'🎁', price:150, color:'rare', weights: { common: 0.4, rare: 0.45, epic: 0.13, legend: 0.02 }, kkBack: 60 },
   { id:'epic', name:'ЭПИК', icon:'💎', price:400, color:'epic', weights: { common: 0.15, rare: 0.4, epic: 0.4, legend: 0.05 }, kkBack: 150 },
   { id:'legend', name:'ЛЕГЕНДА', icon:'👑', price:1000, color:'legend', weights: { common: 0, rare: 0.15, epic: 0.55, legend: 0.3 }, kkBack: 400 }
 ];
-function generateDiscount(){
-  const roll = Math.random();
-  let discount = 0;
-  if (roll < 0.05) discount = 50;
-  else if (roll < 0.20) discount = 25;
-  else if (roll < 0.50) discount = 15;
-  else if (roll < 0.75) discount = 10;
-  const hoursLeft = 1 + Math.floor(Math.random() * 5);
-  return { discount, expiresAt: Date.now() + hoursLeft * 3600000 };
-}
-function loadDiscount(){
-  try {
-    const raw = localStorage.getItem('digital_style_discount');
-    if (raw){
-      const d = JSON.parse(raw);
-      if (d.expiresAt > Date.now()) return d;
-    }
-  } catch(e){}
-  const d = generateDiscount();
-  try { localStorage.setItem('digital_style_discount', JSON.stringify(d)); } catch(e){}
-  return d;
-}
+function generateDiscount(){ const roll = Math.random(); let discount = 0; if (roll < 0.05) discount = 50; else if (roll < 0.20) discount = 25; else if (roll < 0.50) discount = 15; else if (roll < 0.75) discount = 10; const hoursLeft = 1 + Math.floor(Math.random() * 5); return { discount, expiresAt: Date.now() + hoursLeft * 3600000 }; }
+function loadDiscount(){ try { const raw = localStorage.getItem('digital_style_discount'); if (raw){ const d = JSON.parse(raw); if (d.expiresAt > Date.now()) return d; } } catch(e){} const d = generateDiscount(); try { localStorage.setItem('digital_style_discount', JSON.stringify(d)); } catch(e){} return d; }
 let activeDiscount = loadDiscount();
 function refreshBoxes(){
   activeDiscount = loadDiscount();
   const row = $('boxesRow'); row.innerHTML = '';
   BOXES.forEach(b => {
-    const card = document.createElement('div');
-    card.className = 'box-card ' + b.color;
+    const card = document.createElement('div'); card.className = 'box-card ' + b.color;
     const hasDisc = activeDiscount.discount > 0;
     const finalPrice = hasDisc ? Math.round(b.price * (1 - activeDiscount.discount / 100)) : b.price;
     if (hasDisc) card.classList.add('discount');
     let html = '<div class="icon">' + b.icon + '</div><div class="title">' + b.name + '</div>';
-    if (hasDisc){
-      html += '<div class="price old">💾 ' + b.price + '</div>';
-      html += '<div class="price">💾 ' + finalPrice + '</div>';
-      html += '<div class="disc-badge">-' + activeDiscount.discount + '%</div>';
-    } else {
-      html += '<div class="price">💾 ' + b.price + '</div>';
-    }
+    if (hasDisc){ html += '<div class="price old">💾 ' + b.price + '</div>'; html += '<div class="price">💾 ' + finalPrice + '</div>'; html += '<div class="disc-badge">-' + activeDiscount.discount + '%</div>'; } else { html += '<div class="price">💾 ' + b.price + '</div>'; }
     card.innerHTML = html;
     card.addEventListener('click', () => openBox(b, finalPrice));
     row.appendChild(card);
   });
   const info = $('discountInfo');
-  if (activeDiscount.discount > 0){
-    const hoursLeft = Math.max(0, Math.ceil((activeDiscount.expiresAt - Date.now()) / 3600000));
-    info.textContent = '🔥 АКЦИЯ -' + activeDiscount.discount + '% • ещё ' + hoursLeft + ' ч.';
-    info.style.color = '#ffd54f';
-  } else {
-    info.textContent = 'Акций нет. Заглядывай позже!';
-    info.style.color = '#9fd7ff';
-  }
+  if (activeDiscount.discount > 0){ const hoursLeft = Math.max(0, Math.ceil((activeDiscount.expiresAt - Date.now()) / 3600000)); info.textContent = '🔥 АКЦИЯ -' + activeDiscount.discount + '% • ещё ' + hoursLeft + ' ч.'; info.style.color = '#ffd54f'; }
+  else { info.textContent = 'Акций нет. Заглядывай позже!'; info.style.color = '#9fd7ff'; }
 }
 function pickRandomRarity(weights){ const r = Math.random(); let acc = 0; for (const k in weights){ acc += weights[k]; if (r <= acc) return k; } return 'common'; }
 function openBox(box, finalPrice){
   const price = finalPrice || box.price;
   if (profile.kk < price){ alert('Не хватает КК! Нужно 💾 ' + price); return; }
-  profile.kk -= price;
-  playSound('box');
+  profile.kk -= price; playSound('box');
   const rarity = pickRandomRarity(box.weights);
   const pool = Object.keys(FIGHTERS).filter(id => FIGHTERS[id].rarity === rarity);
   const locked = pool.filter(id => !isUnlocked(id));
@@ -912,40 +780,25 @@ function showBoxOpening(resultId, isNew, rarity, box){
   $('boxAnim').textContent = box.icon;
   setTimeout(() => {
     $('boxAnim').style.display = 'none';
-    const card = $('boxResultCard');
-    card.className = 'result-card ' + rarity;
+    const card = $('boxResultCard'); card.className = 'result-card ' + rarity;
     const cv = $('boxResultCanvas');
-    if (resultId){
-      const f = FIGHTERS[resultId];
-      drawPortrait(cv, f);
-      $('boxResultName').textContent = f.name;
-      $('boxResultType').textContent = (isNew ? '✨ НОВЫЙ! ' : 'ДУБЛИКАТ ') + '• ' + rarity.toUpperCase();
-      playSound('win');
-    } else {
-      const ctx = cv.getContext('2d'); ctx.clearRect(0,0,cv.width,cv.height);
-      ctx.fillStyle = '#ffb300'; ctx.font = 'bold 60px sans-serif'; ctx.textAlign = 'center';
-      ctx.fillText('💾', cv.width/2, cv.height/2 + 20);
-      $('boxResultName').textContent = 'КУСКИ КОДА';
-      $('boxResultType').textContent = '+' + box.kkBack + ' KK • ' + rarity.toUpperCase();
-    }
+    if (resultId){ const f = FIGHTERS[resultId]; drawPortrait(cv, f); $('boxResultName').textContent = f.name; $('boxResultType').textContent = (isNew ? '✨ НОВЫЙ! ' : 'ДУБЛИКАТ ') + '• ' + rarity.toUpperCase(); playSound('win'); }
+    else { const ctx = cv.getContext('2d'); ctx.clearRect(0,0,cv.width,cv.height); ctx.fillStyle = '#ffb300'; ctx.font = 'bold 60px sans-serif'; ctx.textAlign = 'center'; ctx.fillText('💾', cv.width/2, cv.height/2 + 20); $('boxResultName').textContent = 'КУСКИ КОДА'; $('boxResultType').textContent = '+' + box.kkBack + ' KK • ' + rarity.toUpperCase(); }
     $('boxResult').classList.add('show');
   }, 1200);
   overlay.onclick = () => { overlay.style.display = 'none'; if ($('mtBoxes').classList.contains('active')) refreshBoxes(); updateProfileUI(); };
 }
 
-/* ================== КОЛЛЕКЦИЯ / ПРОКАЧКА ================== */
+/* ===== КОЛЛЕКЦИЯ / ПРОКАЧКА ===== */
 function refreshCollection(){
   const grid = $('collectionGrid'); grid.innerHTML = '';
   Object.keys(FIGHTERS).forEach(id => {
     const f = FIGHTERS[id];
     const card = document.createElement('div');
     card.className = 'col-card' + (f.side === 'enemy' ? ' enemySide' : '') + (isUnlocked(id) ? '' : ' locked');
-    const lvl = document.createElement('div'); lvl.className = 'lvl'; lvl.textContent = 'L' + getLevel(id);
-    if (!isUnlocked(id)) lvl.style.display = 'none';
-    card.appendChild(lvl);
+    const lvl = document.createElement('div'); lvl.className = 'lvl'; lvl.textContent = 'L' + getLevel(id); if (!isUnlocked(id)) lvl.style.display = 'none'; card.appendChild(lvl);
     const cv = document.createElement('canvas'); card.appendChild(cv);
-    const nm = document.createElement('div'); nm.className = 'name'; nm.textContent = isUnlocked(id) ? f.name : '???';
-    card.appendChild(nm);
+    const nm = document.createElement('div'); nm.className = 'name'; nm.textContent = isUnlocked(id) ? f.name : '???'; card.appendChild(nm);
     if (!isUnlocked(id)){ const lock = document.createElement('div'); lock.className = 'lock'; lock.textContent = '🔒'; card.appendChild(lock); }
     card.addEventListener('click', () => openFighterCard(f.id));
     grid.appendChild(card);
@@ -957,10 +810,8 @@ function refreshUpgrade(){
   const ids = Object.keys(FIGHTERS).filter(id => isUnlocked(id));
   if (ids.length === 0){ grid.innerHTML = '<div style="text-align:center;color:#9fd7ff;padding:20px;grid-column:1/-1;font-size:13px">Открой бойца в боксах</div>'; return; }
   ids.forEach(id => {
-    const f = FIGHTERS[id];
-    const lvl = getLevel(f.id);
-    const card = document.createElement('div');
-    card.className = 'col-card' + (f.side === 'enemy' ? ' enemySide' : '');
+    const f = FIGHTERS[id]; const lvl = getLevel(f.id);
+    const card = document.createElement('div'); card.className = 'col-card' + (f.side === 'enemy' ? ' enemySide' : '');
     const lvlEl = document.createElement('div'); lvlEl.className = 'lvl'; lvlEl.textContent = 'L' + lvl; card.appendChild(lvlEl);
     const cv = document.createElement('canvas'); card.appendChild(cv);
     const nm = document.createElement('div'); nm.className = 'name'; nm.textContent = f.name; card.appendChild(nm);
@@ -978,14 +829,12 @@ function goToMenu(){
   if (token) startFriendsPolling();
 }
 
-/* ================== КАРТОЧКА БОЙЦА ================== */
+/* ===== КАРТОЧКА БОЙЦА ===== */
 let currentCardFighter = null;
 function openFighterCard(fighterId){
   const f = FIGHTERS[fighterId]; if (!f) return;
   currentCardFighter = f;
-  const unlocked = isUnlocked(f.id);
-  const lvl = getLevel(f.id);
-  const stats = getFighterStats(f);
+  const unlocked = isUnlocked(f.id); const lvl = getLevel(f.id); const stats = getFighterStats(f);
   $('fcPortrait').className = 'fc-portrait' + (f.side === 'enemy' ? ' enemy' : '');
   $('fcName').textContent = f.name;
   $('fcSide').textContent = f.side === 'plant' ? 'РАСТЕНИЕ' : 'ЗАХВАТЧИК';
@@ -1003,62 +852,43 @@ function openFighterCard(fighterId){
   const pct = ((lvl-1)/(MAX_LEVEL-1))*100;
   $('fcProgress').style.width = pct + '%';
   $('fcLvlRow').textContent = 'L' + lvl + ' / L' + MAX_LEVEL;
-  if (lvl < MAX_LEVEL){
-    const cost = getUpgradeCost(lvl);
-    $('fcCost').textContent = '💾 ' + cost;
-    $('fcCost').style.color = profile.kk >= cost ? '#7cf86b' : '#ff2e8a';
-  } else $('fcCost').textContent = 'МАКС';
+  if (lvl < MAX_LEVEL){ const cost = getUpgradeCost(lvl); $('fcCost').textContent = '💾 ' + cost; $('fcCost').style.color = profile.kk >= cost ? '#7cf86b' : '#ff2e8a'; } else $('fcCost').textContent = 'МАКС';
   const upBtn = $('fcUpgradeBtn');
-  if (unlocked && lvl < MAX_LEVEL){
-    upBtn.style.display = 'block';
-    upBtn.textContent = 'ПРОКАЧАТЬ — 💾 ' + getUpgradeCost(lvl);
-    upBtn.disabled = profile.kk < getUpgradeCost(lvl);
-  } else upBtn.style.display = 'none';
+  if (unlocked && lvl < MAX_LEVEL){ upBtn.style.display = 'block'; upBtn.textContent = 'ПРОКАЧАТЬ — 💾 ' + getUpgradeCost(lvl); upBtn.disabled = profile.kk < getUpgradeCost(lvl); } else upBtn.style.display = 'none';
   const fightBtn = $('fcFightBtn');
-  if (unlocked){ fightBtn.style.display = 'block'; fightBtn.textContent = 'В БОЙ: ' + f.name; }
-  else fightBtn.style.display = 'none';
+  if (unlocked){ fightBtn.style.display = 'block'; fightBtn.textContent = 'В БОЙ: ' + f.name; } else fightBtn.style.display = 'none';
   $('fighterCard').classList.add('show');
   setTimeout(() => {
-    const cv = $('fcCanvas');
-    const dpr = Math.min(devicePixelRatio, 1.5);
-    const size = 88;
+    const cv = $('fcCanvas'); const dpr = Math.min(devicePixelRatio, 1.5); const size = 88;
     cv.width = size*dpr; cv.height = size*dpr;
-    const c = cv.getContext('2d');
-    c.setTransform(1,0,0,1,0,0); c.scale(dpr, dpr); c.clearRect(0, 0, size, size);
+    const c = cv.getContext('2d'); c.setTransform(1,0,0,1,0,0); c.scale(dpr, dpr); c.clearRect(0, 0, size, size);
     drawFighterShape(c, f, size/2, size/2, size*0.85, -Math.PI/2, false, 0);
   }, 30);
 }
 $('fcCloseBtn').addEventListener('click', () => { $('fighterCard').classList.remove('show'); currentCardFighter = null; });
 $('fcUpgradeBtn').addEventListener('click', () => {
   if (!currentCardFighter) return;
-  const f = currentCardFighter;
-  const lvl = getLevel(f.id);
+  const f = currentCardFighter; const lvl = getLevel(f.id);
   if (lvl >= MAX_LEVEL) return;
-  const cost = getUpgradeCost(lvl);
-  if (profile.kk < cost) return;
-  profile.kk -= cost;
-  profile.levels[f.id] = lvl + 1;
-  playSound('click');
-  saveProfile(); updateProfileUI();
-  openFighterCard(f.id);
+  const cost = getUpgradeCost(lvl); if (profile.kk < cost) return;
+  profile.kk -= cost; profile.levels[f.id] = lvl + 1;
+  playSound('click'); saveProfile(); updateProfileUI(); openFighterCard(f.id);
 });
 $('fcFightBtn').addEventListener('click', () => {
   if (!currentCardFighter) return;
-  const f = currentCardFighter;
-  if (!isUnlocked(f.id)) return;
-  chosenFighter = f;
-  profile.selected[f.side] = f.id;
-  saveProfile();
+  const f = currentCardFighter; if (!isUnlocked(f.id)) return;
+  chosenFighter = f; profile.selected[f.side] = f.id; saveProfile();
   $('fighterCard').classList.remove('show');
-  rollRandomMap();
-  $('menu').style.display = 'none';
-  startGame(f);
+  rollRandomMap(); $('menu').style.display = 'none'; startGame(f);
 });
 
-/* ================== ИГРА ================== */
+/* ===== ИГРА ===== */
 const canvas = $('game');
 const ctx = canvas.getContext('2d');
 let W = 0, H = 0, dpr = 1;
+/* arenaCanvas/arenaDirty — ОБЪЯВЛЕНЫ ДО resize(), иначе TDZ */
+const arenaCanvas = document.createElement('canvas');
+let arenaDirty = true;
 function resize(){ dpr = Math.min(devicePixelRatio, 1.5); W = innerWidth; H = innerHeight; canvas.width = W*dpr; canvas.height = H*dpr; canvas.style.width = W+'px'; canvas.style.height = H+'px'; ctx.setTransform(dpr, 0, 0, dpr, 0, 0); arenaDirty = true; }
 addEventListener('resize', resize); resize();
 let gameActive = false, side = null;
@@ -1082,12 +912,9 @@ const touch = {
 const player = { x: 0, z: 14, hp: 100, maxHp: 100, fighter: null, walkPhase: 0, shield: 0, velX: 0, velZ: 0, respawnTimer: 0, dead: false, stats: null };
 function worldToScreen(wx, wz){ return { x: W/2 + (wx-camera2D.x)*ZOOM + shakeX, y: H*0.68 + (wz-camera2D.z)*ZOOM + shakeY }; }
 
-const arenaCanvas = document.createElement('canvas');
-let arenaDirty = true;
 function buildArenaCache(){
   const sizePx = Math.ceil(ARENA * ZOOM);
-  arenaCanvas.width = sizePx;
-  arenaCanvas.height = sizePx;
+  arenaCanvas.width = sizePx; arenaCanvas.height = sizePx;
   const c = arenaCanvas.getContext('2d');
   c.clearRect(0, 0, sizePx, sizePx);
   const g = c.createRadialGradient(sizePx/2, sizePx/2, 0, sizePx/2, sizePx/2, sizePx/2);
@@ -1095,18 +922,10 @@ function buildArenaCache(){
   c.fillStyle = g; c.fillRect(0, 0, sizePx, sizePx);
   c.strokeStyle = currentMap.grid; c.lineWidth = 1;
   const step = 4*ZOOM;
-  for (let i = 0; i <= ARENA/4; i++){
-    c.beginPath(); c.moveTo(i*step, 0); c.lineTo(i*step, sizePx); c.stroke();
-    c.beginPath(); c.moveTo(0, i*step); c.lineTo(sizePx, i*step); c.stroke();
-  }
+  for (let i = 0; i <= ARENA/4; i++){ c.beginPath(); c.moveTo(i*step, 0); c.lineTo(i*step, sizePx); c.stroke(); c.beginPath(); c.moveTo(0, i*step); c.lineTo(sizePx, i*step); c.stroke(); }
   c.strokeStyle = currentMap.border; c.lineWidth = 8;
   c.strokeRect(0, 0, sizePx, sizePx);
-  for (const ob of obstacles){
-    const ox = (ob[0] + ARENA/2)*ZOOM, oy = (ob[1] + ARENA/2)*ZOOM, r = ob[2]*ZOOM;
-    c.fillStyle = shade(currentMap.border, -50); c.globalAlpha = 0.5;
-    c.beginPath(); c.arc(ox, oy, r, 0, Math.PI*2); c.fill(); c.globalAlpha = 1;
-    c.strokeStyle = currentMap.border; c.lineWidth = 3; c.stroke();
-  }
+  for (const ob of obstacles){ const ox = (ob[0] + ARENA/2)*ZOOM, oy = (ob[1] + ARENA/2)*ZOOM, r = ob[2]*ZOOM; c.fillStyle = shade(currentMap.border, -50); c.globalAlpha = 0.5; c.beginPath(); c.arc(ox, oy, r, 0, Math.PI*2); c.fill(); c.globalAlpha = 1; c.strokeStyle = currentMap.border; c.lineWidth = 3; c.stroke(); }
   arenaDirty = false;
 }
 
@@ -1217,8 +1036,7 @@ function updateAIUnit(unit, dt, allUnits, isEnemy){
   if (ai.cooldown <= 0 && dist < 20 && unit.ammo > 0){ let aimX = tx, aimZ = tz; const velX = target.ref.velX||0, velZ = target.ref.velZ||0; const timeToHit = dist/28; aimX += velX*timeToHit*0.8; aimZ += velZ*timeToHit*0.8; const adx = aimX - unit.x, adz = aimZ - unit.z; const al = Math.hypot(adx, adz) || 1; let dmg = isEnemy ? (unit.isBoss ? 26 : 18) : 12; if (isEnemy && side !== 'enemy') dmg *= damageBoost; performAttack(unit, adx/al, adz/al, isEnemy, false, !isEnemy, dmg); unit.ammo--; ai.cooldown = (unit.stats ? unit.stats.fireRate : 0.6); }
 }
 function explodeGrenade(b){
-  spawnParticles(b.x, b.z, b.color, 18, 15);
-  spawnParticles(b.x, b.z, '#ffd54f', 8, 10);
+  spawnParticles(b.x, b.z, b.color, 18, 15); spawnParticles(b.x, b.z, '#ffd54f', 8, 10);
   shakeAmount = 8;
   const r = b.explodeRadius || 2.5;
   if (b.fromPlayer || b.fromAlly){ for (const e of enemies){ if (e.hp <= 0) continue; if (Math.hypot(e.x-b.x, e.z-b.z) < r){ e.hp = Math.max(0, e.hp-b.baseDmg); if (b.fromPlayer) addSuperCharge(b.baseDmg); if (e.hp <= 0){ battleKK += 10; battleTrophies += 2; battleKills++; } } } }
@@ -1236,10 +1054,7 @@ function updateBullets(dt){
     if (b.fromPlayer || b.fromAlly){ for (let j = 0; j < enemies.length; j++){ const e = enemies[j]; if (e.hp <= 0) continue; if (Math.hypot(e.x-b.x, e.z-b.z) < hitR){ if (b.grenade){ explodeGrenade(b); dead = true; break; } e.hp = Math.max(0, e.hp-b.baseDmg); if (b.fromPlayer){ addSuperCharge(b.baseDmg); playSound('hit'); } if (e.hp <= 0){ battleKK += 10; battleTrophies += 2; battleKills++; if (e.isBoss){ endGame(true); return; } } if (!b.pierce) dead = true; if (dead) break; } } }
     else { if (!player.dead && Math.hypot(player.x-b.x, player.z-b.z) < hitR){ if (b.grenade){ explodeGrenade(b); } else { const d = b.baseDmg*(player.shield>0?0.3:1); player.hp = Math.max(0, player.hp-d); shakeAmount = 6; playSound('hit'); if (player.hp <= 0) killPlayer(); } dead = true; } else { for (let j = 0; j < allies.length; j++){ const a = allies[j]; if (a.hp <= 0) continue; if (Math.hypot(a.x-b.x, a.z-b.z) < hitR){ if (b.grenade) explodeGrenade(b); else a.hp = Math.max(0, a.hp-b.baseDmg); dead = true; break; } } } }
     if (dead){ spawnParticles(b.x, b.z, b.color, 3, 4); bullets.splice(i, 1); } }
-  if (currentMode === MODES.classic){
-    if (enemies.every(e => e.hp <= 0) && gameActive) endGame(true);
-    if (gameActive && player.dead && allies.length > 0 && allies.every(a => a.hp <= 0)) endGame(false);
-  }
+  if (currentMode === MODES.classic){ if (enemies.every(e => e.hp <= 0) && gameActive) endGame(true); if (gameActive && player.dead && allies.length > 0 && allies.every(a => a.hp <= 0)) endGame(false); }
   if (currentMode === MODES.deathmatch){ if (battleKills >= DM_KILLS_TO_WIN && gameActive) endGame(true); if (battleDeaths >= DM_KILLS_TO_WIN && gameActive) endGame(false); }
   if (currentMode === MODES.defense){ if (enemies.every(e => e.hp <= 0) && gameActive){ if (defenseWave >= DEFENSE_WAVES){ endGame(true); return; } defenseWave++; setTimeout(() => { if (gameActive) spawnDefenseWave(); updateHUD(); }, 1500); } if (gameActive && player.dead && allies.every(a => a.hp <= 0)) endGame(false); }
 }
@@ -1301,10 +1116,8 @@ function updateTeamsBar(){
   if ((hudFrameSkip++ % 3) !== 0) return;
   function upd(el, unit, isPlayer){
     if (!el || !unit) return;
-    const hpFill = el.querySelector('.hp-mini .fill');
-    const timer = el.querySelector('.timer');
-    const hp = isPlayer ? player.hp : unit.hp;
-    const maxHp = isPlayer ? player.maxHp : unit.maxHp;
+    const hpFill = el.querySelector('.hp-mini .fill'); const timer = el.querySelector('.timer');
+    const hp = isPlayer ? player.hp : unit.hp; const maxHp = isPlayer ? player.maxHp : unit.maxHp;
     const dead = isPlayer ? player.dead : (unit.hp <= 0);
     if (dead){ el.classList.add('dead'); const t = isPlayer ? player.respawnTimer : 0; if (isPlayer && t > 0){ timer.style.display = 'flex'; timer.textContent = Math.ceil(t); } else { timer.style.display = 'flex'; timer.textContent = '☠'; } hpFill.style.width = '0%'; }
     else { el.classList.remove('dead'); timer.style.display = 'none'; hpFill.style.width = Math.max(0, (hp/maxHp)*100) + '%'; }
@@ -1475,7 +1288,7 @@ bindFixedJoy($('superZone'), touch.super, $('joySuper'), $('joySuper').querySele
 addEventListener('keydown', e => { keys[e.key.toLowerCase()] = true; if (e.key === 'Escape' && gameActive) leaveToMenu(); });
 addEventListener('keyup', e => { keys[e.key.toLowerCase()] = false; });
 
-/* ================== AUTH (СЕРВЕР) ================== */
+/* ===== AUTH ===== */
 let authMode = 'login';
 function showAuth(){ $('authModal').classList.add('show'); $('authNick').value = ''; $('authPass').value = ''; $('authErr').textContent = ''; }
 function hideAuth(){ $('authModal').classList.remove('show'); }
@@ -1519,7 +1332,7 @@ $('logoutBtn').addEventListener('click', () => {
   updateProfileUI(); showAuth();
 });
 
-/* ================== СТАРТ ================== */
+/* ===== СТАРТ ===== */
 updateProfileUI();
 rollRandomMap();
 
@@ -1531,28 +1344,20 @@ function startLoop(){
   const tick = (t) => {
     const dt = Math.min(0.05, (t - last)/1000);
     last = t;
-    try {
-      if (gameActive){ update(dt); render(); }
-    } catch(err){
-      DBG.log('gameLoop err', err.message||String(err));
-    }
+    try { if (gameActive){ update(dt); render(); } } catch(err){ DBG.log('gameLoop err', err.message||String(err)); }
     requestAnimationFrame(tick);
   };
   requestAnimationFrame(tick);
 }
 startLoop();
 
-// СЦЕНА — СНАЧАЛА, СЕТЬ — ПОТОМ
+// СЦЕНА СНАЧАЛА
 DBG.log('calling playCutscene');
 playCutscene();
 
 (async () => {
-  if (!token){ DBG.log('no token, menu without server'); return; }
-  try {
-    const ok = await loadMe();
-    if (ok){ DBG.log('loadMe ok'); updateProfileUI(); startFriendsPolling(); }
-    else DBG.log('loadMe false');
-  } catch(e){ DBG.log('loadMe catch', e.message||String(e)); }
+  if (!token){ DBG.log('no token'); return; }
+  try { const ok = await loadMe(); if (ok){ DBG.log('loadMe ok'); updateProfileUI(); startFriendsPolling(); } else DBG.log('loadMe false'); } catch(e){ DBG.log('loadMe catch', e.message||String(e)); }
 })();
 </script>
 </body>
