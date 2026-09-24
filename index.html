@@ -199,36 +199,6 @@ html,body{width:100%;height:100%;overflow:hidden;background:#000;font-family:-ap
 #msg{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-size:clamp(28px,9vw,60px);font-weight:900;color:#fff;display:none;z-index:30;text-align:center;pointer-events:none}
 #trophyToast{position:absolute;top:32%;left:50%;transform:translateX(-50%);font-size:clamp(20px,6vw,36px);font-weight:900;color:#ffd54f;display:none;z-index:31;text-align:center;pointer-events:none}
 #leave{position:absolute;top:calc(env(safe-area-inset-top) + 6px);right:8px;width:32px;height:32px;border-radius:50%;background:rgba(255,46,138,.25);border:2px solid #ff2e8a;color:#ff2e8a;font-size:15px;font-weight:900;line-height:28px;text-align:center;display:none;pointer-events:auto;cursor:pointer;z-index:20}
-#fighterCard.show{display:flex}
-#fighterCard .fc-top{width:100%;max-width:440px;display:flex;gap:10px;align-items:center}
-#fighterCard .fc-portrait{width:96px;height:96px;border-radius:14px;background:linear-gradient(180deg,#1c3d1f,#0e2410);border:3px solid #7cf86b;display:flex;align-items:center;justify-content:center;flex-shrink:0}
-#fighterCard .fc-portrait.enemy{background:linear-gradient(180deg,#0b2b3d,#04141d);border-color:#00e5ff}
-#fighterCard .fc-portrait canvas{width:88px;height:88px}
-#fighterCard .fc-head{flex:1}
-#fighterCard .fc-name{font-size:22px;font-weight:900;color:#eaffea}
-#fighterCard .fc-side{font-size:11px;font-weight:800;color:#9fd7ff;margin-top:2px}
-#fighterCard .fc-rarity{font-size:11px;font-weight:900;padding:2px 8px;border-radius:6px;display:inline-block;margin-top:4px}
-#fighterCard .fc-rarity.common{background:#7cf86b;color:#04141d}
-#fighterCard .fc-rarity.rare{background:#00e5ff;color:#04141d}
-#fighterCard .fc-rarity.epic{background:#a855f7;color:#fff}
-#fighterCard .fc-rarity.legend{background:#ffd54f;color:#04141d}
-#fighterCard .fc-lvl{font-size:13px;font-weight:900;color:#ffd54f;margin-top:4px}
-#fighterCard .fc-grid{width:100%;max-width:440px;display:grid;grid-template-columns:1fr 1fr;gap:6px}
-#fighterCard .fc-stat{background:rgba(0,0,0,.5);border:2px solid #2cff5e;border-radius:10px;padding:8px 10px}
-#fighterCard .fc-stat .lbl{font-size:10px;font-weight:800;color:#9fd7ff;display:block}
-#fighterCard .fc-stat .val{font-size:18px;font-weight:900;color:#7cf86b}
-#fighterCard .fc-section{width:100%;max-width:440px;background:rgba(0,0,0,.5);border:2px solid #2cff5e;border-radius:10px;padding:10px;display:flex;flex-direction:column;gap:6px}
-#fighterCard .fc-section h3{font-size:11px;font-weight:900;color:#9fd7ff;text-transform:uppercase}
-#fighterCard .fc-section .row{display:flex;justify-content:space-between;font-size:13px}
-#fighterCard .fc-section .k{color:#9fd7ff;font-weight:700}
-#fighterCard .fc-section .v{color:#eaffea;font-weight:800}
-#fighterCard .fc-progress{width:100%;height:10px;background:rgba(0,0,0,.6);border-radius:5px;overflow:hidden;border:1px solid #2cff5e}
-#fighterCard .fc-progress .fill{height:100%;background:linear-gradient(90deg,#7cf86b,#2cff5e);width:0%}
-#fighterCard .fc-btn{width:100%;max-width:440px;padding:14px;border:2px solid;border-radius:12px;font-weight:900;font-size:15px;cursor:pointer;pointer-events:auto}
-#fighterCard .fc-btn[disabled]{opacity:.4}
-#fighterCard .fc-btn.upgrade{background:linear-gradient(180deg,#ffd54f,#ffb300);border-color:#ffe680;color:#05070d}
-#fighterCard .fc-btn.fight{background:linear-gradient(180deg,#2cff5e,#16a34a);border-color:#a8ffa0;color:#05070d}
-#fighterCard .fc-close{width:100%;max-width:440px;padding:12px;background:rgba(255,46,138,.25);border:2px solid #ff2e8a;color:#ff2e8a;font-weight:900;border-radius:12px;cursor:pointer;pointer-events:auto}
 #soundBtn{position:fixed;top:calc(env(safe-area-inset-top) + 6px);right:48px;width:32px;height:32px;border-radius:50%;background:rgba(0,229,255,.2);border:2px solid #00e5ff;color:#00e5ff;font-size:15px;line-height:28px;text-align:center;display:none;pointer-events:auto;cursor:pointer;z-index:20}
 </style>
 </head>
@@ -327,6 +297,7 @@ html,body{width:100%;height:100%;overflow:hidden;background:#000;font-family:-ap
   <button class="fc-btn fight" id="fcFightBtn" style="display:none">В БОЙ</button>
   <button class="fc-close" id="fcCloseBtn">ЗАКРЫТЬ</button>
 </div>
+
 <div id="authModal">
   <div class="logo">Digital Style</div>
   <div class="authTabs"><div class="authTab active" id="tabLogin">ВХОД</div><div class="authTab" id="tabRegister">РЕГИСТРАЦИЯ</div></div>
@@ -457,7 +428,8 @@ function getFighterStats(f){ const lvl = getLevel(f.id); const m = 1 + (lvl-1)*0
 function isUnlocked(id){ return !!profile.unlocked[id]; }
 const ATTACK_NAMES = { single:'Одиночный', triple:'Тройной', shotgun:'Дробовик', long:'Дальний', rapid:'Скорострельный', pierce:'Пробивающий', grenade:'Граната', homing:'Самонаводка', wave:'Волна', spiral:'Спираль' };
 const SUPER_NAMES = { heal:'Исцеление', spikes:'Шипы', laser:'Лазер', roots:'Корни', poison:'Яд', burst:'Взрыв', walls:'Стены', shield:'Щит', thorns:'Шипастый щит', wave:'Волна', dash:'Рывок', barrage:'Залп', swarm:'Рой', blink:'Прыжок' };
-  /* ================== РИСОВАНИЕ БОЙЦОВ ================== */
+
+/* ================== РИСОВАНИЕ БОЙЦОВ ================== */
 function roundRect(ctx, x, y, w, h, r){ ctx.beginPath(); ctx.moveTo(x+r, y); ctx.arcTo(x+w, y, x+w, y+h, r); ctx.arcTo(x+w, y+h, x, y+h, r); ctx.arcTo(x, y+h, x, y, r); ctx.arcTo(x, y, x+w, y, r); ctx.closePath(); }
 function shade(hex, amt){ const n = parseInt(hex.slice(1), 16); let r = (n>>16)+amt, g = ((n>>8)&0xff)+amt, b = (n&0xff)+amt; r = Math.max(0, Math.min(255, r)); g = Math.max(0, Math.min(255, g)); b = Math.max(0, Math.min(255, b)); return '#' + ((r<<16)|(g<<8)|b).toString(16).padStart(6,'0'); }
 function drawFighterShape(ctx, fighter, x, y, size, angle, isDead, walkPhase){
@@ -468,7 +440,6 @@ function drawFighterShape(ctx, fighter, x, y, size, angle, isDead, walkPhase){
   const wobble = walkPhase ? Math.sin(walkPhase) * 0.05 : 0;
   ctx.translate(0, wobble * size);
   const c = fighter.color;
-  if (fighter.side === 'enemy'){ ctx.shadowColor = c; ctx.shadowBlur = 0; }
   ctx.lineWidth = size * 0.12; ctx.strokeStyle = '#05070d'; ctx.lineJoin = 'round';
   switch (fighter.shape){
     case 'blob': drawBlob(ctx, size, c); break;
@@ -488,7 +459,7 @@ function drawFighterShape(ctx, fighter, x, y, size, angle, isDead, walkPhase){
     case 'ghost': drawGhost(ctx, size, c); break;
     default: drawBlob(ctx, size, c);
   }
-  ctx.shadowBlur = 0; drawEyes(ctx, size, fighter.side === 'enemy'); ctx.restore();
+  drawEyes(ctx, size, fighter.side === 'enemy'); ctx.restore();
 }
 function drawEyes(ctx, s, isEnemy){
   const eyeR = s*0.10, ex = s*0.18, ey = -s*0.32;
@@ -498,28 +469,24 @@ function drawEyes(ctx, s, isEnemy){
   ctx.fillStyle = isEnemy ? '#ff2e8a' : '#05070d';
   ctx.beginPath(); ctx.arc(-ex, ey, eyeR*0.75, 0, Math.PI*2); ctx.fill();
   ctx.beginPath(); ctx.arc(ex, ey, eyeR*0.75, 0, Math.PI*2); ctx.fill();
-  ctx.fillStyle = 'rgba(255,255,255,.85)';
-  ctx.beginPath(); ctx.arc(-ex-eyeR*0.25, ey-eyeR*0.3, eyeR*0.3, 0, Math.PI*2); ctx.fill();
-  ctx.beginPath(); ctx.arc(ex-eyeR*0.25, ey-eyeR*0.3, eyeR*0.3, 0, Math.PI*2); ctx.fill();
 }
-function drawBlob(ctx, s, c){ const g = ctx.createRadialGradient(-s*0.2, -s*0.25, 0, 0, 0, s*0.55); g.addColorStop(0, shade(c, 60)); g.addColorStop(.5, c); g.addColorStop(1, shade(c, -30)); ctx.fillStyle = g; ctx.beginPath(); ctx.arc(0, 0, s*0.5, 0, Math.PI*2); ctx.fill(); ctx.stroke(); ctx.fillStyle = 'rgba(255,255,255,.5)'; ctx.beginPath(); ctx.ellipse(-s*0.15, -s*0.22, s*0.13, s*0.09, -0.6, 0, Math.PI*2); ctx.fill(); }
+function drawBlob(ctx, s, c){ const g = ctx.createRadialGradient(-s*0.2, -s*0.25, 0, 0, 0, s*0.55); g.addColorStop(0, shade(c, 60)); g.addColorStop(.5, c); g.addColorStop(1, shade(c, -30)); ctx.fillStyle = g; ctx.beginPath(); ctx.arc(0, 0, s*0.5, 0, Math.PI*2); ctx.fill(); ctx.stroke(); }
 function drawCactus(ctx, s, c){ const g = ctx.createLinearGradient(-s*0.3, -s*0.4, s*0.3, s*0.4); g.addColorStop(0, shade(c, 40)); g.addColorStop(1, shade(c, -30)); ctx.fillStyle = g; roundRect(ctx, -s*0.25, -s*0.4, s*0.5, s*0.85, s*0.2); ctx.fill(); ctx.stroke(); roundRect(ctx, -s*0.48, -s*0.15, s*0.2, s*0.4, s*0.1); ctx.fill(); ctx.stroke(); roundRect(ctx, s*0.28, -s*0.15, s*0.2, s*0.4, s*0.1); ctx.fill(); ctx.stroke(); }
 function drawFlower(ctx, s, c){ for (let i = 0; i < 6; i++){ const a = (i/6)*Math.PI*2; const g = ctx.createRadialGradient(Math.cos(a)*s*0.28, Math.sin(a)*s*0.28, 0, Math.cos(a)*s*0.28, Math.sin(a)*s*0.28, s*0.25); g.addColorStop(0, shade(c, 50)); g.addColorStop(1, c); ctx.fillStyle = g; ctx.beginPath(); ctx.ellipse(Math.cos(a)*s*0.28, Math.sin(a)*s*0.28, s*0.22, s*0.15, a, 0, Math.PI*2); ctx.fill(); ctx.stroke(); } const cg = ctx.createRadialGradient(0, 0, 0, 0, 0, s*0.25); cg.addColorStop(0, '#fde047'); cg.addColorStop(1, '#f59e0b'); ctx.fillStyle = cg; ctx.beginPath(); ctx.arc(0, 0, s*0.22, 0, Math.PI*2); ctx.fill(); ctx.stroke(); }
-function drawTree(ctx, s, c){ const g = ctx.createRadialGradient(0, 0, 0, 0, 0, s*0.5); g.addColorStop(0, shade(c, 60)); g.addColorStop(1, shade(c, -20)); ctx.fillStyle = g; ctx.beginPath(); ctx.arc(-s*0.2, -s*0.1, s*0.32, 0, Math.PI*2); ctx.fill(); ctx.stroke(); ctx.beginPath(); ctx.arc(s*0.2, -s*0.1, s*0.32, 0, Math.PI*2); ctx.fill(); ctx.stroke(); ctx.beginPath(); ctx.arc(0, s*0.15, s*0.38, 0, Math.PI*2); ctx.fill(); ctx.stroke(); ctx.fillStyle = '#7c4a2e'; roundRect(ctx, -s*0.1, s*0.25, s*0.2, s*0.25, s*0.05); ctx.fill(); ctx.stroke(); }
-function drawMushroom(ctx, s, c){ ctx.fillStyle = '#fef3c7'; roundRect(ctx, -s*0.15, s*0.05, s*0.3, s*0.4, s*0.1); ctx.fill(); ctx.stroke(); const g = ctx.createRadialGradient(0, -s*0.3, 0, 0, -s*0.05, s*0.5); g.addColorStop(0, shade(c, 50)); g.addColorStop(1, shade(c, -20)); ctx.fillStyle = g; ctx.beginPath(); ctx.arc(0, -s*0.05, s*0.45, Math.PI, 0); ctx.closePath(); ctx.fill(); ctx.stroke(); ctx.fillStyle = '#fff'; [[-0.2,-0.15],[0.15,-0.2],[0,-0.3]].forEach(p => { ctx.beginPath(); ctx.arc(p[0]*s, p[1]*s, s*0.055, 0, Math.PI*2); ctx.fill(); }); }
-function drawBerry(ctx, s, c){ const g = ctx.createRadialGradient(-s*0.15, -s*0.15, 0, 0, 0, s*0.45); g.addColorStop(0, shade(c, 60)); g.addColorStop(1, shade(c, -30)); ctx.fillStyle = g; ctx.beginPath(); ctx.arc(0, 0, s*0.4, 0, Math.PI*2); ctx.fill(); ctx.stroke(); ctx.fillStyle = '#22c55e'; ctx.beginPath(); ctx.ellipse(0, -s*0.42, s*0.15, s*0.08, 0, 0, Math.PI*2); ctx.fill(); ctx.stroke(); }
+function drawTree(ctx, s, c){ const g = ctx.createRadialGradient(0, 0, 0, 0, 0, s*0.5); g.addColorStop(0, shade(c, 60)); g.addColorStop(1, shade(c, -20)); ctx.fillStyle = g; ctx.beginPath(); ctx.arc(-s*0.2, -s*0.1, s*0.32, 0, Math.PI*2); ctx.fill(); ctx.stroke(); ctx.beginPath(); ctx.arc(s*0.2, -s*0.1, s*0.32, 0, Math.PI*2); ctx.fill(); ctx.stroke(); ctx.beginPath(); ctx.arc(0, s*0.15, s*0.38, 0, Math.PI*2); ctx.fill(); ctx.stroke(); ctx.fillStyle = '#7c4a2e'; roundRect(ctx, -s*0.1, s*0.25, s*0.2, s*0.25, s*0.05); ctx.fill(); }
+function drawMushroom(ctx, s, c){ ctx.fillStyle = '#fef3c7'; roundRect(ctx, -s*0.15, s*0.05, s*0.3, s*0.4, s*0.1); ctx.fill(); ctx.stroke(); const g = ctx.createRadialGradient(0, -s*0.3, 0, 0, -s*0.05, s*0.5); g.addColorStop(0, shade(c, 50)); g.addColorStop(1, shade(c, -20)); ctx.fillStyle = g; ctx.beginPath(); ctx.arc(0, -s*0.05, s*0.45, Math.PI, 0); ctx.closePath(); ctx.fill(); ctx.stroke(); }
+function drawBerry(ctx, s, c){ const g = ctx.createRadialGradient(-s*0.15, -s*0.15, 0, 0, 0, s*0.45); g.addColorStop(0, shade(c, 60)); g.addColorStop(1, shade(c, -30)); ctx.fillStyle = g; ctx.beginPath(); ctx.arc(0, 0, s*0.4, 0, Math.PI*2); ctx.fill(); ctx.stroke(); }
 function drawBamboo(ctx, s, c){ for (let i = 0; i < 3; i++){ const g = ctx.createLinearGradient(-s*0.3 + i*s*0.22, 0, -s*0.3 + i*s*0.22 + s*0.16, 0); g.addColorStop(0, shade(c, 40)); g.addColorStop(1, shade(c, -30)); ctx.fillStyle = g; roundRect(ctx, -s*0.3 + i*s*0.22, -s*0.45, s*0.16, s*0.9, s*0.08); ctx.fill(); ctx.stroke(); } }
-function drawLily(ctx, s, c){ for (let i = 0; i < 5; i++){ const a = (i/5)*Math.PI*2; const g = ctx.createRadialGradient(Math.cos(a)*s*0.3, Math.sin(a)*s*0.3, 0, Math.cos(a)*s*0.3, Math.sin(a)*s*0.3, s*0.25); g.addColorStop(0, '#fff'); g.addColorStop(1, c); ctx.fillStyle = g; ctx.beginPath(); ctx.ellipse(Math.cos(a)*s*0.3, Math.sin(a)*s*0.3, s*0.22, s*0.13, a, 0, Math.PI*2); ctx.fill(); ctx.stroke(); } ctx.fillStyle = '#facc15'; ctx.beginPath(); ctx.arc(0, 0, s*0.15, 0, Math.PI*2); ctx.fill(); ctx.stroke(); }
-function drawRose(ctx, s, c){ for (let i = 0; i < 5; i++){ const a = (i/5)*Math.PI*2; const g = ctx.createRadialGradient(Math.cos(a)*s*0.22, Math.sin(a)*s*0.22, 0, Math.cos(a)*s*0.22, Math.sin(a)*s*0.22, s*0.28); g.addColorStop(0, shade(c, 50)); g.addColorStop(1, shade(c, -20)); ctx.fillStyle = g; ctx.beginPath(); ctx.arc(Math.cos(a)*s*0.22, Math.sin(a)*s*0.22, s*0.24, 0, Math.PI*2); ctx.fill(); ctx.stroke(); } const cg = ctx.createRadialGradient(0, 0, 0, 0, 0, s*0.3); cg.addColorStop(0, shade(c, 60)); cg.addColorStop(1, shade(c, -50)); ctx.fillStyle = cg; ctx.beginPath(); ctx.arc(0, 0, s*0.28, 0, Math.PI*2); ctx.fill(); ctx.stroke(); }
-function drawPalm(ctx, s, c){ for (let i = 0; i < 7; i++){ const a = (i/7)*Math.PI*2; ctx.save(); ctx.rotate(a); const g = ctx.createLinearGradient(0, -s*0.35, 0, -s*0.65); g.addColorStop(0, shade(c, 20)); g.addColorStop(1, shade(c, -30)); ctx.fillStyle = g; ctx.beginPath(); ctx.ellipse(0, -s*0.35, s*0.1, s*0.3, 0, 0, Math.PI*2); ctx.fill(); ctx.stroke(); ctx.restore(); } ctx.fillStyle = '#7c4a2e'; ctx.beginPath(); ctx.arc(0, 0, s*0.15, 0, Math.PI*2); ctx.fill(); ctx.stroke(); }
-function drawDrone(ctx, s, c){ const g = ctx.createRadialGradient(-s*0.1, -s*0.1, 0, 0, 0, s*0.45); g.addColorStop(0, shade(c, 70)); g.addColorStop(1, shade(c, -20)); ctx.fillStyle = g; ctx.beginPath(); ctx.arc(0, 0, s*0.4, 0, Math.PI*2); ctx.fill(); ctx.stroke(); ctx.fillStyle = '#1e293b'; [[-1,-1],[1,-1],[-1,1],[1,1]].forEach(p => { ctx.beginPath(); ctx.arc(p[0]*s*0.35, p[1]*s*0.35, s*0.13, 0, Math.PI*2); ctx.fill(); ctx.stroke(); }); ctx.fillStyle = '#a8f5ff'; ctx.beginPath(); ctx.arc(0, 0, s*0.15, 0, Math.PI*2); ctx.fill(); }
-function drawTank(ctx, s, c){ ctx.fillStyle = '#0f172a'; roundRect(ctx, -s*0.55, -s*0.5, s*1.1, s*0.16, s*0.06); ctx.fill(); ctx.stroke(); roundRect(ctx, -s*0.55, s*0.34, s*1.1, s*0.16, s*0.06); ctx.fill(); ctx.stroke(); const g = ctx.createLinearGradient(-s*0.4, -s*0.3, s*0.4, s*0.3); g.addColorStop(0, shade(c, 40)); g.addColorStop(1, shade(c, -20)); ctx.fillStyle = g; roundRect(ctx, -s*0.42, -s*0.35, s*0.84, s*0.7, s*0.14); ctx.fill(); ctx.stroke(); ctx.fillStyle = '#22d3ee'; ctx.beginPath(); ctx.arc(0, 0, s*0.14, 0, Math.PI*2); ctx.fill(); ctx.stroke(); }
-function drawSniper(ctx, s, c){ const g = ctx.createRadialGradient(-s*0.1, -s*0.1, 0, 0, 0, s*0.4); g.addColorStop(0, shade(c, 50)); g.addColorStop(1, shade(c, -20)); ctx.fillStyle = g; ctx.beginPath(); ctx.arc(0, 0, s*0.35, 0, Math.PI*2); ctx.fill(); ctx.stroke(); ctx.fillStyle = '#312e81'; roundRect(ctx, -s*0.08, -s*0.8, s*0.16, s*0.6, s*0.04); ctx.fill(); ctx.stroke(); }
+function drawLily(ctx, s, c){ for (let i = 0; i < 5; i++){ const a = (i/5)*Math.PI*2; const g = ctx.createRadialGradient(Math.cos(a)*s*0.3, Math.sin(a)*s*0.3, 0, Math.cos(a)*s*0.3, Math.sin(a)*s*0.3, s*0.25); g.addColorStop(0, '#fff'); g.addColorStop(1, c); ctx.fillStyle = g; ctx.beginPath(); ctx.ellipse(Math.cos(a)*s*0.3, Math.sin(a)*s*0.3, s*0.22, s*0.13, a, 0, Math.PI*2); ctx.fill(); ctx.stroke(); } ctx.fillStyle = '#facc15'; ctx.beginPath(); ctx.arc(0, 0, s*0.15, 0, Math.PI*2); ctx.fill(); }
+function drawRose(ctx, s, c){ for (let i = 0; i < 5; i++){ const a = (i/5)*Math.PI*2; const g = ctx.createRadialGradient(Math.cos(a)*s*0.22, Math.sin(a)*s*0.22, 0, Math.cos(a)*s*0.22, Math.sin(a)*s*0.22, s*0.28); g.addColorStop(0, shade(c, 50)); g.addColorStop(1, shade(c, -20)); ctx.fillStyle = g; ctx.beginPath(); ctx.arc(Math.cos(a)*s*0.22, Math.sin(a)*s*0.22, s*0.24, 0, Math.PI*2); ctx.fill(); ctx.stroke(); } const cg = ctx.createRadialGradient(0, 0, 0, 0, 0, s*0.3); cg.addColorStop(0, shade(c, 60)); cg.addColorStop(1, shade(c, -50)); ctx.fillStyle = cg; ctx.beginPath(); ctx.arc(0, 0, s*0.28, 0, Math.PI*2); ctx.fill(); }
+function drawPalm(ctx, s, c){ for (let i = 0; i < 7; i++){ const a = (i/7)*Math.PI*2; ctx.save(); ctx.rotate(a); const g = ctx.createLinearGradient(0, -s*0.35, 0, -s*0.65); g.addColorStop(0, shade(c, 20)); g.addColorStop(1, shade(c, -30)); ctx.fillStyle = g; ctx.beginPath(); ctx.ellipse(0, -s*0.35, s*0.1, s*0.3, 0, 0, Math.PI*2); ctx.fill(); ctx.stroke(); ctx.restore(); } ctx.fillStyle = '#7c4a2e'; ctx.beginPath(); ctx.arc(0, 0, s*0.15, 0, Math.PI*2); ctx.fill(); }
+function drawDrone(ctx, s, c){ const g = ctx.createRadialGradient(-s*0.1, -s*0.1, 0, 0, 0, s*0.45); g.addColorStop(0, shade(c, 70)); g.addColorStop(1, shade(c, -20)); ctx.fillStyle = g; ctx.beginPath(); ctx.arc(0, 0, s*0.4, 0, Math.PI*2); ctx.fill(); ctx.stroke(); ctx.fillStyle = '#1e293b'; [[-1,-1],[1,-1],[-1,1],[1,1]].forEach(p => { ctx.beginPath(); ctx.arc(p[0]*s*0.35, p[1]*s*0.35, s*0.13, 0, Math.PI*2); ctx.fill(); }); }
+function drawTank(ctx, s, c){ ctx.fillStyle = '#0f172a'; roundRect(ctx, -s*0.55, -s*0.5, s*1.1, s*0.16, s*0.06); ctx.fill(); roundRect(ctx, -s*0.55, s*0.34, s*1.1, s*0.16, s*0.06); ctx.fill(); const g = ctx.createLinearGradient(-s*0.4, -s*0.3, s*0.4, s*0.3); g.addColorStop(0, shade(c, 40)); g.addColorStop(1, shade(c, -20)); ctx.fillStyle = g; roundRect(ctx, -s*0.42, -s*0.35, s*0.84, s*0.7, s*0.14); ctx.fill(); ctx.stroke(); ctx.fillStyle = '#22d3ee'; ctx.beginPath(); ctx.arc(0, 0, s*0.14, 0, Math.PI*2); ctx.fill(); }
+function drawSniper(ctx, s, c){ const g = ctx.createRadialGradient(-s*0.1, -s*0.1, 0, 0, 0, s*0.4); g.addColorStop(0, shade(c, 50)); g.addColorStop(1, shade(c, -20)); ctx.fillStyle = g; ctx.beginPath(); ctx.arc(0, 0, s*0.35, 0, Math.PI*2); ctx.fill(); ctx.stroke(); ctx.fillStyle = '#312e81'; roundRect(ctx, -s*0.08, -s*0.8, s*0.16, s*0.6, s*0.04); ctx.fill(); }
 function drawBug(ctx, s, c){ ctx.strokeStyle = '#05070d'; ctx.lineWidth = s*0.09; for (let i = 0; i < 3; i++){ ctx.beginPath(); ctx.moveTo(-s*0.3, -s*0.2 + i*s*0.2); ctx.lineTo(-s*0.55, -s*0.35 + i*s*0.28); ctx.stroke(); ctx.beginPath(); ctx.moveTo(s*0.3, -s*0.2 + i*s*0.2); ctx.lineTo(s*0.55, -s*0.35 + i*s*0.28); ctx.stroke(); } const g = ctx.createRadialGradient(-s*0.1, -s*0.15, 0, 0, 0, s*0.5); g.addColorStop(0, shade(c, 60)); g.addColorStop(1, shade(c, -25)); ctx.fillStyle = g; ctx.beginPath(); ctx.ellipse(0, 0, s*0.35, s*0.45, 0, 0, Math.PI*2); ctx.fill(); ctx.stroke(); }
 function drawGhost(ctx, s, c){ ctx.globalAlpha *= 0.85; const g = ctx.createRadialGradient(0, -s*0.15, 0, 0, 0, s*0.5); g.addColorStop(0, '#fff'); g.addColorStop(1, c); ctx.fillStyle = g; ctx.beginPath(); ctx.arc(0, -s*0.05, s*0.4, Math.PI, 0); ctx.lineTo(s*0.4, s*0.3); for (let i = 4; i >= 0; i--){ ctx.lineTo(-s*0.4 + (i/4)*s*0.8, s*0.15 + (i%2===0 ? s*0.18 : -s*0.05)); } ctx.closePath(); ctx.fill(); ctx.stroke(); ctx.globalAlpha /= 0.85; }
 function drawPortrait(canvas, fighter){ const ctx = canvas.getContext('2d'); const dpr = Math.min(devicePixelRatio, 2); const size = canvas.clientWidth || 100; canvas.width = size*dpr; canvas.height = size*dpr; ctx.scale(dpr, dpr); ctx.clearRect(0, 0, size, size); drawFighterShape(ctx, fighter, size/2, size/2, size*0.85, -Math.PI/2, false, 0); }
-
-/* ================== КАТ-СЦЕНА ================== */
+  /* ================== КАТ-СЦЕНА ================== */
 let csSkipResolve = null;
 function wait(ms){ return new Promise(r => { const t = setTimeout(() => { if (csSkipResolve === r) csSkipResolve = null; r('timeout'); }, ms); csSkipResolve = (reason) => { clearTimeout(t); csSkipResolve = null; r(reason); }; }); }
 function cancelCutscene(){ if (csSkipResolve) csSkipResolve('skip'); }
@@ -629,18 +596,9 @@ function refreshPick(){
     const cv = document.createElement('canvas'); card.appendChild(cv);
     const nm = document.createElement('div'); nm.className = 'name'; nm.textContent = f.name; card.appendChild(nm);
     card.addEventListener('click', () => openFighterCard(f.id));
-    card.addEventListener('click', () => openFighterCard(f.id)); grid.appendChild(card);
+    grid.appendChild(card);
     setTimeout(() => drawPortrait(cv, f), 10);
   });
-}
-function pickFighter(f){
-  chosenFighter = f;
-  profile.selected[f.side] = f.id;
-  saveProfile();
-  document.querySelectorAll('.pick-card').forEach(el => el.classList.toggle('selected', el.dataset.id === f.id));
-  $('playBtn').textContent = 'В БОЙ: ' + f.name;
-  $('playBtn').classList.add('ready');
-  playSound('click');
 }
 $('tabPlant').addEventListener('click', () => { pickSide = 'plant'; $('tabPlant').style.border = '2px solid #7cf86b'; $('tabPlant').style.background = 'linear-gradient(180deg,#1c3d1f,#0e2410)'; $('tabEnemy').style.border = '2px solid transparent'; $('tabEnemy').style.background = 'rgba(255,255,255,.06)'; refreshPick(); });
 $('tabEnemy').addEventListener('click', () => { pickSide = 'enemy'; $('tabEnemy').style.border = '2px solid #00e5ff'; $('tabEnemy').style.background = 'linear-gradient(180deg,#0b2b3d,#04141d)'; $('tabPlant').style.border = '2px solid transparent'; $('tabPlant').style.background = 'rgba(255,255,255,.06)'; refreshPick(); });
@@ -719,7 +677,7 @@ function openBox(box, finalPrice){
   let resultId = null, isNew = false;
   if (locked.length > 0){ resultId = locked[Math.floor(Math.random()*locked.length)]; isNew = true; profile.unlocked[resultId] = true; }
   else { const bonus = box.kkBack || 25; profile.kk += bonus; }
-  saveProfile(); updateProfileUI(); showBoxOpening(resultId, isNew, rarity, box, profile.kk);
+  saveProfile(); updateProfileUI(); showBoxOpening(resultId, isNew, rarity, box);
 }
 function showBoxOpening(resultId, isNew, rarity, box){
   const overlay = $('boxOpening');
@@ -765,7 +723,7 @@ function refreshCollection(){
     card.appendChild(nm);
     if (!isUnlocked(id)){ const lock = document.createElement('div'); lock.className = 'lock'; lock.textContent = '🔒'; card.appendChild(lock); }
     card.addEventListener('click', () => openFighterCard(f.id));
-    card.addEventListener('click', () => openFighterCard(f.id)); grid.appendChild(card);
+    grid.appendChild(card);
     setTimeout(() => drawPortrait(cv, f), 10);
   });
 }
@@ -863,8 +821,7 @@ $('fcFightBtn').addEventListener('click', () => {
   rollRandomMap();
   $('menu').style.display = 'none';
   startGame(f);
-});
-  /* ================== ИГРА ================== */
+});/* ================== ИГРА ================== */
 const canvas = $('game');
 const ctx = canvas.getContext('2d');
 let W = 0, H = 0, dpr = 1;
@@ -872,7 +829,7 @@ function resize(){ dpr = Math.min(devicePixelRatio, 2); W = innerWidth; H = inne
 addEventListener('resize', resize); resize();
 let gameActive = false, side = null;
 let allies = [], enemies = [], bullets = [], particles = [], floatingTexts = [], zones = [], obstacles = [];
-let keys = {}, yaw = 0, camera2D = { x: 0, z: 0 }, shakeAmount = 0;
+let keys = {}, yaw = 0, camera2D = { x: 0, z: 0 }, shakeAmount = 0, shakeX = 0, shakeY = 0;
 let ARENA = 40;
 const ZOOM = 24;
 let superCharge = 0;
@@ -889,7 +846,7 @@ const touch = {
   firing:false
 };
 const player = { x: 0, z: 14, hp: 100, maxHp: 100, fighter: null, walkPhase: 0, shield: 0, velX: 0, velZ: 0, respawnTimer: 0, dead: false, stats: null };
-function worldToScreen(wx, wz){ return { x: W/2 + (wx-camera2D.x)*ZOOM + (Math.random()-0.5)*shakeAmount, y: H*0.68 + (wz-camera2D.z)*ZOOM + (Math.random()-0.5)*shakeAmount }; }
+function worldToScreen(wx, wz){ return { x: W/2 + (wx-camera2D.x)*ZOOM + shakeX, y: H*0.68 + (wz-camera2D.z)*ZOOM + shakeY }; }
 
 function spawnCharacters(myFighter){
   const playerIsEnemy = (myFighter.side === 'enemy');
@@ -1129,6 +1086,8 @@ function update(dt){
   updateBullets(dt); updateEffects(dt); updateHUD(); updateTeamsBar();
 }
 function render(){
+  shakeX = (Math.random() - 0.5) * shakeAmount;
+  shakeY = (Math.random() - 0.5) * shakeAmount;
   ctx.fillStyle = '#05070d'; ctx.fillRect(0, 0, W, H);
   if (!gameActive) return;
   drawArena();
@@ -1164,10 +1123,12 @@ function drawArena(){
   ctx.fillStyle = g; ctx.fillRect(cx-halfPx, cy-halfPx, halfPx*2, halfPx*2);
   ctx.strokeStyle = currentMap.grid; ctx.lineWidth = 1;
   const step = 4*ZOOM; const sX = cx-halfPx, sY = cy-halfPx;
-for (let i = 0; i <= ARENA/4; i++){ ctx.beginPath(); ctx.moveTo(sX+i*step, sY); ctx.lineTo(sX+i*step, sY+halfPx*2); ctx.stroke(); ctx.beginPath(); ctx.moveTo(sX, sY+i*step); ctx.lineTo(sX+halfPx*2, sY+i*step); ctx.stroke(); } ctx.shadowBlur = 0;
+  for (let i = 0; i <= ARENA/4; i++){ ctx.beginPath(); ctx.moveTo(sX+i*step, sY); ctx.lineTo(sX+i*step, sY+halfPx*2); ctx.stroke(); ctx.beginPath(); ctx.moveTo(sX, sY+i*step); ctx.lineTo(sX+halfPx*2, sY+i*step); ctx.stroke(); }
+  ctx.strokeStyle = currentMap.border; ctx.lineWidth = 8; ctx.shadowColor = currentMap.border; ctx.shadowBlur = 20;
+  ctx.strokeRect(cx-halfPx, cy-halfPx, halfPx*2, halfPx*2); ctx.shadowBlur = 0;
   for (const ob of obstacles){ const p = worldToScreen(ob[0], ob[1]); const r = ob[2]*ZOOM; ctx.fillStyle = shade(currentMap.border, -50); ctx.globalAlpha = 0.5; ctx.beginPath(); ctx.arc(p.x, p.y, r, 0, Math.PI*2); ctx.fill(); ctx.globalAlpha = 1; ctx.strokeStyle = currentMap.border; ctx.lineWidth = 3; ctx.stroke(); }
 }
-function drawBullet(b){ const p = worldToScreen(b.x, b.z); const r = b.radius; const g = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, r*2); g.addColorStop(0, b.color); g.addColorStop(0.5, b.color); g.addColorStop(1, 'transparent'); ctx.fillStyle = g; ctx.beginPath(); ctx.arc(p.x, p.y, r*2, 0, Math.PI*2); ctx.fill(); }
+function drawBullet(b){ const p = worldToScreen(b.x, b.z); ctx.fillStyle = b.color; ctx.globalAlpha = 0.6; ctx.beginPath(); ctx.arc(p.x, p.y, b.radius*2, 0, Math.PI*2); ctx.fill(); ctx.globalAlpha = 1; ctx.fillStyle = '#fff'; ctx.beginPath(); ctx.arc(p.x, p.y, b.radius*0.6, 0, Math.PI*2); ctx.fill(); }
 function updateHUD(){
   const pIcon = (side === 'enemy') ? '💠 ' : '🌿 ';
   const eIcon = (side === 'enemy') ? '🌿 ' : '💠 ';
@@ -1247,82 +1208,7 @@ bindFixedJoy($('attackZone'), touch.attack, $('joyAttack'), $('joyAttack').query
 bindFixedJoy($('superZone'), touch.super, $('joySuper'), $('joySuper').querySelector('.knob'), 'super');
 addEventListener('keydown', e => { keys[e.key.toLowerCase()] = true; if (e.key === 'Escape' && gameActive) leaveToMenu(); });
 addEventListener('keyup', e => { keys[e.key.toLowerCase()] = false; });
-/* ================== КАРТОЧКА БОЙЦА ================== */
-let currentCardFighter = null;
-function openFighterCard(fighterId){
-  const f = FIGHTERS[fighterId]; if (!f) return;
-  currentCardFighter = f;
-  const unlocked = isUnlocked(f.id);
-  const lvl = getLevel(f.id);
-  const stats = getFighterStats(f);
-  $('fcPortrait').className = 'fc-portrait' + (f.side === 'enemy' ? ' enemy' : '');
-  $('fcName').textContent = f.name;
-  $('fcSide').textContent = f.side === 'plant' ? 'РАСТЕНИЕ' : 'ЗАХВАТЧИК';
-  $('fcRarity').className = 'fc-rarity ' + f.rarity;
-  $('fcRarity').textContent = f.rarity.toUpperCase();
-  $('fcLvl').textContent = unlocked ? ('L' + lvl + ' / L' + MAX_LEVEL) : 'НЕ ОТКРЫТ';
-  $('fcHp').textContent = unlocked ? stats.hp : '???';
-  $('fcDmg').textContent = unlocked ? Math.round(stats.dmg) : '???';
-  $('fcSpeed').textContent = unlocked ? stats.speed.toFixed(1) : '???';
-  $('fcRate').textContent = unlocked ? (1/stats.fireRate).toFixed(2) + '/сек' : '???';
-  $('fcAttackName').textContent = ATTACK_NAMES[f.attack] || f.attack;
-  $('fcAttackKind').textContent = f.attack;
-  $('fcSuperName').textContent = SUPER_NAMES[f.super] || f.super;
-  $('fcSuperKind').textContent = f.super;
-  const pct = ((lvl-1)/(MAX_LEVEL-1))*100;
-  $('fcProgress').style.width = pct + '%';
-  $('fcLvlRow').textContent = 'L' + lvl + ' / L' + MAX_LEVEL;
-  if (lvl < MAX_LEVEL){
-    const cost = getUpgradeCost(lvl);
-    $('fcCost').textContent = '💾 ' + cost;
-    $('fcCost').style.color = profile.kk >= cost ? '#7cf86b' : '#ff2e8a';
-  } else $('fcCost').textContent = 'МАКС';
-  const upBtn = $('fcUpgradeBtn');
-  if (unlocked && lvl < MAX_LEVEL){
-    upBtn.style.display = 'block';
-    upBtn.textContent = 'ПРОКАЧАТЬ — 💾 ' + getUpgradeCost(lvl);
-    upBtn.disabled = profile.kk < getUpgradeCost(lvl);
-  } else upBtn.style.display = 'none';
-  const fightBtn = $('fcFightBtn');
-  if (unlocked){ fightBtn.style.display = 'block'; fightBtn.textContent = 'В БОЙ: ' + f.name; }
-  else fightBtn.style.display = 'none';
-  $('fighterCard').classList.add('show');
-  setTimeout(() => {
-    const cv = $('fcCanvas');
-    const dpr = Math.min(devicePixelRatio, 2);
-    const size = 88;
-    cv.width = size*dpr; cv.height = size*dpr;
-    const c = cv.getContext('2d');
-    c.setTransform(1,0,0,1,0,0); c.scale(dpr, dpr); c.clearRect(0, 0, size, size);
-    drawFighterShape(c, f, size/2, size/2, size*0.85, -Math.PI/2, false, 0);
-  }, 30);
-}
-$('fcCloseBtn').addEventListener('click', () => { $('fighterCard').classList.remove('show'); currentCardFighter = null; });
-$('fcUpgradeBtn').addEventListener('click', () => {
-  if (!currentCardFighter) return;
-  const f = currentCardFighter;
-  const lvl = getLevel(f.id);
-  if (lvl >= MAX_LEVEL) return;
-  const cost = getUpgradeCost(lvl);
-  if (profile.kk < cost) return;
-  profile.kk -= cost;
-  profile.levels[f.id] = lvl + 1;
-  playSound('click');
-  saveProfile(); updateProfileUI();
-  openFighterCard(f.id);
-});
-$('fcFightBtn').addEventListener('click', () => {
-  if (!currentCardFighter) return;
-  const f = currentCardFighter;
-  if (!isUnlocked(f.id)) return;
-  chosenFighter = f;
-  profile.selected[f.side] = f.id;
-  saveProfile();
-  $('fighterCard').classList.remove('show');
-  rollRandomMap();
-  $('menu').style.display = 'none';
-  startGame(f);
-});
+
 /* ================== AUTH (СЕРВЕР) ================== */
 let authMode = 'login';
 function showAuth(){ $('authModal').classList.add('show'); $('authNick').value = ''; $('authPass').value = ''; $('authErr').textContent = ''; }
