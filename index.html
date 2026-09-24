@@ -43,7 +43,7 @@ html,body{width:100%;height:100%;overflow:hidden;background:#000;font-family:-ap
 #csTitle{position:absolute;top:14%;left:0;right:0;text-align:center;font-size:clamp(34px,12vw,72px);font-weight:900;letter-spacing:5px;color:#7cf86b;text-shadow:0 0 20px #2cff5e,0 0 60px #2cff5e;opacity:0;transform:translateY(-20px);transition:opacity 1s,transform 1s;z-index:6;pointer-events:none}
 #csTitle.show{opacity:1;transform:translateY(0)}
 #csTitle .sub{display:block;font-size:clamp(11px,3.2vw,14px);font-weight:600;letter-spacing:3px;color:#9fd7ff;margin-top:10px;text-shadow:none}
-#skipBtn{position:absolute;top:calc(env(safe-area-inset-top) + 14px);right:16px;z-index:60;pointer-events:auto;cursor:pointer;padding:8px 16px;border-radius:20px;background:rgba(0,0,0,.6);border:1.5px solid #9fd7ff;color:#9fd7ff;font-size:13px;letter-spacing:1.5px;font-weight:700}
+#skipBtn{position:absolute;top:calc(env(safe-area-inset-top) + 14px);right:16px;z-index:60;pointer-events:auto;cursor:pointer;padding:10px 18px;border-radius:20px;background:rgba(0,0,0,.6);border:1.5px solid #9fd7ff;color:#9fd7ff;font-size:13px;letter-spacing:1.5px;font-weight:700}
 #skipBtn:active{transform:scale(.95)}
 #csProgress{position:absolute;bottom:calc(env(safe-area-inset-bottom) + 18px);left:50%;transform:translateX(-50%);display:flex;gap:8px;z-index:8}
 #csProgress .dot{width:8px;height:8px;border-radius:50%;background:rgba(255,255,255,.25);transition:background .3s,transform .3s}
@@ -126,7 +126,6 @@ html,body{width:100%;height:100%;overflow:hidden;background:#000;font-family:-ap
 #authModal .hint{font-size:12px;color:#9fd7ff;text-align:center;max-width:320px;line-height:1.4}
 #authModal .err{color:#ff2e8a;font-weight:800;font-size:13px;text-align:center;min-height:18px}
 
-/* ===== Друзья ===== */
 #friendsAdd{display:flex;gap:6px;width:100%;max-width:440px}
 #friendsAdd input{flex:1;padding:12px;background:rgba(255,255,255,.08);border:2px solid #00e5ff;border-radius:10px;color:#fff;font-size:15px;outline:none;text-align:center;pointer-events:auto}
 #friendsAdd input:focus{border-color:#7cf86b}
@@ -388,7 +387,7 @@ function getUpgradeCost(level){ return 100 * level * level; }
 const RESPAWN_TIME = 5;
 
 /* ================== ДРУЗЬЯ ================== */
-let friends = [];              // [{ nickname, online, trophies, kk }]
+let friends = [];
 let friendsPollTimer = null;
 let friendsPollBusy = false;
 const FRIENDS_POLL_MS = 15000;
@@ -615,23 +614,61 @@ function drawBug(ctx, s, c){ ctx.strokeStyle = '#05070d'; ctx.lineWidth = s*0.09
 function drawGhost(ctx, s, c){ ctx.globalAlpha *= 0.85; const g = ctx.createRadialGradient(0, -s*0.15, 0, 0, 0, s*0.5); g.addColorStop(0, '#fff'); g.addColorStop(1, c); ctx.fillStyle = g; ctx.beginPath(); ctx.arc(0, -s*0.05, s*0.4, Math.PI, 0); ctx.lineTo(s*0.4, s*0.3); for (let i = 4; i >= 0; i--){ ctx.lineTo(-s*0.4 + (i/4)*s*0.8, s*0.15 + (i%2===0 ? s*0.18 : -s*0.05)); } ctx.closePath(); ctx.fill(); ctx.stroke(); ctx.globalAlpha /= 0.85; }
 function drawPortrait(canvas, fighter){ const ctx = canvas.getContext('2d'); const dpr = Math.min(devicePixelRatio, 1.5); const size = canvas.clientWidth || 100; canvas.width = size*dpr; canvas.height = size*dpr; ctx.setTransform(1,0,0,1,0,0); ctx.scale(dpr, dpr); ctx.clearRect(0, 0, size, size); drawFighterShape(ctx, fighter, size/2, size/2, size*0.85, -Math.PI/2, false, 0); }
 
-/* ================== КАТ-СЦЕНА ================== */
-let csSkipResolve = null;
-function wait(ms){ return new Promise(r => { const t = setTimeout(() => { if (csSkipResolve === r) csSkipResolve = null; r('timeout'); }, ms); csSkipResolve = (reason) => { clearTimeout(t); csSkipResolve = null; r(reason); }; }); }
-function cancelCutscene(){ if (csSkipResolve) csSkipResolve('skip'); }
-$('skipBtn').addEventListener('click', cancelCutscene);
-$('skipBtn').addEventListener('touchstart', e => { e.preventDefault(); cancelCutscene(); }, {passive:false});
+/* ================== КАТ-СЦЕНА (FIXED) ================== */
+let csToken = 0;
+let csSkipAll = null;
+let csEnded = false;
+let csTimers = [];
+let csWatchdog = null;
+
+function csSet(fn, ms){ const id = setTimeout(fn, ms); csTimers.push(id); return id; }
+function csClearTimers(){ csTimers.forEach(clearTimeout); csTimers = []; }
+
+function wait(ms){
+  const myToken = ++csToken;
+  return new Promise(resolve => {
+    const t = setTimeout(() => {
+      if (myToken !== csToken) return resolve('skip');
+      csSkipAll = null;
+      resolve('timeout');
+    }, ms);
+    csSkipAll = () => {
+      if (myToken !== csToken) return;
+      clearTimeout(t);
+      csToken++;
+      csSkipAll = null;
+      resolve('skip');
+    };
+  });
+}
+function cancelCutscene(){ if (csSkipAll) csSkipAll(); }
+
+$('skipBtn').addEventListener('pointerdown', e => { e.preventDefault(); cancelCutscene(); }, {passive:false});
+
 function clearSceneExtras(){ document.querySelectorAll('.plant-sprite,.invader-sprite,.note').forEach(e => e.remove()); }
-function spawnPlantsCS(count){ const positions = [[12,62],[32,58],[52,64],[72,58],[86,62],[20,76],[80,78],[42,70],[62,72]]; for (let i = 0; i < count; i++){ const p = positions[i % positions.length]; const el = document.createElement('div'); el.className = 'plant-sprite'; el.style.left = p[0] + '%'; el.style.top = p[1] + '%'; el.style.opacity = '0'; el.style.transform = 'translateY(30px) scale(0.6)'; el.innerHTML = '<div class="head"></div><div class="stem"></div>'; $('cutscene').appendChild(el); setTimeout(() => { el.style.opacity = '1'; el.style.transform = 'translateY(0) scale(1)'; }, 100 + i*120); } }
-function spawnNoteCS(){ const note = document.createElement('div'); note.className = 'note'; note.textContent = ['♪','♫','♬'][Math.floor(Math.random()*3)]; note.style.left = (20+Math.random()*60)+'%'; note.style.top = (55+Math.random()*15)+'%'; $('cutscene').appendChild(note); setTimeout(() => note.remove(), 3200); }
-function spawnInvaderCS(x, y, delay){ const el = document.createElement('div'); el.className = 'invader-sprite'; el.style.left = x+'%'; el.style.top = y+'%'; el.innerHTML = '<div class="body"></div>'; $('cutscene').appendChild(el); setTimeout(() => el.classList.add('show'), delay || 0); }
+function spawnPlantsCS(count){ const positions = [[12,62],[32,58],[52,64],[72,58],[86,62],[20,76],[80,78],[42,70],[62,72]]; for (let i = 0; i < count; i++){ const p = positions[i % positions.length]; const el = document.createElement('div'); el.className = 'plant-sprite'; el.style.left = p[0] + '%'; el.style.top = p[1] + '%'; el.style.opacity = '0'; el.style.transform = 'translateY(30px) scale(0.6)'; el.innerHTML = '<div class="head"></div><div class="stem"></div>'; $('cutscene').appendChild(el); csSet(() => { el.style.opacity = '1'; el.style.transform = 'translateY(0) scale(1)'; }, 100 + i*120); } }
+function spawnNoteCS(){ const note = document.createElement('div'); note.className = 'note'; note.textContent = ['♪','♫','♬'][Math.floor(Math.random()*3)]; note.style.left = (20+Math.random()*60)+'%'; note.style.top = (55+Math.random()*15)+'%'; $('cutscene').appendChild(note); csSet(() => note.remove(), 3200); }
+function spawnInvaderCS(x, y, delay){ const el = document.createElement('div'); el.className = 'invader-sprite'; el.style.left = x+'%'; el.style.top = y+'%'; el.innerHTML = '<div class="body"></div>'; $('cutscene').appendChild(el); csSet(() => el.classList.add('show'), delay || 0); }
 function setSceneBg(ids){ ['bg1','bg2','bg3','bg4','bg5'].forEach(id => $(id).classList.remove('active')); ids.forEach(id => $(id).classList.add('active')); }
 function setProgress(i){ document.querySelectorAll('#csProgress .dot').forEach((d, k) => d.classList.toggle('on', k === i)); }
-function setText(html){ const t = $('csText'); t.classList.remove('show'); setTimeout(() => { t.innerHTML = html; t.classList.add('show'); }, 250); }
-function triggerGlitch(d){ const g = $('glitchOverlay'); g.classList.add('on'); setTimeout(() => g.classList.remove('on'), d || 500); }
-function triggerFlash(d){ const f = $('flash'); f.classList.add('on'); setTimeout(() => f.classList.remove('on'), d || 150); }
+function setText(html){ const t = $('csText'); t.classList.remove('show'); csSet(() => { t.innerHTML = html; t.classList.add('show'); }, 250); }
+function triggerGlitch(d){ const g = $('glitchOverlay'); g.classList.add('on'); csSet(() => g.classList.remove('on'), d || 500); }
+function triggerFlash(d){ const f = $('flash'); f.classList.add('on'); csSet(() => f.classList.remove('on'), d || 150); }
+
 async function playCutscene(){
-  if (profile.cs_seen === true){ $('cutscene').classList.add('hidden'); goToMenu(); return; }
+  csEnded = false;
+  csToken = 0;
+  csSkipAll = null;
+  csClearTimers();
+  if (csWatchdog) clearTimeout(csWatchdog);
+  csWatchdog = setTimeout(() => {
+    if (!$('cutscene').classList.contains('hidden')){
+      console.warn('cutscene watchdog fired');
+      endCutscene();
+    }
+  }, 30000);
+
+  if (profile.cs_seen === true){ endCutscene(); return; }
   clearSceneExtras();
   ['bg1','bg2','bg3','bg4','bg5'].forEach(id => $(id).classList.remove('active'));
   $('csText').classList.remove('show'); $('csTitle').classList.remove('show'); $('csLogo').classList.remove('show');
@@ -640,15 +677,15 @@ async function playCutscene(){
   if (await wait(2000) === 'skip') return endCutscene();
   $('csTitle').classList.remove('show');
   setText('🌿 <b class="p">Растения</b> мирно жили в цифровом лесу...');
-  for (let i = 0; i < 4; i++) setTimeout(spawnNoteCS, i*400);
+  for (let i = 0; i < 4; i++) csSet(spawnNoteCS, i*400);
   if (await wait(2200) === 'skip') return endCutscene();
   setSceneBg(['bg2']); setProgress(1); spawnPlantsCS(4);
   setText('Они играли, пели песни и плели <b class="p">свет</b>.');
-  for (let i = 0; i < 5; i++) setTimeout(spawnNoteCS, i*380);
+  for (let i = 0; i < 5; i++) csSet(spawnNoteCS, i*380);
   if (await wait(4000) === 'skip') return endCutscene();
   setSceneBg(['bg3']); setProgress(2); triggerGlitch(700); triggerFlash(150);
   setText('Но однажды из глубины сети пришёл <b class="r">ГЛИТЧ-ВИРУС</b>.');
-  document.querySelectorAll('.plant-sprite').forEach(p => { p.style.opacity = '0'; setTimeout(() => p.remove(), 900); });
+  document.querySelectorAll('.plant-sprite').forEach(p => { p.style.opacity = '0'; csSet(() => p.remove(), 900); });
   spawnInvaderCS(40, 55, 400);
   if (await wait(3800) === 'skip') return endCutscene();
   setSceneBg(['bg4']); setProgress(3); triggerGlitch(500);
@@ -658,14 +695,25 @@ async function playCutscene(){
   setSceneBg(['bg5']); setProgress(4);
   document.querySelectorAll('.invader-sprite').forEach(i => i.remove());
   setText('<b class="p">40 ВИДОВ РАСТЕНИЙ</b> против <b class="e">10 ВИДОВ ЗАХВАТЧИКОВ</b>.');
-  spawnPlantsCS(3); setTimeout(() => spawnInvaderCS(70, 55, 0), 300);
+  spawnPlantsCS(3); csSet(() => spawnInvaderCS(70, 55, 0), 300);
   if (await wait(3800) === 'skip') return endCutscene();
   setProgress(5); setSceneBg(['bg5']);
   $('csText').classList.remove('show'); $('csLogo').classList.add('show'); triggerFlash(200);
   if (await wait(2600) === 'skip') return endCutscene();
   endCutscene();
 }
-function endCutscene(){ if (csSkipResolve) csSkipResolve('skip'); clearSceneExtras(); $('cutscene').classList.add('hidden'); profile.cs_seen = true; saveProfile(); goToMenu(); }
+function endCutscene(){
+  if (csEnded) return;
+  csEnded = true;
+  if (csWatchdog){ clearTimeout(csWatchdog); csWatchdog = null; }
+  csClearTimers();
+  if (csSkipAll) csSkipAll();
+  clearSceneExtras();
+  $('cutscene').classList.add('hidden');
+  profile.cs_seen = true;
+  saveProfile();
+  goToMenu();
+}
 
 /* ================== ПРОФИЛЬ UI ================== */
 const RANKS = [
@@ -877,7 +925,13 @@ function refreshUpgrade(){
     setTimeout(() => drawPortrait(cv, f), 10);
   });
 }
-function goToMenu(){ $('menu').style.display = 'flex'; updateProfileUI(); switchMainTab('play'); if (!token) showAuth(); if (token) startFriendsPolling(); }
+function goToMenu(){
+  $('menu').style.display = 'flex';
+  updateProfileUI();
+  try { switchMainTab('play'); } catch(e){ console.warn('switchMainTab error', e); }
+  if (!token) showAuth();
+  if (token) startFriendsPolling();
+}
 
 /* ================== КАРТОЧКА БОЙЦА ================== */
 let currentCardFighter = null;
@@ -983,7 +1037,6 @@ const touch = {
 const player = { x: 0, z: 14, hp: 100, maxHp: 100, fighter: null, walkPhase: 0, shield: 0, velX: 0, velZ: 0, respawnTimer: 0, dead: false, stats: null };
 function worldToScreen(wx, wz){ return { x: W/2 + (wx-camera2D.x)*ZOOM + shakeX, y: H*0.68 + (wz-camera2D.z)*ZOOM + shakeY }; }
 
-/* ===== Статичный слой арены — рисуется один раз и кэшируется ===== */
 const arenaCanvas = document.createElement('canvas');
 let arenaDirty = true;
 function buildArenaCache(){
@@ -1215,7 +1268,7 @@ function updateTeamsBar(){
   for (let i = 0; i < allies.length; i++) upd(miniAvatarEls.allies[i], allies[i], false);
   for (let i = 0; i < enemies.length; i++) upd(miniAvatarEls.enemies[i], enemies[i], false);
 }
-let superShootCD = 0, lastT = performance.now();
+let superShootCD = 0;
 function update(dt){
   if (shakeAmount > 0) shakeAmount = Math.max(0, shakeAmount - dt*40);
   if (!gameActive) return;
@@ -1424,13 +1477,26 @@ $('logoutBtn').addEventListener('click', () => {
 /* ================== СТАРТ ================== */
 updateProfileUI();
 rollRandomMap();
-function gameLoop(t){
-  const dt = Math.min(0.05, (t - lastT)/1000);
-  lastT = t;
-  if (gameActive){ update(dt); render(); }
-  requestAnimationFrame(gameLoop);
+
+let loopRunning = false;
+function startLoop(){
+  if (loopRunning) return;
+  loopRunning = true;
+  let last = performance.now();
+  const tick = (t) => {
+    const dt = Math.min(0.05, (t - last)/1000);
+    last = t;
+    try {
+      if (gameActive){ update(dt); render(); }
+    } catch(err){
+      console.error('gameLoop error:', err);
+    }
+    requestAnimationFrame(tick);
+  };
+  requestAnimationFrame(tick);
 }
-requestAnimationFrame(gameLoop);
+startLoop();
+
 (async () => {
   if (token){ const ok = await loadMe(); if (ok) { updateProfileUI(); startFriendsPolling(); } }
   playCutscene();
