@@ -132,11 +132,13 @@ html,body{width:100%;height:100%;overflow:hidden;background:#000;font-family:-ap
 .friend-row.offline{border-color:#475569;opacity:.7}
 .friend-row.incoming{border-color:#ffd54f}
 .friend-row.outgoing{border-color:#9fd7ff;opacity:.85}
-.friend-dot{width:10px;height:10px;border-radius:50%;background:#22c55e;box-shadow:0 0 8px #22c55e;flex-shrink:0}
-.friend-row.offline .friend-dot{background:#64748b;box-shadow:none}
+.friend-dot{width:10px;height:10px;border-radius:50%;background:#22c55e;box-shadow:0 0 8px #22c55e;flex-shrink:0;animation:onlinePulse 2s ease-in-out infinite}
+.friend-row.offline .friend-dot{background:#64748b;box-shadow:none;animation:none}
+@keyframes onlinePulse{0%,100%{box-shadow:0 0 8px #22c55e,0 0 0 0 rgba(34,197,94,.6)}50%{box-shadow:0 0 8px #22c55e,0 0 0 6px rgba(34,197,94,0)}}
 .friend-info{flex:1;min-width:0}
 .friend-nick{font-weight:900;font-size:13px;color:#eaffea;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .friend-stats{font-size:10px;color:#9fd7ff;font-weight:700;margin-top:2px}
+.friend-row:not(.offline) .friend-stats{color:#7cf86b}
 .friend-btns{display:flex;gap:4px;flex-shrink:0}
 .friend-btn{padding:6px 9px;font-size:11px;font-weight:900;border-radius:8px;cursor:pointer;pointer-events:auto;border:2px solid}
 .friend-btn.duel{background:linear-gradient(180deg,#2cff5e,#16a34a);border-color:#a8ffa0;color:#04141d}
@@ -145,6 +147,7 @@ html,body{width:100%;height:100%;overflow:hidden;background:#000;font-family:-ap
 .friend-btn:disabled{opacity:.4;cursor:default}
 .friends-section-title{width:100%;max-width:440px;font-size:11px;font-weight:900;letter-spacing:2px;color:#9fd7ff;padding:6px 4px 2px;text-align:left}
 #friendsEmpty{color:#9fd7ff;font-size:12px;text-align:center;padding:16px 8px}
+#friendsOnlineBadge{color:#7cf86b;font-weight:900;font-size:13px}
 .top-list{width:100%;max-width:440px;display:flex;flex-direction:column;gap:4px}
 .top-row{display:flex;align-items:center;gap:10px;padding:8px 12px;background:rgba(0,0,0,.45);border:2px solid #2cff5e;border-radius:10px;font-weight:800}
 .top-row.gold{border-color:#ffd54f;box-shadow:0 0 14px rgba(255,213,79,.35)}
@@ -359,7 +362,7 @@ html,body{width:100%;height:100%;overflow:hidden;background:#000;font-family:-ap
     <div class="screen" id="scCollection"><h2>👥 Твоя коллекция</h2><div class="collection-grid" id="collectionGrid"></div></div>
     <div class="screen" id="scUpgrade"><h2>⬆ Прокачай бойца</h2><div class="collection-grid" id="upgradeGrid"></div></div>
     <div class="screen" id="scFriends">
-      <h2>🤝 Друзья <span id="friendsOnlineBadge" style="color:#7cf86b"></span></h2>
+      <h2>🤝 Друзья <span id="friendsOnlineBadge"></span></h2>
       <div id="friendsAdd">
         <input id="friendNickInput" maxlength="16" placeholder="Ник друга" autocomplete="off">
         <button id="friendAddBtn">ДОБАВИТЬ</button>
@@ -521,7 +524,7 @@ function renderFriends(){
   }
   empty.style.display = 'none';
   const onlineCount = friendsData.friends.filter(f => f.online).length;
-  if (badge) badge.textContent = '· онлайн ' + onlineCount + '/' + friendsData.friends.length;
+  if (badge) badge.textContent = '· 🟢 ' + onlineCount + ' / ' + friendsData.friends.length + ' онлайн';
 
   function mkTitle(text){
     const t = document.createElement('div'); t.className = 'friends-section-title'; t.textContent = text;
@@ -686,7 +689,7 @@ function renderTop(){
   }
 }
 
-/* ===== ЗВУК ===== */
+/* ===== ЗВУК (SFX) ===== */
 let audioCtx = null;
 function initAudio(){ if (audioCtx) return; try { audioCtx = new (window.AudioContext || window.webkitAudioContext)(); } catch(e){} }
 function playSound(type){ if (!profile.sound || !audioCtx) return; const t = audioCtx.currentTime; const o = audioCtx.createOscillator(); const g = audioCtx.createGain(); o.connect(g); g.connect(audioCtx.destination); switch(type){ case 'shoot': o.type='square'; o.frequency.setValueAtTime(600,t); o.frequency.exponentialRampToValueAtTime(200,t+0.08); g.gain.setValueAtTime(0.05,t); g.gain.exponentialRampToValueAtTime(0.001,t+0.08); o.start(t); o.stop(t+0.1); break; case 'hit': o.type='sawtooth'; o.frequency.setValueAtTime(200,t); o.frequency.exponentialRampToValueAtTime(80,t+0.1); g.gain.setValueAtTime(0.08,t); g.gain.exponentialRampToValueAtTime(0.001,t+0.12); o.start(t); o.stop(t+0.14); break; case 'ult': o.type='sine'; o.frequency.setValueAtTime(300,t); o.frequency.exponentialRampToValueAtTime(1200,t+0.3); g.gain.setValueAtTime(0.15,t); g.gain.exponentialRampToValueAtTime(0.001,t+0.5); o.start(t); o.stop(t+0.55); break; case 'click': o.type='sine'; o.frequency.setValueAtTime(800,t); g.gain.setValueAtTime(0.04,t); g.gain.exponentialRampToValueAtTime(0.001,t+0.05); o.start(t); o.stop(t+0.06); break; case 'win': o.type='triangle'; o.frequency.setValueAtTime(500,t); o.frequency.setValueAtTime(700,t+0.1); o.frequency.setValueAtTime(1000,t+0.2); g.gain.setValueAtTime(0.15,t); g.gain.exponentialRampToValueAtTime(0.001,t+0.5); o.start(t); o.stop(t+0.55); break; case 'lose': o.type='sawtooth'; o.frequency.setValueAtTime(300,t); o.frequency.exponentialRampToValueAtTime(80,t+0.4); g.gain.setValueAtTime(0.12,t); g.gain.exponentialRampToValueAtTime(0.001,t+0.5); o.start(t); o.stop(t+0.55); break; case 'box': o.type='triangle'; o.frequency.setValueAtTime(400,t); o.frequency.setValueAtTime(600,t+0.1); o.frequency.setValueAtTime(900,t+0.2); g.gain.setValueAtTime(0.12,t); g.gain.exponentialRampToValueAtTime(0.001,t+0.4); o.start(t); o.stop(t+0.45); break; } }
@@ -696,46 +699,158 @@ $('soundBtn').addEventListener('click', () => { initAudio(); toggleSound(); });
 document.addEventListener('touchstart', initAudio, {once:true});
 document.addEventListener('mousedown', initAudio, {once:true});
 
-/* ===== МУЗЫКА ===== */
-const MUSIC_URL = 'https://raw.githubusercontent.com/gnsledovatel/Music-for-ds/main/ds%20music%20alpha.mp3';
-let musicEl = null;
-let musicStarted = false;
-let musicTried = false;
+/* ===== ПРОЦЕДУРНАЯ МУЗЫКА (Web Audio API) ===== */
+let musicEngine = null;
+
+function createPRNG(seed) {
+  let s = seed >>> 0;
+  if (s === 0) s = 1;
+  return () => {
+    s = (s * 1664525 + 1013904223) >>> 0;
+    return s / 0xFFFFFFFF;
+  };
+}
+
+function createMusicEngine(seed) {
+  const AudioCtx = window.AudioContext || window.webkitAudioContext;
+  const mctx = new AudioCtx();
+  const prng = createPRNG(seed);
+  const masterGain = mctx.createGain();
+  masterGain.gain.value = 0.18;
+  masterGain.connect(mctx.destination);
+
+  // Настройки
+  const bpm = 96;
+  const stepDur = 60 / bpm / 2; // восьмые
+  const scale = [0, 2, 3, 5, 7, 8, 10]; // натуральный минор
+  const rootHz = 220;
+
+  let nextStepTime = 0;
+  let step = 0;
+  let isPlaying = false;
+  let scheduleTimer = null;
+
+  function noteFreq(semitone) { return rootHz * Math.pow(2, semitone / 12); }
+
+  function playTone(time, freq, dur, type, vol) {
+    const osc = mctx.createOscillator();
+    const gain = mctx.createGain();
+    osc.type = type || 'sine';
+    osc.frequency.setValueAtTime(freq, time);
+    gain.gain.setValueAtTime(0, time);
+    gain.gain.linearRampToValueAtTime(vol, time + 0.01);
+    gain.gain.exponentialRampToValueAtTime(0.001, time + dur);
+    osc.connect(gain);
+    gain.connect(masterGain);
+    osc.start(time);
+    osc.stop(time + dur + 0.05);
+  }
+
+  function playKick(time) {
+    const osc = mctx.createOscillator();
+    const gain = mctx.createGain();
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(150, time);
+    osc.frequency.exponentialRampToValueAtTime(40, time + 0.15);
+    gain.gain.setValueAtTime(0.9, time);
+    gain.gain.exponentialRampToValueAtTime(0.001, time + 0.22);
+    osc.connect(gain);
+    gain.connect(masterGain);
+    osc.start(time);
+    osc.stop(time + 0.25);
+  }
+
+  function playHat(time) {
+    const bufSize = Math.floor(mctx.sampleRate * 0.05);
+    const buffer = mctx.createBuffer(1, bufSize, mctx.sampleRate);
+    const data = buffer.getChannelData(0);
+    for (let i = 0; i < bufSize; i++) data[i] = (Math.random() * 2 - 1) * (1 - i / bufSize);
+    const src = mctx.createBufferSource();
+    src.buffer = buffer;
+    const gain = mctx.createGain();
+    gain.gain.setValueAtTime(0.12, time);
+    gain.gain.exponentialRampToValueAtTime(0.001, time + 0.05);
+    const filter = mctx.createBiquadFilter();
+    filter.type = 'highpass';
+    filter.frequency.value = 6500;
+    src.connect(filter);
+    filter.connect(gain);
+    gain.connect(masterGain);
+    src.start(time);
+  }
+
+  function scheduleStep(t) {
+    // Бас на сильных долях
+    if (step % 8 === 0 || step % 8 === 4) {
+      const bassNote = scale[Math.floor(prng() * 3)] - 12;
+      playTone(t, noteFreq(bassNote), stepDur * 1.6, 'triangle', 0.28);
+    }
+    // Мелодия (не всегда)
+    if (prng() < 0.6) {
+      const note = scale[Math.floor(prng() * scale.length)];
+      const oct = prng() < 0.3 ? 12 : 0;
+      playTone(t, noteFreq(note + oct), stepDur * 0.9, 'square', 0.07);
+    }
+    // Ритм
+    if (step % 4 === 0) playKick(t);
+    if (step % 2 === 0) playHat(t);
+  }
+
+  function scheduler() {
+    while (nextStepTime < mctx.currentTime + 0.15) {
+      scheduleStep(nextStepTime);
+      nextStepTime += stepDur;
+      step++;
+    }
+    if (isPlaying) scheduleTimer = setTimeout(scheduler, 30);
+  }
+
+  return {
+    start() {
+      if (isPlaying) return;
+      if (mctx.state === 'suspended') mctx.resume();
+      isPlaying = true;
+      nextStepTime = mctx.currentTime + 0.06;
+      step = 0;
+      scheduler();
+    },
+    stop() {
+      isPlaying = false;
+      if (scheduleTimer) { clearTimeout(scheduleTimer); scheduleTimer = null; }
+    },
+    setVolume(v) {
+      try { masterGain.gain.value = v; } catch(e){}
+    },
+    isPlaying() { return isPlaying; }
+  };
+}
 
 function initMusic(){
-  if (musicEl) return;
+  if (musicEngine) return;
+  if (!profile.music) return;
+  const seed = nickname
+    ? nickname.split('').reduce((a, b) => (a * 31 + b.charCodeAt(0)) >>> 0, 7)
+    : (Math.floor(Math.random() * 100000) + 1);
   try {
-    musicEl = new Audio(MUSIC_URL);
-    musicEl.loop = true;
-    musicEl.volume = 0.35;
-    musicEl.preload = 'auto';
-    musicEl.addEventListener('error', () => { console.warn('[music] load error'); });
-    musicEl.addEventListener('canplaythrough', () => { updateMusicBtn(); });
+    musicEngine = createMusicEngine(seed);
   } catch(e){ console.warn('[music] init fail', e); }
 }
 function tryStartMusic(){
   if (!profile.music) return;
   initMusic();
-  if (!musicEl || musicStarted) return;
-  musicTried = true;
-  musicEl.play().then(() => {
-    musicStarted = true;
-    updateMusicBtn();
-  }).catch(err => {
-    console.warn('[music] autoplay blocked:', err.message);
-    musicTried = false;
-  });
+  if (!musicEngine) return;
+  if (musicEngine.isPlaying()) return;
+  try { musicEngine.start(); } catch(e){}
+  updateMusicBtn();
 }
 function toggleMusic(){
-  initMusic();
-  if (!musicEl) return;
   profile.music = !profile.music;
   saveProfile();
   if (profile.music){
-    musicEl.play().then(() => { musicStarted = true; updateMusicBtn(); }).catch(()=>{});
+    initMusic();
+    if (musicEngine) musicEngine.start();
   } else {
-    musicEl.pause();
-    musicStarted = false;
+    if (musicEngine) musicEngine.stop();
   }
   updateMusicBtn();
 }
@@ -743,16 +858,16 @@ function updateMusicBtn(){
   const b = $('musicBtn');
   if (!b) return;
   b.textContent = profile.music ? '🎵' : '🔇';
-  b.classList.toggle('playing', !!(profile.music && musicStarted));
+  b.classList.toggle('playing', !!(profile.music && musicEngine && musicEngine.isPlaying()));
 }
 function updateMusicVolume(inGame){
-  if (!musicEl) return;
-  musicEl.volume = inGame ? 0.18 : 0.35;
+  if (!musicEngine) return;
+  musicEngine.setVolume(inGame ? 0.10 : 0.18);
 }
 $('musicBtn').addEventListener('click', (e) => { e.stopPropagation(); toggleMusic(); });
 
 function firstMusicKick(){
-  if (!musicTried) tryStartMusic();
+  tryStartMusic();
   document.removeEventListener('touchstart', firstMusicKick);
   document.removeEventListener('mousedown', firstMusicKick);
   document.removeEventListener('keydown', firstMusicKick);
@@ -760,7 +875,7 @@ function firstMusicKick(){
 document.addEventListener('touchstart', firstMusicKick, {once:true});
 document.addEventListener('mousedown', firstMusicKick, {once:true});
 document.addEventListener('keydown', firstMusicKick, {once:true});
-setTimeout(() => { tryStartMusic(); updateMusicBtn(); }, 400);
+setTimeout(() => { updateMusicBtn(); }, 400);
 
 /* ===== КАРТЫ ===== */
 const MAPS = [
@@ -987,7 +1102,7 @@ let activeDiscount = loadDiscount();
 function refreshBoxes(){ activeDiscount = loadDiscount(); const row = $('boxesRow'); row.innerHTML = ''; BOXES.forEach(b => { const card = document.createElement('div'); card.className = 'box-card ' + b.color; const hasDisc = activeDiscount.discount > 0; const finalPrice = hasDisc ? Math.round(b.price * (1 - activeDiscount.discount / 100)) : b.price; if (hasDisc) card.classList.add('discount'); let html = '<div class="icon">' + b.icon + '</div><div class="title">' + b.name + '</div>'; if (hasDisc){ html += '<div class="price old">💾 ' + b.price + '</div>'; html += '<div class="price">💾 ' + finalPrice + '</div>'; html += '<div class="disc-badge">-' + activeDiscount.discount + '%</div>'; } else { html += '<div class="price">💾 ' + b.price + '</div>'; } card.innerHTML = html; card.addEventListener('click', () => openBox(b, finalPrice)); row.appendChild(card); }); const info = $('discountInfo'); if (activeDiscount.discount > 0){ const hoursLeft = Math.max(0, Math.ceil((activeDiscount.expiresAt - Date.now()) / 3600000)); info.textContent = '🔥 АКЦИЯ -' + activeDiscount.discount + '% • ещё ' + hoursLeft + ' ч.'; info.style.color = '#ffd54f'; } else { info.textContent = 'Акций нет. Заглядывай позже!'; info.style.color = '#9fd7ff'; } }
 function pickRandomRarity(weights){ const r = Math.random(); let acc = 0; for (const k in weights){ acc += weights[k]; if (r <= acc) return k; } return 'common'; }
 function openBox(box, finalPrice){ const price = finalPrice || box.price; if (profile.kk < price){ alert('Не хватает КК! Нужно 💾 ' + price); return; } profile.kk -= price; playSound('box'); const rarity = pickRandomRarity(box.weights); const pool = Object.keys(FIGHTERS).filter(id => FIGHTERS[id].rarity === rarity); const locked = pool.filter(id => !isUnlocked(id)); let resultId = null, isNew = false; if (locked.length > 0){ resultId = locked[Math.floor(Math.random()*locked.length)]; isNew = true; profile.unlocked[resultId] = true; } else { const bonus = box.kkBack || 25; profile.kk += bonus; } saveProfile(); updateProfileUI(); showBoxOpening(resultId, isNew, rarity, box); }
-function showBoxOpening(resultId, isNew, rarity, box){ const overlay = $('boxOpening'); overlay.style.display = 'flex'; $('boxAnim').style.display = 'flex'; $('boxResult').classList.remove('show'); $('boxAnim').textContent = box.icon; setTimeout(() => { $('boxAnim').style.display = 'none'; const card = $('boxResultCard'); card.className = 'result-card ' + rarity; const cv = $('boxResultCanvas'); if (resultId){ const f = FIGHTERS[resultId]; drawPortrait(cv, f, getSkin(resultId)); $('boxResultName').textContent = f.name; $('boxResultType').textContent = (isNew ? '✨ НОВЫЙ! ' : 'ДУБЛИКАТ ') + '• ' + rarity.toUpperCase(); playSound('win'); } else { const ctx = cv.getContext('2d'); ctx.clearRect(0,0,cv.width,cv.height); ctx.fillStyle = '#ffb300'; ctx.font = 'bold 60px sans-serif'; ctx.textAlign = 'center'; ctx.fillText('💾', cv.width/2, cv.height/2 + 20); $('boxResultName').textContent = 'КУСКИ КОДА'; $('boxResultType').textContent = '+' + box.kkBack + ' KK • ' + rarity.toUpperCase(); } $('boxResult').classList.add('show'); }, 1200); overlay.onclick = () => { overlay.style.display = 'none'; if ($('mtBoxes').classList.contains('active')) refreshBoxes(); updateProfileUI(); }; }
+function showBoxOpening(resultId, isNew, rarity, box){ const overlay = $('boxOpening'); overlay.style.display = 'flex'; $('boxAnim').style.display = 'flex'; $('boxResult').classList.remove('show'); $('boxAnim').textContent = box.icon; setTimeout(() => { $('boxAnim').style.display = 'none'; const card = $('boxResultCard'); card.className = 'result-card ' + rarity; const cv = $('boxResultCanvas'); if (resultId){ const f = FIGHTERS[resultId]; drawPortrait(cv, f, getSkin(resultId)); $('boxResultName').textContent = f.name; $('boxResultType').textContent = (isNew ? '✨ НОВЫЙ! ' : 'ДУБЛИКАТ ') + '• ' + rarity.toUpperCase(); playSound('win'); } else { const ctx2 = cv.getContext('2d'); ctx2.clearRect(0,0,cv.width,cv.height); ctx2.fillStyle = '#ffb300'; ctx2.font = 'bold 60px sans-serif'; ctx2.textAlign = 'center'; ctx2.fillText('💾', cv.width/2, cv.height/2 + 20); $('boxResultName').textContent = 'КУСКИ КОДА'; $('boxResultType').textContent = '+' + box.kkBack + ' KK • ' + rarity.toUpperCase(); } $('boxResult').classList.add('show'); }, 1200); overlay.onclick = () => { overlay.style.display = 'none'; if ($('mtBoxes').classList.contains('active')) refreshBoxes(); updateProfileUI(); }; }
 
 /* ===== КОЛЛЕКЦИЯ / ПРОКАЧКА ===== */
 function refreshCollection(){ const grid = $('collectionGrid'); grid.innerHTML = ''; Object.keys(FIGHTERS).forEach(id => { const f = FIGHTERS[id]; const card = document.createElement('div'); card.className = 'col-card' + (f.side === 'enemy' ? ' enemySide' : '') + (isUnlocked(id) ? '' : ' locked'); const lvl = document.createElement('div'); lvl.className = 'lvl'; lvl.textContent = 'L' + getLevel(id); if (!isUnlocked(id)) lvl.style.display = 'none'; card.appendChild(lvl); const cv = document.createElement('canvas'); card.appendChild(cv); const nm = document.createElement('div'); nm.className = 'name'; nm.textContent = isUnlocked(id) ? f.name : '???'; card.appendChild(nm); if (!isUnlocked(id)){ const lock = document.createElement('div'); lock.className = 'lock'; lock.textContent = '🔒'; card.appendChild(lock); } card.addEventListener('click', () => openFighterCard(f.id)); grid.appendChild(card); setTimeout(() => drawPortrait(cv, f, getSkin(id)), 10); }); }
@@ -1527,7 +1642,7 @@ function runCommand(raw){
     case 'super': { superCharge = SUPER_MAX; updateSuperUI(); dcPrint('✓ Ульта заряжена', 'dc-ok'); break; }
     case 'safehp': { const v = parseInt(a1,10); if (!safe){ dcPrint('✗ Нет сейфа', 'dc-err'); break; } if (isNaN(v)){ dcPrint('safe HP: ' + safe.hp + ' / ' + safe.maxHp, 'dc-info'); break; } safe.hp = Math.max(0, Math.min(safe.maxHp, v)); dcPrint('✓ safe.hp = ' + safe.hp, 'dc-ok'); if (safe.hp <= 0 && gameActive){ bossDeathEffect(safe.x, safe.z); endGame(true); } break; }
     case 'skin': { if (!FIGHTERS[a1] || isNaN(parseInt(a2,10))){ dcPrint('skin <id> <0-7>', 'dc-err'); break; } const idx = Math.max(0, Math.min(7, parseInt(a2,10))); profile.skins[a1] = idx; saveProfile(); dcPrint('✓ ' + FIGHTERS[a1].name + ' → скин ' + SKINS[idx].name, 'dc-ok'); break; }
-    case 'music': { if (a1 === 'on'){ profile.music = true; saveProfile(); tryStartMusic(); updateMusicBtn(); dcPrint('✓ Музыка ON', 'dc-ok'); } else if (a1 === 'off'){ profile.music = false; saveProfile(); if (musicEl) musicEl.pause(); musicStarted = false; updateMusicBtn(); dcPrint('✓ Музыка OFF', 'dc-ok'); } else dcPrint('music: ' + (profile.music ? 'on' : 'off'), 'dc-info'); break; }
+    case 'music': { if (a1 === 'on'){ profile.music = true; saveProfile(); tryStartMusic(); updateMusicBtn(); dcPrint('✓ Музыка ON', 'dc-ok'); } else if (a1 === 'off'){ profile.music = false; saveProfile(); if (musicEngine) musicEngine.stop(); updateMusicBtn(); dcPrint('✓ Музыка OFF', 'dc-ok'); } else dcPrint('music: ' + (profile.music ? 'on' : 'off'), 'dc-info'); break; }
     case 'win': { if (gameActive){ endGame(true); dcPrint('✓ Победа', 'dc-ok'); } else dcPrint('✗ Не в бою', 'dc-err'); break; }
     case 'lose': { if (gameActive){ endGame(false); dcPrint('✓ Поражение', 'dc-ok'); } else dcPrint('✗ Не в бою', 'dc-err'); break; }
     case 'map': { const name = parts.slice(1).join(' ').toLowerCase(); const found = MAPS.find(m => m.name.toLowerCase() === name || m.name.toLowerCase().includes(name)); if (!found){ dcPrint('Карты: ' + MAPS.map(m => m.name).join(', '), 'dc-info'); break; } currentMap = found; $('mapName').textContent = found.name; $('mapSize').textContent = found.size + '×' + found.size + ' • ' + found.theme; dcPrint('✓ Карта: ' + found.name, 'dc-ok'); break; }
