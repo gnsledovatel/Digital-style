@@ -58,8 +58,7 @@ html,body{width:100%;height:100%;overflow:hidden;background:#000;font-family:-ap
 #profile .rank{color:#00e5ff;font-size:clamp(9px,2.6vw,11px);font-weight:600}
 #nickLabel{color:#7cf86b;font-weight:800;font-size:clamp(10px,2.8vw,13px);cursor:pointer}
 #logoutBtn{padding:3px 8px;background:rgba(255,46,138,.2);border:1px solid #ff2e8a;color:#ff2e8a;font-weight:800;font-size:10px;border-radius:6px;cursor:pointer;pointer-events:auto;display:none}
-#menu h1{font-size:clamp(18px,5vw,28px);font-weight:900;letter-spacing:2px;color:#7cf86b;text-shadow:0 0 20px #2cff5e;text-align:center}
-#menu h2{font-size:clamp(9px,2.6vw,12px);color:#00e5ff;letter-spacing:2px;margin-bottom:4px;text-align:center}
+#menu h1{font-size:clamp(18px,5vw,28px);font-weight:900;letter-spacing:2px;color:#7cf86b;text-shadow:0 0 20px #2cff5e;text-align:center;cursor:pointer;user-select:none;-webkit-user-select:none}
 .mainTabs{display:flex;gap:4px;width:100%;max-width:440px;flex-wrap:wrap;justify-content:center}
 .mainTab{padding:8px 12px;text-align:center;font-weight:800;font-size:clamp(10px,2.7vw,12px);border-radius:10px;cursor:pointer;border:2px solid transparent;background:rgba(255,255,255,.06);color:#9fd7ff;pointer-events:auto}
 .mainTab.active{background:linear-gradient(180deg,#1c3d1f,#0e2410);border-color:#7cf86b;color:#eaffea}
@@ -217,8 +216,6 @@ html,body{width:100%;height:100%;overflow:hidden;background:#000;font-family:-ap
 #trophyToast{position:absolute;top:32%;left:50%;transform:translateX(-50%);font-size:clamp(20px,6vw,36px);font-weight:900;color:#ffd54f;display:none;z-index:31;text-align:center;pointer-events:none}
 #leave{position:absolute;top:calc(env(safe-area-inset-top) + 6px);right:8px;width:32px;height:32px;border-radius:50%;background:rgba(255,46,138,.25);border:2px solid #ff2e8a;color:#ff2e8a;font-size:15px;font-weight:900;line-height:28px;text-align:center;display:none;pointer-events:auto;cursor:pointer;z-index:20}
 #soundBtn{position:fixed;top:calc(env(safe-area-inset-top) + 6px);right:48px;width:32px;height:32px;border-radius:50%;background:rgba(0,229,255,.2);border:2px solid #00e5ff;color:#00e5ff;font-size:15px;line-height:28px;text-align:center;display:none;pointer-events:auto;cursor:pointer;z-index:20}
-
-/* ===== ЭКРАН ПОБЕДЫ/ПОРАЖЕНИЯ ===== */
 #victoryScreen{position:fixed;inset:0;z-index:400;display:none;flex-direction:column;align-items:center;justify-content:center;background:radial-gradient(circle at 50% 40%,rgba(28,61,31,.97) 0%,rgba(5,7,13,.99) 80%);pointer-events:auto;text-align:center;padding:20px}
 #victoryScreen.show{display:flex;animation:vsIn .45s ease}
 #victoryScreen.lose{background:radial-gradient(circle at 50% 40%,rgba(58,10,26,.97) 0%,rgba(5,7,13,.99) 80%)}
@@ -238,6 +235,41 @@ html,body{width:100%;height:100%;overflow:hidden;background:#000;font-family:-ap
 #victoryScreen .vs-btn{padding:15px 44px;background:linear-gradient(180deg,#7cf86b,#2cff5e);border:2px solid #a8ffa0;color:#05070d;font-weight:900;font-size:16px;letter-spacing:1.5px;border-radius:12px;cursor:pointer;pointer-events:auto;box-shadow:0 0 24px rgba(124,248,107,.45)}
 #victoryScreen.lose .vs-btn{background:linear-gradient(180deg,#ff2e8a,#c21560);border-color:#ff8fbc;color:#fff;box-shadow:0 0 24px rgba(255,46,138,.45)}
 #victoryScreen .vs-btn:active{transform:scale(.96)}
+#saveIndicator{position:fixed;bottom:calc(env(safe-area-inset-bottom) + 16px);left:16px;padding:8px 14px;background:rgba(0,0,0,.75);border:2px solid #7cf86b;color:#7cf86b;font-weight:800;font-size:12px;letter-spacing:1px;border-radius:10px;z-index:500;opacity:0;transform:translateY(10px);transition:opacity .3s,transform .3s;pointer-events:none}
+#saveIndicator.show{opacity:1;transform:translateY(0)}
+#saveIndicator.err{border-color:#ff2e8a;color:#ff2e8a}
+#saveBtn{position:fixed;bottom:calc(env(safe-area-inset-bottom) + 16px);left:16px;width:44px;height:44px;border-radius:50%;background:rgba(0,0,0,.6);border:2px solid #7cf86b;color:#7cf86b;font-size:20px;line-height:40px;text-align:center;cursor:pointer;pointer-events:auto;z-index:91;display:none}
+#saveBtn.show{display:block}
+#saveBtn:active{transform:scale(.92)}
+
+/* ===== DEV CONSOLE ===== */
+#devConsole{position:fixed;left:0;right:0;bottom:0;max-height:60vh;background:rgba(5,7,13,.96);border-top:2px solid #00e5ff;z-index:1000000;display:none;flex-direction:column;pointer-events:auto;box-shadow:0 -8px 30px rgba(0,229,255,.2)}
+#devConsole.show{display:flex}
+#dcHeader{display:flex;justify-content:space-between;align-items:center;padding:8px 12px;background:rgba(0,229,255,.1);border-bottom:1px solid rgba(0,229,255,.3);font-weight:900;font-size:12px;letter-spacing:2px;color:#00e5ff}
+#dcClose{padding:4px 12px;background:rgba(255,46,138,.2);border:1px solid #ff2e8a;color:#ff2e8a;border-radius:6px;font-weight:900;cursor:pointer;font-size:12px}
+#dcLog{flex:1;overflow-y:auto;padding:8px 12px;font:11px/1.4 'SF Mono',Menlo,Consolas,monospace;color:#9fd7ff;white-space:pre-wrap;word-break:break-word;max-height:40vh;min-height:120px}
+#dcLog .dc-info{color:#9fd7ff}
+#dcLog .dc-ok{color:#7cf86b}
+#dcLog .dc-err{color:#ff2e8a}
+#dcLog .dc-cmd{color:#ffd54f}
+#dcInputRow{display:flex;align-items:center;gap:6px;padding:8px 12px;border-top:1px solid rgba(0,229,255,.3);background:rgba(0,0,0,.5)}
+#dcInputRow .prompt{color:#00e5ff;font-weight:900;font-size:14px}
+#dcInput{flex:1;background:transparent;border:none;outline:none;color:#eaffea;font:13px 'SF Mono',Menlo,Consolas,monospace;pointer-events:auto}
+#dcHint{font-size:10px;color:#475569;padding:4px 12px 8px;text-align:right}
+
+/* ===== МОДАЛКА РАЗБЛОКИРОВКИ DEV CONSOLE ===== */
+#devUnlock{position:fixed;inset:0;z-index:999998;display:none;align-items:center;justify-content:center;background:rgba(3,5,10,.9);pointer-events:auto;padding:20px}
+#devUnlock.show{display:flex}
+#devUnlock .du-box{width:100%;max-width:340px;background:linear-gradient(180deg,#0a1520,#05070d);border:2px solid #00e5ff;border-radius:14px;padding:20px;display:flex;flex-direction:column;gap:12px;box-shadow:0 0 40px rgba(0,229,255,.25)}
+#devUnlock .du-title{font-size:14px;font-weight:900;letter-spacing:3px;color:#00e5ff;text-align:center}
+#devUnlock .du-hint{font-size:11px;color:#9fd7ff;text-align:center;line-height:1.4}
+#devUnlock input{width:100%;padding:12px;background:rgba(255,255,255,.06);border:2px solid #00e5ff;border-radius:10px;color:#fff;font-size:16px;outline:none;text-align:center;letter-spacing:1px;pointer-events:auto}
+#devUnlock input:focus{border-color:#7cf86b}
+#devUnlock .du-err{color:#ff2e8a;font-weight:800;font-size:12px;text-align:center;min-height:16px;letter-spacing:1px}
+#devUnlock .du-row{display:flex;gap:8px}
+#devUnlock button{flex:1;padding:12px;border:none;font-weight:900;font-size:13px;border-radius:10px;cursor:pointer;pointer-events:auto}
+#devUnlock .du-ok{background:linear-gradient(180deg,#2cff5e,#16a34a);color:#04141d}
+#devUnlock .du-cancel{background:rgba(255,46,138,.2);border:2px solid #ff2e8a !important;color:#ff2e8a}
 </style>
 </head>
 <body>
@@ -265,7 +297,7 @@ html,body{width:100%;height:100%;overflow:hidden;background:#000;font-family:-ap
       <span id="nickLabel">—</span>
       <span id="logoutBtn">ВЫЙТИ</span>
     </div>
-    <h1>Digital Style</h1>
+    <h1 id="menuTitle">Digital Style</h1>
     <div class="mainTabs">
       <div class="mainTab active" id="mtPlay">🎮 Играть</div>
       <div class="mainTab" id="mtBoxes">📦 Боксы</div>
@@ -322,6 +354,9 @@ html,body{width:100%;height:100%;overflow:hidden;background:#000;font-family:-ap
   <div id="msg"></div><div id="trophyToast"></div>
 </div>
 
+<button id="saveBtn" title="Сохранить">💾</button>
+<div id="saveIndicator">💾 Сохранено ✓</div>
+
 <div id="victoryScreen">
   <div class="vs-icon" id="vsIcon">🏆</div>
   <div class="vs-title" id="vsTitle">ПОБЕДА!</div>
@@ -331,6 +366,27 @@ html,body{width:100%;height:100%;overflow:hidden;background:#000;font-family:-ap
   </div>
   <div class="vs-kills" id="vsKills"></div>
   <button class="vs-btn" id="vsBtn">В МЕНЮ</button>
+</div>
+
+<!-- МОДАЛКА РАЗБЛОКИРОВКИ DEV CONSOLE -->
+<div id="devUnlock">
+  <div class="du-box">
+    <div class="du-title">🔒 СЕКРЕТНЫЙ КОД</div>
+    <div class="du-hint">Введи кодовое слово для доступа к консоли разработчика</div>
+    <input id="duInput" type="text" placeholder="· · · · · · ·" autocomplete="off" autocapitalize="off" spellcheck="false">
+    <div class="du-err" id="duErr"></div>
+    <div class="du-row">
+      <button class="du-cancel" id="duCancel">ОТМЕНА</button>
+      <button class="du-ok" id="duOk">ОТКРЫТЬ</button>
+    </div>
+  </div>
+</div>
+
+<div id="devConsole">
+  <div id="dcHeader"><span>🛠 DEV CONSOLE</span><span id="dcClose">ЗАКРЫТЬ ✕</span></div>
+  <div id="dcLog"></div>
+  <div id="dcInputRow"><span class="prompt">&gt;</span><input id="dcInput" type="text" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="help — список команд"></div>
+  <div id="dcHint">↑/↓ — история · Enter — выполнить</div>
 </div>
 
 <div id="fighterCard">
@@ -368,7 +424,7 @@ html,body{width:100%;height:100%;overflow:hidden;background:#000;font-family:-ap
 </div>
 
 <script type="module">
-const DBG = { log: (...args) => { try { console.log('[DS]', ...args); } catch(e){} }, show: () => {} };
+const DBG = { log: (...args) => { try { console.log('[DS]', ...args); } catch(e){} } };
 DBG.log('boot');
 window.addEventListener('error', e => { try { console.error('[DS] ERR:', e.message, e.filename, e.lineno); } catch(_){} });
 window.addEventListener('unhandledrejection', e => { try { console.error('[DS] REJ:', e.reason); } catch(_){} });
@@ -385,8 +441,30 @@ let token = '', nickname = '';
 try { token = localStorage.getItem(TOKEN_KEY) || ''; nickname = localStorage.getItem(NICK_KEY) || ''; } catch(e){}
 let profile = { kk: 200, trophies: 0, wins: 0, losses: 0, kills: 0, games: 0, unlocked: { plant_0: true, plant_1: true, plant_2: true, inv_0: true }, levels: {}, selected: { plant: 'plant_0', enemy: 'inv_0' }, cs_seen: false, sound: true };
 try { const raw = localStorage.getItem(SAVE_KEY); if (raw) Object.assign(profile, JSON.parse(raw)); } catch(e){}
-function saveProfile(){ try { localStorage.setItem(SAVE_KEY, JSON.stringify(profile)); } catch(e){} if (token) syncToServer(); }
-async function syncToServer(){ if (!token) return; try { await fetch('/api/save', { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-Token': token }, body: JSON.stringify({ kk: profile.kk, trophies: profile.trophies, wins: profile.wins||0, losses: profile.losses||0, kills: profile.kills||0, games: profile.games||0, unlocked: profile.unlocked, levels: profile.levels, selected: profile.selected, lastSeen: Date.now() }) }); } catch(e){} }
+
+let saveIndicatorTimer = null;
+function showSaveIndicator(ok){
+  const el = $('saveIndicator');
+  if (!el) return;
+  el.textContent = ok ? '💾 Сохранено ✓' : '⚠ Ошибка сохранения';
+  el.classList.toggle('err', !ok);
+  el.classList.add('show');
+  if (saveIndicatorTimer) clearTimeout(saveIndicatorTimer);
+  saveIndicatorTimer = setTimeout(() => el.classList.remove('show'), 1600);
+}
+function saveProfile(opts){
+  try { localStorage.setItem(SAVE_KEY, JSON.stringify(profile)); } catch(e){}
+  if (token) syncToServer(opts);
+  else if (opts && opts.toast) showSaveIndicator(true);
+}
+async function syncToServer(opts){
+  if (!token) return false;
+  try {
+    const r = await fetch('/api/save', { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-Token': token }, body: JSON.stringify({ kk: profile.kk, trophies: profile.trophies, wins: profile.wins||0, losses: profile.losses||0, kills: profile.kills||0, games: profile.games||0, unlocked: profile.unlocked, levels: profile.levels, selected: profile.selected, lastSeen: Date.now() }) });
+    if (r.ok && opts && opts.toast) showSaveIndicator(true);
+    return true;
+  } catch(e){ if (opts && opts.toast) showSaveIndicator(false); return false; }
+}
 async function loadMe(){
   if (!token) return false;
   try {
@@ -404,6 +482,11 @@ function getLevel(id){ return profile.levels[id] || 1; }
 const MAX_LEVEL = 10;
 function getUpgradeCost(level){ return 100 * level * level; }
 const RESPAWN_TIME = 5;
+
+setInterval(() => { saveProfile(); }, 30000);
+document.addEventListener('visibilitychange', () => { if (document.hidden) saveProfile(); });
+window.addEventListener('beforeunload', () => { saveProfile(); });
+$('saveBtn').addEventListener('click', () => { saveProfile({ toast: true }); });
 
 /* ===== ДРУЗЬЯ ===== */
 let friends = []; let friendsPollTimer = null; let friendsPollBusy = false; const FRIENDS_POLL_MS = 15000;
@@ -498,7 +581,7 @@ function rollRandomMap(){ currentMap = MAPS[Math.floor(Math.random()*MAPS.length
 /* ===== РЕЖИМЫ ===== */
 const MODES = { classic:{ id:'classic', name:'КЛАССИКА' }, deathmatch:{ id:'deathmatch', name:'МЯСОРУБКА' }, defense:{ id:'defense', name:'ОБОРОНА' } };
 let currentMode = MODES.classic;
-const INVADER_BUFF = { classic:{ hp:2.2, dmg:1.6, speed:1.3, fireRate:0.55 }, deathmatch:{ hp:1.0, dmg:1.0, speed:1.0, fireRate:1.00 }, defense:{ hp:1.3, dmg:1.2, speed:1.0, fireRate:0.95 } };
+const INVADER_BUFF = { classic:{ hp:3.2, dmg:2.2, speed:1.35, fireRate:0.50 }, deathmatch:{ hp:1.0, dmg:1.0, speed:1.0, fireRate:1.00 }, defense:{ hp:1.8, dmg:1.5, speed:1.05, fireRate:0.85 } };
 const DEFENSE_WAVES = 5;
 const DM_KILLS_TO_WIN = 20;
 
@@ -827,6 +910,7 @@ function refreshUpgrade(){
 }
 function goToMenu(){
   $('menu').style.display = 'flex';
+  $('saveBtn').classList.add('show');
   updateProfileUI();
   try { switchMainTab('play'); } catch(e){ DBG.log('switchMainTab err', e.message||String(e)); }
   if (!token) showAuth();
@@ -907,6 +991,11 @@ const MAX_AMMO = 3, RELOAD_TIME = 2.0;
 let ammo = MAX_AMMO, ammoTimer = 0;
 let battleKK = 0, battleTrophies = 0, battleKills = 0, battleDeaths = 0, defenseWave = 0, damageBoost = 1.0;
 let playerPrevX = 0, playerPrevZ = 14;
+/* Dev-читы */
+let godMode = false;
+let speedMul = 1;
+let damageMul = 1;
+
 const touch = {
   move:{active:false,id:null,dx:0,dy:0,cx:0,cy:0,r:65},
   attack:{active:false,id:null,dx:0,dy:0,cx:0,cy:0,r:65},
@@ -999,7 +1088,12 @@ function performAttack(shooter, dirX, dirZ, isEnemy, fromPlayer, fromAlly, baseD
     default: spawnBullet(shooter, Math.sin(baseAngle), Math.cos(baseAngle), 30, baseDmg, 6, color, fromPlayer, fromAlly, null, 'single');
   }
 }
-function spawnBullet(shooter, dx, dz, speed, dmg, radius, color, fromPlayer, fromAlly, extra, kind){ bullets.push(Object.assign({ x: shooter.x, z: shooter.z, dx, dz, speed, fromPlayer, fromAlly, isSuper: false, baseDmg: dmg, radius, color, kind: kind||'single', life: 2.5 }, extra||{})); spawnParticles(shooter.x + dx*1, shooter.z + dz*1, color, 2, 3); }
+function spawnBullet(shooter, dx, dz, speed, dmg, radius, color, fromPlayer, fromAlly, extra, kind){
+  let finalDmg = dmg;
+  if (fromPlayer) finalDmg *= damageMul;
+  bullets.push(Object.assign({ x: shooter.x, z: shooter.z, dx, dz, speed, fromPlayer, fromAlly, isSuper: false, baseDmg: finalDmg, radius, color, kind: kind||'single', life: 2.5 }, extra||{}));
+  spawnParticles(shooter.x + dx*1, shooter.z + dz*1, color, 2, 3);
+}
 function getOptimalRange(unit){ const t = unit.fighter.attack; if (t==='long') return 14; if (t==='shotgun') return 5; if (t==='wave') return 8; if (t==='grenade') return 11; if (t==='pierce') return 10; if (t==='rapid') return 7; if (t==='homing') return 9; return 9; }
 function findBestTarget(unit, isEnemy){
   const candidates = [];
@@ -1044,7 +1138,7 @@ function explodeGrenade(b){
   shakeAmount = 8;
   const r = b.explodeRadius || 2.5;
   if (b.fromPlayer || b.fromAlly){ for (const e of enemies){ if (e.hp <= 0) continue; if (Math.hypot(e.x-b.x, e.z-b.z) < r){ e.hp = Math.max(0, e.hp-b.baseDmg); if (b.fromPlayer) addSuperCharge(b.baseDmg); if (e.hp <= 0){ battleKK += 10; battleTrophies += 2; battleKills++; } } } }
-  else { if (!player.dead && Math.hypot(player.x-b.x, player.z-b.z) < r){ const d = b.baseDmg*(player.shield>0?0.3:1); player.hp = Math.max(0, player.hp-d); if (player.hp <= 0) killPlayer(); } for (const a of allies){ if (a.hp <= 0) continue; if (Math.hypot(a.x-b.x, a.z-b.z) < r) a.hp = Math.max(0, a.hp-b.baseDmg); } }
+  else { if (!player.dead && Math.hypot(player.x-b.x, player.z-b.z) < r){ if (!godMode){ const d = b.baseDmg*(player.shield>0?0.3:1); player.hp = Math.max(0, player.hp-d); if (player.hp <= 0) killPlayer(); } } for (const a of allies){ if (a.hp <= 0) continue; if (Math.hypot(a.x-b.x, a.z-b.z) < r) a.hp = Math.max(0, a.hp-b.baseDmg); } }
 }
 function updateBullets(dt){
   for (let i = bullets.length - 1; i >= 0; i--){
@@ -1056,7 +1150,7 @@ function updateBullets(dt){
     if (Math.abs(b.x) > ARENA/2 || Math.abs(b.z) > ARENA/2){ if (b.grenade) explodeGrenade(b); dead = true; }
     const hitR = b.radius/6;
     if (b.fromPlayer || b.fromAlly){ for (let j = 0; j < enemies.length; j++){ const e = enemies[j]; if (e.hp <= 0) continue; if (Math.hypot(e.x-b.x, e.z-b.z) < hitR){ if (b.grenade){ explodeGrenade(b); dead = true; break; } e.hp = Math.max(0, e.hp-b.baseDmg); if (b.fromPlayer){ addSuperCharge(b.baseDmg); playSound('hit'); } if (e.hp <= 0){ battleKK += 10; battleTrophies += 2; battleKills++; if (e.isBoss){ bossDeathEffect(e.x, e.z); endGame(true); return; } } if (!b.pierce) dead = true; if (dead) break; } } }
-    else { if (!player.dead && Math.hypot(player.x-b.x, player.z-b.z) < hitR){ if (b.grenade){ explodeGrenade(b); } else { const d = b.baseDmg*(player.shield>0?0.3:1); player.hp = Math.max(0, player.hp-d); shakeAmount = 6; playSound('hit'); if (player.hp <= 0) killPlayer(); } dead = true; } else { for (let j = 0; j < allies.length; j++){ const a = allies[j]; if (a.hp <= 0) continue; if (Math.hypot(a.x-b.x, a.z-b.z) < hitR){ if (b.grenade) explodeGrenade(b); else a.hp = Math.max(0, a.hp-b.baseDmg); dead = true; break; } } } }
+    else { if (!player.dead && Math.hypot(player.x-b.x, player.z-b.z) < hitR){ if (b.grenade){ explodeGrenade(b); } else if (!godMode){ const d = b.baseDmg*(player.shield>0?0.3:1); player.hp = Math.max(0, player.hp-d); shakeAmount = 6; playSound('hit'); if (player.hp <= 0) killPlayer(); } dead = true; } else { for (let j = 0; j < allies.length; j++){ const a = allies[j]; if (a.hp <= 0) continue; if (Math.hypot(a.x-b.x, a.z-b.z) < hitR){ if (b.grenade) explodeGrenade(b); else a.hp = Math.max(0, a.hp-b.baseDmg); dead = true; break; } } } }
     if (dead){ spawnParticles(b.x, b.z, b.color, 3, 4); bullets.splice(i, 1); } }
   if (currentMode === MODES.classic){ if (enemies.every(e => e.hp <= 0) && gameActive) endGame(true); if (gameActive && player.dead && allies.length > 0 && allies.every(a => a.hp <= 0)) endGame(false); }
   if (currentMode === MODES.deathmatch){ if (battleKills >= DM_KILLS_TO_WIN && gameActive) endGame(true); if (battleDeaths >= DM_KILLS_TO_WIN && gameActive) endGame(false); }
@@ -1069,7 +1163,7 @@ function bossDeathEffect(x, z){
   spawnParticles(x, z, '#7cf86b', 30, 15);
   const f = $('flash'); if (f){ f.classList.add('on'); setTimeout(() => f.classList.remove('on'), 220); }
 }
-function killPlayer(){ player.dead = true; player.respawnTimer = RESPAWN_TIME; player.hp = 0; battleDeaths++; spawnParticles(player.x, player.z, '#ff2e8a', 20, 15); shakeAmount = 15; $('respawnOverlay').style.display = 'flex'; if (currentMode === MODES.deathmatch){ setTimeout(() => { if (gameActive) respawnPlayer(); }, 3000); } }
+function killPlayer(){ if (godMode){ player.hp = Math.max(1, player.hp); return; } player.dead = true; player.respawnTimer = RESPAWN_TIME; player.hp = 0; battleDeaths++; spawnParticles(player.x, player.z, '#ff2e8a', 20, 15); shakeAmount = 15; $('respawnOverlay').style.display = 'flex'; if (currentMode === MODES.deathmatch){ setTimeout(() => { if (gameActive) respawnPlayer(); }, 3000); } }
 function respawnPlayer(){ let safeX = 0, safeZ = 12; const alive = allies.filter(a => a.hp > 0); if (alive.length > 0){ const a = alive[Math.floor(Math.random()*alive.length)]; safeX = a.x + (Math.random()-0.5)*4; safeZ = a.z + (Math.random()-0.5)*4; } player.x = Math.max(-ARENA/2+1, Math.min(ARENA/2-1, safeX)); player.z = Math.max(-ARENA/2+1, Math.min(ARENA/2-1, safeZ)); player.hp = player.maxHp; player.dead = false; player.respawnTimer = 0; ammo = MAX_AMMO; ammoTimer = 0; $('respawnOverlay').style.display = 'none'; spawnParticles(player.x, player.z, '#7cf86b', 15, 12); }
 function updateEffects(dt){
   for (let i = particles.length - 1; i >= 0; i--){ const p = particles[i]; p.x += p.vx*dt; p.z += p.vz*dt; p.vx *= 0.92; p.vz *= 0.92; p.life -= dt; if (p.life <= 0) particles.splice(i, 1); }
@@ -1084,7 +1178,7 @@ function fireSuperAimed(aimDirX, aimDirZ){
   if (superCharge < SUPER_MAX || superActive) return;
   playSound('ult');
   const s = player.fighter.super; superActive = true; superCharge = 0; superTimer = 0; updateSuperUI();
-  const a = Math.atan2(aimDirX, aimDirZ); const dmgBase = player.stats.dmg;
+  const a = Math.atan2(aimDirX, aimDirZ); const dmgBase = player.stats.dmg * damageMul;
   switch (s) {
     case 'heal': { player.hp = Math.min(player.maxHp, player.hp+80); allies.forEach(x => { if (x.hp > 0) x.hp = Math.min(x.maxHp, x.hp+80); }); spawnParticles(player.x, player.z, '#7cf86b', 20, 12); superTimer = 0.5; break; }
     case 'spikes': { superTimer = 1.5; for (let ang = 0; ang < Math.PI*2; ang += Math.PI/8) bullets.push({ x: player.x, z: player.z, dx: Math.sin(ang), dz: Math.cos(ang), speed: 20, fromPlayer: true, fromAlly: false, isSuper: true, baseDmg: dmgBase*1.5, life: 1.5, radius: 7, color: '#4ade80' }); shakeAmount = 8; break; }
@@ -1149,7 +1243,7 @@ function update(dt){
   let spdMul = 1;
   for (const z of zones){ if (z.type === 'roots' && Math.hypot(player.x-z.x, player.z-z.z) < z.r) spdMul = 0.5; }
   if (!player.dead){
-    const spd = player.stats.speed * spdMul;
+    const spd = player.stats.speed * spdMul * speedMul;
     let mx = 0, mz = 0;
     const m = touch.move;
     if (m.active){ mx = m.dx; mz = m.dy; }
@@ -1171,8 +1265,8 @@ function update(dt){
   camera2D.z += (player.z - camera2D.z) * 0.15;
   if (superActive && !player.dead){
     superTimer -= dt;
-    if (player.fighter.super === 'burst'){ superShootCD -= dt; if (superShootCD <= 0){ for (let ang = 0; ang < Math.PI*2; ang += Math.PI/6){ const a2 = yaw + ang + Math.random()*0.5; bullets.push({ x: player.x, z: player.z, dx: Math.sin(a2), dz: Math.cos(a2), speed: 25, fromPlayer: true, fromAlly: false, isSuper: true, baseDmg: player.stats.dmg, life: 1.5, radius: 5, color: '#ec4899' }); } superShootCD = 0.15; } }
-    if (player.fighter.super === 'swarm'){ superShootCD -= dt; if (superShootCD <= 0){ for (let ang = 0; ang < Math.PI*2; ang += Math.PI/8){ const a2 = yaw + ang; bullets.push({ x: player.x, z: player.z, dx: Math.sin(a2), dz: Math.cos(a2), speed: 30, fromPlayer: true, fromAlly: false, isSuper: true, baseDmg: player.stats.dmg, life: 1.5, radius: 5, color: '#a855f7' }); } superShootCD = 0.2; } }
+    if (player.fighter.super === 'burst'){ superShootCD -= dt; if (superShootCD <= 0){ for (let ang = 0; ang < Math.PI*2; ang += Math.PI/6){ const a2 = yaw + ang + Math.random()*0.5; bullets.push({ x: player.x, z: player.z, dx: Math.sin(a2), dz: Math.cos(a2), speed: 25, fromPlayer: true, fromAlly: false, isSuper: true, baseDmg: player.stats.dmg*damageMul, life: 1.5, radius: 5, color: '#ec4899' }); } superShootCD = 0.15; } }
+    if (player.fighter.super === 'swarm'){ superShootCD -= dt; if (superShootCD <= 0){ for (let ang = 0; ang < Math.PI*2; ang += Math.PI/8){ const a2 = yaw + ang; bullets.push({ x: player.x, z: player.z, dx: Math.sin(a2), dz: Math.cos(a2), speed: 30, fromPlayer: true, fromAlly: false, isSuper: true, baseDmg: player.stats.dmg*damageMul, life: 1.5, radius: 5, color: '#a855f7' }); } superShootCD = 0.2; } }
     if (superTimer <= 0){ superActive = false; updateSuperUI(); }
   }
   allies.forEach(al => { if (al.hp > 0) updateAIUnit(al, dt, allies, false); });
@@ -1180,7 +1274,6 @@ function update(dt){
   updateBullets(dt); updateEffects(dt); updateHUD(); updateTeamsBar();
 }
 
-/* ===== ПРИЦЕЛ ПО ТИПУ АТАКИ ===== */
 function drawAim(){
   if (player.dead || !player.fighter) return;
   const p = worldToScreen(player.x, player.z);
@@ -1393,6 +1486,282 @@ $('logoutBtn').addEventListener('click', () => {
   stopFriendsPolling(); renderFriends();
   updateProfileUI(); showAuth();
 });
+
+/* ============================================================
+   DEV CONSOLE + СЕКРЕТНАЯ РАЗБЛОКИРОВКА
+   Открытие: 5 тапов по заголовку "Digital Style" в меню →
+   модалка с полем ввода → слово "следователь" или "sledovatel"
+   (без учёта регистра) → открывается дев-консоль.
+   ============================================================ */
+const DC_SECRET_WORDS = ['следователь', 'sledovatel'];
+
+const dcEl = $('devConsole');
+const dcLogEl = $('dcLog');
+const dcInputEl = $('dcInput');
+const duEl = $('devUnlock');
+const duInputEl = $('duInput');
+const duErrEl = $('duErr');
+const duOkBtn = $('duOk');
+const duCancelBtn = $('duCancel');
+
+let dcHistory = [];
+let dcHistoryIdx = -1;
+
+function dcPrint(msg, cls){
+  const span = document.createElement('div');
+  span.className = cls || 'dc-info';
+  span.textContent = msg;
+  dcLogEl.appendChild(span);
+  dcLogEl.scrollTop = dcLogEl.scrollHeight;
+}
+function dcOpen(){
+  dcEl.classList.add('show');
+  dcInputEl.focus();
+  setTimeout(() => dcInputEl.focus(), 100);
+}
+function dcClose(){
+  dcEl.classList.remove('show');
+}
+function duOpen(){
+  duEl.classList.add('show');
+  duInputEl.value = '';
+  duErrEl.textContent = '';
+  setTimeout(() => duInputEl.focus(), 100);
+}
+function duClose(){
+  duEl.classList.remove('show');
+  duErrEl.textContent = '';
+}
+function duCheck(){
+  const v = (duInputEl.value || '').trim().toLowerCase();
+  if (DC_SECRET_WORDS.includes(v)){
+    duClose();
+    dcOpen();
+    dcPrint('✓ Доступ разрешён. Введи help для списка команд.', 'dc-ok');
+  } else {
+    duErrEl.textContent = '✗ НЕВЕРНЫЙ КОД';
+    duInputEl.value = '';
+  }
+}
+
+/* 5 тапов по заголовку */
+let titleTaps = 0; let titleTapTimer = null;
+$('menuTitle').addEventListener('click', () => {
+  titleTaps++;
+  if (titleTapTimer) clearTimeout(titleTapTimer);
+  titleTapTimer = setTimeout(() => { titleTaps = 0; }, 1500);
+  if (titleTaps >= 5){
+    titleTaps = 0;
+    clearTimeout(titleTapTimer);
+    duOpen();
+  }
+});
+
+duOkBtn.addEventListener('click', duCheck);
+duCancelBtn.addEventListener('click', duClose);
+duInputEl.addEventListener('keydown', e => { if (e.key === 'Enter') duCheck(); });
+$('dcClose').addEventListener('click', dcClose);
+dcInputEl.addEventListener('keydown', e => {
+  if (e.key === 'Enter'){
+    const cmd = dcInputEl.value.trim();
+    if (!cmd) return;
+    dcHistory.push(cmd);
+    dcHistoryIdx = dcHistory.length;
+    dcPrint('> ' + cmd, 'dc-cmd');
+    dcInputEl.value = '';
+    try { runCommand(cmd); } catch(err){ dcPrint('✗ ' + err.message, 'dc-err'); }
+  } else if (e.key === 'ArrowUp'){
+    if (dcHistory.length === 0) return;
+    dcHistoryIdx = Math.max(0, dcHistoryIdx - 1);
+    dcInputEl.value = dcHistory[dcHistoryIdx] || '';
+    e.preventDefault();
+  } else if (e.key === 'ArrowDown'){
+    if (dcHistory.length === 0) return;
+    dcHistoryIdx = Math.min(dcHistory.length, dcHistoryIdx + 1);
+    dcInputEl.value = dcHistory[dcHistoryIdx] || '';
+    e.preventDefault();
+  } else if (e.key === 'Escape'){
+    dcClose();
+  }
+});
+
+function runCommand(raw){
+  const parts = raw.split(/\s+/);
+  const cmd = (parts[0] || '').toLowerCase();
+  const a1 = parts[1];
+  const a2 = parts[2];
+
+  switch (cmd) {
+    case 'help':
+      dcPrint([
+        '╭─ КОМАНДЫ КОНСОЛИ ─────────────────',
+        '│ help                 — этот список',
+        '│ kk N | kk +N | kk -N — КК',
+        '│ trophy N | +N | -N   — трофеи',
+        '│ unlock all | <id>    — разблокировать',
+        '│ lock all | <id>      — заблокировать',
+        '│ level <id> <1-10>    — уровень бойца',
+        '│ max                  — всем открытым L10',
+        '│ god on|off           — бессмертие',
+        '│ speed N              — множитель скорости',
+        '│ damage N             — множитель урона',
+        '│ heal                 — полное HP',
+        '│ super                — залить ульту',
+        '│ win | lose           — завершить бой',
+        '│ map <название>       — сменить карту',
+        '│ mode classic|deathmatch|defense',
+        '│ info                 — состояние',
+        '│ reset                — сброс профиля',
+        '│ export               — профиль в JSON',
+        '│ import <json>        — загрузить',
+        '│ save                 — сохранить',
+        '│ clear                — очистить лог',
+        '│ close                — закрыть',
+        '╰────────────────────────────────────'
+      ].join('\n'), 'dc-info');
+      break;
+
+    case 'kk': {
+      if (!a1){ dcPrint('KK: ' + profile.kk, 'dc-info'); break; }
+      if (a1.startsWith('+')) profile.kk += parseInt(a1.slice(1), 10) || 0;
+      else if (a1.startsWith('-')) profile.kk -= parseInt(a1.slice(1), 10) || 0;
+      else profile.kk = parseInt(a1, 10) || 0;
+      profile.kk = Math.max(0, profile.kk);
+      saveProfile(); updateProfileUI();
+      dcPrint('✓ KK = ' + profile.kk, 'dc-ok'); break;
+    }
+    case 'trophy': case 'trophies': {
+      if (!a1){ dcPrint('Трофеи: ' + profile.trophies, 'dc-info'); break; }
+      if (a1.startsWith('+')) profile.trophies += parseInt(a1.slice(1), 10) || 0;
+      else if (a1.startsWith('-')) profile.trophies -= parseInt(a1.slice(1), 10) || 0;
+      else profile.trophies = parseInt(a1, 10) || 0;
+      profile.trophies = Math.max(0, profile.trophies);
+      saveProfile(); updateProfileUI();
+      dcPrint('✓ Трофеи = ' + profile.trophies, 'dc-ok'); break;
+    }
+
+    case 'unlock': {
+      if (!a1) { dcPrint('unlock all | plant_N | inv_N', 'dc-err'); break; }
+      if (a1 === 'all'){ Object.keys(FIGHTERS).forEach(id => profile.unlocked[id] = true); dcPrint('✓ Открыто всё (' + Object.keys(FIGHTERS).length + ')', 'dc-ok'); }
+      else if (FIGHTERS[a1]){ profile.unlocked[a1] = true; dcPrint('✓ Открыт ' + FIGHTERS[a1].name, 'dc-ok'); }
+      else { dcPrint('✗ Неизвестный боец: ' + a1, 'dc-err'); return; }
+      saveProfile(); refreshPick(); refreshCollection(); break;
+    }
+    case 'lock': {
+      if (!a1) { dcPrint('lock all | plant_N | inv_N', 'dc-err'); break; }
+      if (a1 === 'all'){ Object.keys(FIGHTERS).forEach(id => delete profile.unlocked[id]); dcPrint('✓ Всё заблокировано', 'dc-ok'); }
+      else if (FIGHTERS[a1]){ delete profile.unlocked[a1]; dcPrint('✓ Заблокирован ' + FIGHTERS[a1].name, 'dc-ok'); }
+      else { dcPrint('✗ Неизвестный боец: ' + a1, 'dc-err'); return; }
+      saveProfile(); refreshPick(); refreshCollection(); break;
+    }
+    case 'level': {
+      const lv = parseInt(a2, 10);
+      if (!FIGHTERS[a1] || isNaN(lv)){ dcPrint('level <id> <1-10>', 'dc-err'); break; }
+      profile.levels[a1] = Math.max(1, Math.min(10, lv));
+      profile.unlocked[a1] = true;
+      saveProfile(); updateProfileUI();
+      dcPrint('✓ ' + FIGHTERS[a1].name + ' L' + profile.levels[a1], 'dc-ok'); break;
+    }
+    case 'max': {
+      const ids = Object.keys(FIGHTERS).filter(id => isUnlocked(id));
+      ids.forEach(id => profile.levels[id] = 10);
+      saveProfile(); updateProfileUI();
+      dcPrint('✓ Все открытые → L10 (' + ids.length + ')', 'dc-ok'); break;
+    }
+    case 'god': {
+      if (a1 === 'on'){ godMode = true; dcPrint('✓ God ON', 'dc-ok'); }
+      else if (a1 === 'off'){ godMode = false; dcPrint('✓ God OFF', 'dc-ok'); }
+      else dcPrint('godMode: ' + godMode, 'dc-info');
+      break;
+    }
+    case 'speed': {
+      const v = parseFloat(a1);
+      if (isNaN(v) || v <= 0){ dcPrint('speed: ' + speedMul, 'dc-info'); break; }
+      speedMul = v; dcPrint('✓ speed = ' + speedMul, 'dc-ok'); break;
+    }
+    case 'damage': case 'dmg': {
+      const v = parseFloat(a1);
+      if (isNaN(v) || v <= 0){ dcPrint('damage: ' + damageMul, 'dc-info'); break; }
+      damageMul = v; dcPrint('✓ damage = ' + damageMul, 'dc-ok'); break;
+    }
+    case 'heal': {
+      if (player && player.maxHp){ player.hp = player.maxHp; dcPrint('✓ HP восстановлено', 'dc-ok'); }
+      else dcPrint('✗ Только в бою', 'dc-err'); break;
+    }
+    case 'super': {
+      superCharge = SUPER_MAX; updateSuperUI();
+      dcPrint('✓ Ульта заряжена', 'dc-ok'); break;
+    }
+    case 'win': {
+      if (gameActive){ endGame(true); dcPrint('✓ Победа', 'dc-ok'); }
+      else dcPrint('✗ Не в бою', 'dc-err'); break;
+    }
+    case 'lose': {
+      if (gameActive){ endGame(false); dcPrint('✓ Поражение', 'dc-ok'); }
+      else dcPrint('✗ Не в бою', 'dc-err'); break;
+    }
+    case 'map': {
+      const name = parts.slice(1).join(' ').toLowerCase();
+      const found = MAPS.find(m => m.name.toLowerCase() === name || m.name.toLowerCase().includes(name));
+      if (!found){ dcPrint('Карты: ' + MAPS.map(m => m.name).join(', '), 'dc-info'); break; }
+      currentMap = found; $('mapName').textContent = found.name; $('mapSize').textContent = found.size + '×' + found.size + ' • ' + found.theme;
+      dcPrint('✓ Карта: ' + found.name, 'dc-ok'); break;
+    }
+    case 'mode': {
+      if (a1 === 'classic'){ currentMode = MODES.classic; dcPrint('✓ Классика', 'dc-ok'); }
+      else if (a1 === 'deathmatch'){ currentMode = MODES.deathmatch; dcPrint('✓ Мясорубка', 'dc-ok'); }
+      else if (a1 === 'defense'){ currentMode = MODES.defense; dcPrint('✓ Оборона', 'dc-ok'); }
+      else dcPrint('mode classic | deathmatch | defense', 'dc-err');
+      break;
+    }
+    case 'info': {
+      dcPrint(JSON.stringify({
+        kk: profile.kk, trophies: profile.trophies,
+        wins: profile.wins||0, losses: profile.losses||0,
+        unlockedCount: Object.keys(profile.unlocked).filter(k => profile.unlocked[k]).length,
+        totalFighters: Object.keys(FIGHTERS).length,
+        nickname, godMode, speedMul, damageMul,
+        map: currentMap.name, mode: currentMode.id,
+        gameActive
+      }, null, 2), 'dc-info');
+      break;
+    }
+    case 'reset': {
+      if (!confirm('Сбросить профиль полностью?')) { dcPrint('Отменено', 'dc-info'); break; }
+      profile = { kk: 200, trophies: 0, wins: 0, losses: 0, kills: 0, games: 0, unlocked: { plant_0: true, plant_1: true, plant_2: true, inv_0: true }, levels: {}, selected: { plant: 'plant_0', enemy: 'inv_0' }, cs_seen: true, sound: true };
+      saveProfile({ toast: true }); updateProfileUI(); refreshPick(); refreshCollection(); refreshUpgrade();
+      dcPrint('✓ Профиль сброшен', 'dc-ok'); break;
+    }
+    case 'export': {
+      const s = JSON.stringify(profile);
+      dcPrint('Профиль (скопируй):', 'dc-info');
+      dcPrint(s, 'dc-ok');
+      break;
+    }
+    case 'import': {
+      const json = raw.slice(raw.indexOf(' ') + 1);
+      try {
+        const obj = JSON.parse(json);
+        Object.assign(profile, obj);
+        saveProfile({ toast: true }); updateProfileUI(); refreshPick(); refreshCollection();
+        dcPrint('✓ Импортировано', 'dc-ok');
+      } catch(e){ dcPrint('✗ Невалидный JSON', 'dc-err'); }
+      break;
+    }
+    case 'save': {
+      saveProfile({ toast: true });
+      dcPrint('✓ Сохранено', 'dc-ok'); break;
+    }
+    case 'clear': {
+      dcLogEl.innerHTML = ''; break;
+    }
+    case 'close': {
+      dcClose(); break;
+    }
+    default:
+      dcPrint('✗ Неизвестная команда: ' + cmd + ' (help — список)', 'dc-err');
+  }
+}
 
 /* ===== СТАРТ ===== */
 updateProfileUI();
