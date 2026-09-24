@@ -130,6 +130,8 @@ html,body{width:100%;height:100%;overflow:hidden;background:#000;font-family:-ap
 #friendsAdd button{padding:12px 14px;background:linear-gradient(180deg,#00e5ff,#0891b2);border:none;color:#04141d;font-weight:900;font-size:13px;border-radius:10px;cursor:pointer;pointer-events:auto}
 .friend-row{width:100%;display:flex;align-items:center;gap:8px;padding:8px 10px;background:rgba(0,0,0,.45);border:2px solid #2cff5e;border-radius:10px}
 .friend-row.offline{border-color:#475569;opacity:.7}
+.friend-row.incoming{border-color:#ffd54f}
+.friend-row.outgoing{border-color:#9fd7ff;opacity:.85}
 .friend-dot{width:10px;height:10px;border-radius:50%;background:#22c55e;box-shadow:0 0 8px #22c55e;flex-shrink:0}
 .friend-row.offline .friend-dot{background:#64748b;box-shadow:none}
 .friend-info{flex:1;min-width:0}
@@ -138,8 +140,10 @@ html,body{width:100%;height:100%;overflow:hidden;background:#000;font-family:-ap
 .friend-btns{display:flex;gap:4px;flex-shrink:0}
 .friend-btn{padding:6px 9px;font-size:11px;font-weight:900;border-radius:8px;cursor:pointer;pointer-events:auto;border:2px solid}
 .friend-btn.duel{background:linear-gradient(180deg,#2cff5e,#16a34a);border-color:#a8ffa0;color:#04141d}
+.friend-btn.accept{background:linear-gradient(180deg,#ffd54f,#ffb300);border-color:#ffe680;color:#05070d}
 .friend-btn.remove{background:rgba(255,46,138,.2);border-color:#ff2e8a;color:#ff2e8a}
 .friend-btn:disabled{opacity:.4;cursor:default}
+.friends-section-title{width:100%;max-width:440px;font-size:11px;font-weight:900;letter-spacing:2px;color:#9fd7ff;padding:6px 4px 2px;text-align:left}
 #friendsEmpty{color:#9fd7ff;font-size:12px;text-align:center;padding:16px 8px}
 .top-list{width:100%;max-width:440px;display:flex;flex-direction:column;gap:4px}
 .top-row{display:flex;align-items:center;gap:10px;padding:8px 12px;background:rgba(0,0,0,.45);border:2px solid #2cff5e;border-radius:10px;font-weight:800}
@@ -183,7 +187,6 @@ html,body{width:100%;height:100%;overflow:hidden;background:#000;font-family:-ap
 #fighterCard .fc-btn.upgrade{background:linear-gradient(180deg,#ffd54f,#ffb300);border-color:#ffe680;color:#05070d}
 #fighterCard .fc-btn.fight{background:linear-gradient(180deg,#2cff5e,#16a34a);border-color:#a8ffa0;color:#05070d}
 #fighterCard .fc-close{width:100%;max-width:440px;padding:12px;background:rgba(255,46,138,.25);border:2px solid #ff2e8a;color:#ff2e8a;font-weight:900;border-radius:12px;cursor:pointer;pointer-events:auto}
-/* ===== СКИНЫ ===== */
 #skinRow{width:100%;max-width:440px;display:flex;gap:6px;overflow-x:auto;padding:6px 2px;border-top:1px dashed rgba(124,248,107,.4);border-bottom:1px dashed rgba(124,248,107,.4)}
 .skin-swatch{flex-shrink:0;width:46px;height:46px;border-radius:10px;cursor:pointer;border:2px solid transparent;display:flex;align-items:center;justify-content:center;pointer-events:auto;position:relative;font-size:9px;font-weight:900;color:#fff;text-shadow:0 1px 3px #000}
 .skin-swatch.active{border-color:#ffd54f;box-shadow:0 0 12px #ffd54f;transform:scale(1.05)}
@@ -231,6 +234,9 @@ html,body{width:100%;height:100%;overflow:hidden;background:#000;font-family:-ap
 #trophyToast{position:absolute;top:32%;left:50%;transform:translateX(-50%);font-size:clamp(20px,6vw,36px);font-weight:900;color:#ffd54f;display:none;z-index:31;text-align:center;pointer-events:none}
 #leave{position:absolute;top:calc(env(safe-area-inset-top) + 6px);right:8px;width:32px;height:32px;border-radius:50%;background:rgba(255,46,138,.25);border:2px solid #ff2e8a;color:#ff2e8a;font-size:15px;font-weight:900;line-height:28px;text-align:center;display:none;pointer-events:auto;cursor:pointer;z-index:20}
 #soundBtn{position:fixed;top:calc(env(safe-area-inset-top) + 6px);right:48px;width:32px;height:32px;border-radius:50%;background:rgba(0,229,255,.2);border:2px solid #00e5ff;color:#00e5ff;font-size:15px;line-height:28px;text-align:center;display:none;pointer-events:auto;cursor:pointer;z-index:20}
+#musicBtn{position:fixed;top:calc(env(safe-area-inset-top) + 6px);right:88px;width:32px;height:32px;border-radius:50%;background:rgba(168,85,247,.25);border:2px solid #a855f7;color:#a855f7;font-size:15px;line-height:28px;text-align:center;display:block;pointer-events:auto;cursor:pointer;z-index:21}
+#musicBtn.playing{background:rgba(168,85,247,.55);box-shadow:0 0 14px #a855f7;animation:musicPulse 1.6s ease-in-out infinite}
+@keyframes musicPulse{0%,100%{transform:scale(1)}50%{transform:scale(1.08)}}
 #victoryScreen{position:fixed;inset:0;z-index:400;display:none;flex-direction:column;align-items:center;justify-content:center;background:radial-gradient(circle at 50% 40%,rgba(28,61,31,.97) 0%,rgba(5,7,13,.99) 80%);pointer-events:auto;text-align:center;padding:20px}
 #victoryScreen.show{display:flex;animation:vsIn .45s ease}
 #victoryScreen.lose{background:radial-gradient(circle at 50% 40%,rgba(58,10,26,.97) 0%,rgba(5,7,13,.99) 80%)}
@@ -281,7 +287,6 @@ html,body{width:100%;height:100%;overflow:hidden;background:#000;font-family:-ap
 #devUnlock button{flex:1;padding:12px;border:none;font-weight:900;font-size:13px;border-radius:10px;cursor:pointer;pointer-events:auto}
 #devUnlock .du-ok{background:linear-gradient(180deg,#2cff5e,#16a34a);color:#04141d}
 #devUnlock .du-cancel{background:rgba(255,46,138,.2);border:2px solid #ff2e8a !important;color:#ff2e8a}
-/* ===== КОСМЕТИКА ===== */
 #scanlines{position:fixed;inset:0;pointer-events:none;z-index:5;background:repeating-linear-gradient(0deg,rgba(0,0,0,.08) 0 1px,transparent 1px 3px);mix-blend-mode:multiply;opacity:.35}
 #vignette{position:fixed;inset:0;pointer-events:none;z-index:6;background:radial-gradient(ellipse at center,transparent 40%,rgba(0,0,0,.65) 100%)}
 </style>
@@ -370,6 +375,7 @@ html,body{width:100%;height:100%;overflow:hidden;background:#000;font-family:-ap
   <div id="ammoBox"><div class="ammo" id="ammo0"><div class="fill"></div></div><div class="ammo" id="ammo1"><div class="fill"></div></div><div class="ammo" id="ammo2"><div class="fill"></div></div></div>
   <div id="leave">✕</div>
   <div id="soundBtn">🔊</div>
+  <div id="musicBtn">🎵</div>
   <div id="leftZone"></div><div id="attackZone"></div><div id="superZone"></div>
   <div class="joy-fixed" id="joyL"><div class="label">ДВИЖЕНИЕ</div><div class="knob"></div></div>
   <div class="joy-fixed" id="joyAttack"><div class="label">АТАКА</div><div class="knob"></div></div>
@@ -454,13 +460,13 @@ const TOKEN_KEY = 'digital_style_token';
 const NICK_KEY = 'digital_style_nick';
 let token = '', nickname = '';
 try { token = localStorage.getItem(TOKEN_KEY) || ''; nickname = localStorage.getItem(NICK_KEY) || ''; } catch(e){}
-let profile = { kk: 200, trophies: 0, wins: 0, losses: 0, kills: 0, games: 0, unlocked: { plant_0: true, plant_1: true, plant_2: true, inv_0: true }, levels: {}, selected: { plant: 'plant_0', enemy: 'inv_0' }, skins: {}, cs_seen: false, sound: true };
+let profile = { kk: 200, trophies: 0, wins: 0, losses: 0, kills: 0, games: 0, unlocked: { plant_0: true, plant_1: true, plant_2: true, inv_0: true }, levels: {}, selected: { plant: 'plant_0', enemy: 'inv_0' }, skins: {}, cs_seen: false, sound: true, music: true };
 try { const raw = localStorage.getItem(SAVE_KEY); if (raw) Object.assign(profile, JSON.parse(raw)); if (!profile.skins) profile.skins = {}; } catch(e){}
 let saveIndicatorTimer = null;
 function showSaveIndicator(ok){ const el = $('saveIndicator'); if (!el) return; el.textContent = ok ? '💾 Сохранено ✓' : '⚠ Ошибка сохранения'; el.classList.toggle('err', !ok); el.classList.add('show'); if (saveIndicatorTimer) clearTimeout(saveIndicatorTimer); saveIndicatorTimer = setTimeout(() => el.classList.remove('show'), 1600); }
 function saveProfile(opts){ try { localStorage.setItem(SAVE_KEY, JSON.stringify(profile)); } catch(e){} if (token) syncToServer(opts); else if (opts && opts.toast) showSaveIndicator(true); }
-async function syncToServer(opts){ if (!token) return false; try { const r = await fetch('/api/save', { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-Token': token }, body: JSON.stringify({ kk: profile.kk, trophies: profile.trophies, wins: profile.wins||0, losses: profile.losses||0, kills: profile.kills||0, games: profile.games||0, unlocked: profile.unlocked, levels: profile.levels, selected: profile.selected, skins: profile.skins, lastSeen: Date.now() }) }); if (r.ok && opts && opts.toast) showSaveIndicator(true); return true; } catch(e){ if (opts && opts.toast) showSaveIndicator(false); return false; } }
-async function loadMe(){ if (!token) return false; try { const ctrl = new AbortController(); const to = setTimeout(() => ctrl.abort(), 8000); const r = await fetch('/api/me', { headers: { 'X-Token': token }, signal: ctrl.signal }); clearTimeout(to); if (r.status === 401){ token = ''; nickname = ''; try { localStorage.removeItem(TOKEN_KEY); localStorage.removeItem(NICK_KEY); } catch(e){} return false; } const data = await r.json(); if (data.ok && data.player){ const p = data.player; profile.kk = p.kk; profile.trophies = p.trophies; profile.wins = p.wins||0; profile.losses = p.losses||0; profile.kills = p.kills||0; profile.games = p.games||0; profile.unlocked = p.unlocked || profile.unlocked; profile.levels = p.levels || {}; profile.selected = p.selected || profile.selected; profile.skins = p.skins || profile.skins || {}; nickname = p.nickname; try { localStorage.setItem(SAVE_KEY, JSON.stringify(profile)); localStorage.setItem(NICK_KEY, nickname); } catch(e){} return true; } } catch(e){ DBG.log('loadMe err', e.message||String(e)); } return false; }
+async function syncToServer(opts){ if (!token) return false; try { const r = await fetch('/api/save', { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-Token': token }, body: JSON.stringify({ kk: profile.kk, trophies: profile.trophies, wins: profile.wins||0, losses: profile.losses||0, kills: profile.kills||0, games: profile.games||0, unlocked: profile.unlocked, levels: profile.levels, selected: profile.selected, skins: profile.skins }) }); if (r.ok && opts && opts.toast) showSaveIndicator(true); return true; } catch(e){ if (opts && opts.toast) showSaveIndicator(false); return false; } }
+async function loadMe(){ if (!token) return false; try { const ctrl = new AbortController(); const to = setTimeout(() => ctrl.abort(), 8000); const r = await fetch('/api/me', { headers: { 'X-Token': token }, signal: ctrl.signal }); clearTimeout(to); if (r.status === 401){ token = ''; nickname = ''; try { localStorage.removeItem(TOKEN_KEY); localStorage.removeItem(NICK_KEY); } catch(e){} return false; } const data = await r.json(); if (data.ok && data.player){ const p = data.player; profile.kk = p.kk; profile.trophies = p.trophies; profile.wins = p.wins||0; profile.losses = p.losses||0; profile.kills = p.kills||0; profile.games = p.games||0; profile.unlocked = p.unlocked || profile.unlocked; profile.levels = p.levels || {}; profile.selected = p.selected || profile.selected; nickname = p.nickname; try { localStorage.setItem(SAVE_KEY, JSON.stringify(profile)); localStorage.setItem(NICK_KEY, nickname); } catch(e){} return true; } } catch(e){ DBG.log('loadMe err', e.message||String(e)); } return false; }
 function getLevel(id){ return profile.levels[id] || 1; }
 function getSkin(id){ return profile.skins[id] || 0; }
 function setSkin(id, idx){ if (!profile.skins) profile.skins = {}; profile.skins[id] = idx; saveProfile(); }
@@ -483,37 +489,202 @@ const SKINS = [
   { id: 6, name: 'Токсин', tint: '#7cf86b', glow: '#16a34a' },
   { id: 7, name: 'Радуга', tint: 'rainbow', glow: '#ff2e8a' }
 ];
-function getSkinTint(skinId, t){
-  const s = SKINS[skinId] || SKINS[0];
-  if (!s.tint) return null;
-  if (s.tint === 'rainbow'){
-    const hue = ((t || performance.now()) * 0.06) % 360;
-    return 'hsl(' + hue + ', 90%, 60%)';
-  }
-  return s.tint;
-}
+function getSkinTint(skinId, t){ const s = SKINS[skinId] || SKINS[0]; if (!s.tint) return null; if (s.tint === 'rainbow'){ const hue = ((t || performance.now()) * 0.06) % 360; return 'hsl(' + hue + ', 90%, 60%)'; } return s.tint; }
 
 /* ===== ДРУЗЬЯ ===== */
-let friends = []; let friendsPollTimer = null; let friendsPollBusy = false; const FRIENDS_POLL_MS = 15000;
-async function fetchFriends(){ if (!token) { friends = []; renderFriends(); return; } if (friendsPollBusy) return; friendsPollBusy = true; try { const r = await fetch('/api/friends', { headers: { 'X-Token': token } }); if (r.ok){ const data = await r.json(); if (data && data.ok && Array.isArray(data.friends)) friends = data.friends; } } catch(e){} friendsPollBusy = false; renderFriends(); }
-function renderFriends(){ const list = $('friendsList'); const empty = $('friendsEmpty'); const badge = $('friendsOnlineBadge'); if (!list) return; list.innerHTML = ''; if (!token){ empty.style.display = 'block'; empty.textContent = 'Войди в аккаунт, чтобы добавлять друзей и видеть, кто онлайн.'; if (badge) badge.textContent = ''; return; } if (friends.length === 0){ empty.style.display = 'block'; empty.textContent = 'Пока никого. Добавь друга по нику выше.'; if (badge) badge.textContent = ''; return; } empty.style.display = 'none'; const onlineCount = friends.filter(f => f.online).length; if (badge) badge.textContent = '· онлайн ' + onlineCount + '/' + friends.length; friends.slice().sort((a,b) => (b.online?1:0) - (a.online?1:0) || (b.trophies||0) - (a.trophies||0)).forEach(f => { const row = document.createElement('div'); row.className = 'friend-row' + (f.online ? '' : ' offline'); const dot = document.createElement('div'); dot.className = 'friend-dot'; const info = document.createElement('div'); info.className = 'friend-info'; const nick = document.createElement('div'); nick.className = 'friend-nick'; nick.textContent = f.nickname; const stats = document.createElement('div'); stats.className = 'friend-stats'; stats.textContent = (f.online ? '● в сети' : '○ оффлайн') + ' · 🏆 ' + (f.trophies||0); info.appendChild(nick); info.appendChild(stats); const btns = document.createElement('div'); btns.className = 'friend-btns'; const duel = document.createElement('button'); duel.className = 'friend-btn duel'; duel.textContent = 'ВЫЗВАТЬ'; duel.disabled = !f.online; duel.addEventListener('click', () => inviteFriendToDuel(f.nickname)); const rm = document.createElement('button'); rm.className = 'friend-btn remove'; rm.textContent = '✕'; rm.addEventListener('click', () => removeFriend(f.nickname)); btns.appendChild(duel); btns.appendChild(rm); row.appendChild(dot); row.appendChild(info); row.appendChild(btns); list.appendChild(row); }); }
-async function addFriend(){ const input = $('friendNickInput'); const nick = (input.value || '').trim(); if (!/^[a-zA-Z0-9_]{3,16}$/.test(nick)){ alert('Ник: 3-16 символов, буквы/цифры/_'); return; } if (!token){ showAuth(); return; } try { const r = await fetch('/api/friends/add', { method:'POST', headers: { 'Content-Type':'application/json', 'X-Token': token }, body: JSON.stringify({ nickname: nick }) }); const data = await r.json().catch(() => ({})); if (!data.ok){ alert(data.error || 'Не удалось добавить'); return; } input.value = ''; await fetchFriends(); } catch(e){ alert('Ошибка сети'); } }
-async function removeFriend(nick){ if (!confirm('Удалить ' + nick + ' из друзей?')) return; try { await fetch('/api/friends/remove', { method:'POST', headers: { 'Content-Type':'application/json', 'X-Token': token }, body: JSON.stringify({ nickname: nick }) }); } catch(e){} friends = friends.filter(f => f.nickname !== nick); renderFriends(); }
-async function inviteFriendToDuel(nick){ try { const r = await fetch('/api/friends/duel', { method:'POST', headers: { 'Content-Type':'application/json', 'X-Token': token }, body: JSON.stringify({ nickname: nick }) }); const data = await r.json().catch(() => ({})); if (!data.ok){ alert(data.error || 'Не удалось отправить вызов'); return; } alert('Вызов отправлен: ' + nick); } catch(e){ alert('Ошибка сети'); } }
+let friendsData = { friends: [], incoming: [], outgoing: [] };
+let friendsPollTimer = null; let friendsPollBusy = false; const FRIENDS_POLL_MS = 15000;
+async function fetchFriends(){
+  if (!token) { friendsData = { friends: [], incoming: [], outgoing: [] }; renderFriends(); return; }
+  if (friendsPollBusy) return; friendsPollBusy = true;
+  try {
+    const r = await fetch('/api/friends', { headers: { 'X-Token': token } });
+    if (r.ok){
+      const data = await r.json();
+      if (data && data.ok){
+        friendsData = { friends: data.friends || [], incoming: data.incoming || [], outgoing: data.outgoing || [] };
+      }
+    }
+  } catch(e){}
+  friendsPollBusy = false; renderFriends();
+}
+function renderFriends(){
+  const list = $('friendsList'); const empty = $('friendsEmpty'); const badge = $('friendsOnlineBadge');
+  if (!list) return;
+  list.innerHTML = '';
+  if (!token){ empty.style.display = 'block'; empty.textContent = 'Войди в аккаунт, чтобы добавлять друзей и видеть, кто онлайн.'; if (badge) badge.textContent = ''; return; }
+  const total = friendsData.friends.length + friendsData.incoming.length + friendsData.outgoing.length;
+  if (total === 0){
+    empty.style.display = 'block'; empty.textContent = 'Пока никого. Добавь друга по нику выше.';
+    if (badge) badge.textContent = '';
+    return;
+  }
+  empty.style.display = 'none';
+  const onlineCount = friendsData.friends.filter(f => f.online).length;
+  if (badge) badge.textContent = '· онлайн ' + onlineCount + '/' + friendsData.friends.length;
+
+  function mkTitle(text){
+    const t = document.createElement('div'); t.className = 'friends-section-title'; t.textContent = text;
+    return t;
+  }
+
+  if (friendsData.incoming.length > 0){
+    list.appendChild(mkTitle('📥 ВХОДЯЩИЕ ЗАЯВКИ'));
+    friendsData.incoming.forEach(f => {
+      const row = document.createElement('div'); row.className = 'friend-row incoming';
+      const info = document.createElement('div'); info.className = 'friend-info';
+      const nick = document.createElement('div'); nick.className = 'friend-nick'; nick.textContent = f.nickname;
+      const stats = document.createElement('div'); stats.className = 'friend-stats'; stats.textContent = 'хочет добавить тебя';
+      info.appendChild(nick); info.appendChild(stats);
+      const btns = document.createElement('div'); btns.className = 'friend-btns';
+      const acc = document.createElement('button'); acc.className = 'friend-btn accept'; acc.textContent = 'ПРИНЯТЬ';
+      acc.addEventListener('click', () => acceptFriend(f.nickname));
+      const rej = document.createElement('button'); rej.className = 'friend-btn remove'; rej.textContent = '✕';
+      rej.addEventListener('click', () => removeFriend(f.nickname));
+      btns.appendChild(acc); btns.appendChild(rej);
+      row.appendChild(info); row.appendChild(btns);
+      list.appendChild(row);
+    });
+  }
+
+  if (friendsData.outgoing.length > 0){
+    list.appendChild(mkTitle('📤 ОТПРАВЛЕННЫЕ ЗАЯВКИ'));
+    friendsData.outgoing.forEach(f => {
+      const row = document.createElement('div'); row.className = 'friend-row outgoing';
+      const info = document.createElement('div'); info.className = 'friend-info';
+      const nick = document.createElement('div'); nick.className = 'friend-nick'; nick.textContent = f.nickname;
+      const stats = document.createElement('div'); stats.className = 'friend-stats'; stats.textContent = 'ожидает подтверждения';
+      info.appendChild(nick); info.appendChild(stats);
+      const btns = document.createElement('div'); btns.className = 'friend-btns';
+      const rej = document.createElement('button'); rej.className = 'friend-btn remove'; rej.textContent = 'ОТМЕНА';
+      rej.addEventListener('click', () => removeFriend(f.nickname));
+      btns.appendChild(rej);
+      row.appendChild(info); row.appendChild(btns);
+      list.appendChild(row);
+    });
+  }
+
+  if (friendsData.friends.length > 0){
+    list.appendChild(mkTitle('👥 ДРУЗЬЯ'));
+    friendsData.friends.slice().sort((a,b) => (b.online?1:0) - (a.online?1:0)).forEach(f => {
+      const row = document.createElement('div'); row.className = 'friend-row' + (f.online ? '' : ' offline');
+      const dot = document.createElement('div'); dot.className = 'friend-dot';
+      const info = document.createElement('div'); info.className = 'friend-info';
+      const nick = document.createElement('div'); nick.className = 'friend-nick'; nick.textContent = f.nickname;
+      const stats = document.createElement('div'); stats.className = 'friend-stats';
+      stats.textContent = (f.online ? '● в сети' : '○ оффлайн');
+      info.appendChild(nick); info.appendChild(stats);
+      const btns = document.createElement('div'); btns.className = 'friend-btns';
+      const duel = document.createElement('button'); duel.className = 'friend-btn duel'; duel.textContent = 'ВЫЗВАТЬ';
+      duel.disabled = !f.online;
+      duel.addEventListener('click', () => inviteFriendToDuel(f.nickname));
+      const rm = document.createElement('button'); rm.className = 'friend-btn remove'; rm.textContent = '✕';
+      rm.addEventListener('click', () => removeFriend(f.nickname));
+      btns.appendChild(duel); btns.appendChild(rm);
+      row.appendChild(dot); row.appendChild(info); row.appendChild(btns);
+      list.appendChild(row);
+    });
+  }
+}
+async function addFriend(){
+  const input = $('friendNickInput'); const nick = (input.value || '').trim();
+  if (!/^[a-zA-Z0-9_]{3,16}$/.test(nick)){ alert('Ник: 3-16 символов, буквы/цифры/_'); return; }
+  if (!token){ showAuth(); return; }
+  try {
+    const r = await fetch('/api/friends/add', { method:'POST', headers: { 'Content-Type':'application/json', 'X-Token': token }, body: JSON.stringify({ friend: nick }) });
+    const data = await r.json().catch(() => ({}));
+    if (!data.ok){ alert(data.error || 'Не удалось добавить'); return; }
+    input.value = '';
+    await fetchFriends();
+  } catch(e){ alert('Ошибка сети'); }
+}
+async function acceptFriend(nick){
+  try {
+    const r = await fetch('/api/friends/accept', { method:'POST', headers: { 'Content-Type':'application/json', 'X-Token': token }, body: JSON.stringify({ friend: nick }) });
+    const data = await r.json().catch(() => ({}));
+    if (!data.ok){ alert(data.error || 'Не удалось принять'); return; }
+    await fetchFriends();
+  } catch(e){ alert('Ошибка сети'); }
+}
+async function removeFriend(nick){
+  if (!confirm('Удалить ' + nick + '?')) return;
+  try {
+    await fetch('/api/friends/remove', { method:'POST', headers: { 'Content-Type':'application/json', 'X-Token': token }, body: JSON.stringify({ friend: nick }) });
+  } catch(e){}
+  await fetchFriends();
+}
+async function inviteFriendToDuel(nick){
+  try {
+    const r = await fetch('/api/friends/invite', { method:'POST', headers: { 'Content-Type':'application/json', 'X-Token': token }, body: JSON.stringify({ friend: nick, roomId: '' }) });
+    const data = await r.json().catch(() => ({}));
+    if (!data.ok){ alert(data.error || 'Не удалось отправить вызов'); return; }
+    alert('Вызов отправлен: ' + nick);
+  } catch(e){ alert('Ошибка сети'); }
+}
 function startFriendsPolling(){ if (friendsPollTimer) clearInterval(friendsPollTimer); fetchFriends(); friendsPollTimer = setInterval(() => { const s = $('scFriends'); if (s && s.classList.contains('active')) fetchFriends(); }, FRIENDS_POLL_MS); }
 function stopFriendsPolling(){ if (friendsPollTimer){ clearInterval(friendsPollTimer); friendsPollTimer = null; } }
 
 /* ===== ТОП ===== */
-const MOCK_NAMES = ['ShadowX','NeonBlade','DigitalGhost','PlantMaster','CyberWolf','VoidWalker','QuantumFox','StormBringer','NeonNinja','PixelKing','DataReaper','GlitchLord','CodeBreaker','ByteHunter','NetRunner','SilentPulse','ZeroCool','NightHawk','IronFist','StarFall','MegaByte','PhotonAce','DarkMatter','TurboCat','HexWizard','LaserEyes','SkyRider','OmegaCore','AtomSmasher','ChromeViper'];
-const MOCK_LEADERS = MOCK_NAMES.map((n, i) => ({ nickname: n, trophies: Math.round(800 - i * 24 - (i%3)*5), kk: 8000 - i*210 }));
 let topList = [];
 async function loadTop(){
-  const loading = $('topLoading'); const list = $('topList'); if (loading) loading.style.display = 'block'; if (list) list.innerHTML = ''; topList = [];
-  try { if (token){ const r = await fetch('/api/leaderboard', { headers: { 'X-Token': token } }); if (r.ok){ const d = await r.json(); if (d && d.ok && Array.isArray(d.players) && d.players.length > 0){ topList = d.players; } } } } catch(e){}
-  if (topList.length === 0){ topList = MOCK_LEADERS.slice(); if (nickname) topList.push({ nickname, trophies: profile.trophies, kk: profile.kk }); topList.sort((a,b) => (b.trophies||0) - (a.trophies||0)); }
-  if (loading) loading.style.display = 'none'; renderTop();
+  const loading = $('topLoading');
+  const list = $('topList');
+  if (loading) loading.style.display = 'block';
+  if (list) list.innerHTML = '';
+  topList = [];
+  try {
+    const headers = {};
+    if (token) headers['X-Token'] = token;
+    const r = await fetch('/api/leaderboard', { headers });
+    if (r.ok){
+      const d = await r.json();
+      const arr = (d && (d.rows || d.players)) || [];
+      if (Array.isArray(arr)) topList = arr;
+    }
+  } catch(e){ console.warn('[top] error', e); }
+  if (nickname && !topList.some(p => p.nickname === nickname)){
+    topList.push({ nickname, trophies: profile.trophies });
+  }
+  topList.sort((a,b) => (b.trophies||0) - (a.trophies||0));
+  if (loading) loading.style.display = 'none';
+  renderTop();
 }
-function renderTop(){ const list = $('topList'); if (!list) return; list.innerHTML = ''; const myNick = nickname; const top30 = topList.slice(0, 30); top30.forEach((p, i) => { const row = document.createElement('div'); row.className = 'top-row'; if (i === 0) row.classList.add('gold'); else if (i === 1) row.classList.add('silver'); else if (i === 2) row.classList.add('bronze'); if (p.nickname === myNick) row.classList.add('me'); const medal = i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : '#' + (i + 1); row.innerHTML = '<div class="top-rank">' + medal + '</div><div class="top-name">' + (p.nickname || '???') + '</div><div class="top-tr">🏆 ' + (p.trophies || 0) + '</div>'; list.appendChild(row); }); const card = $('topMyCard'); if (nickname){ const pos = topList.findIndex(x => x.nickname === myNick); card.style.display = 'block'; card.textContent = 'Ты: ' + (pos >= 0 ? '#' + (pos + 1) : '—') + '   ·   🏆 ' + profile.trophies + '   ·   💾 ' + profile.kk; } else { card.style.display = 'none'; } }
+function renderTop(){
+  const list = $('topList');
+  if (!list) return;
+  list.innerHTML = '';
+  const myNick = nickname;
+  if (topList.length === 0){
+    list.innerHTML = '<div style="text-align:center;color:#9fd7ff;padding:30px 12px;font-size:13px;line-height:1.6">Пока никто не играл.<br>Будь первым в топе! 🏆</div>';
+    const card = $('topMyCard');
+    if (card) card.style.display = 'none';
+    return;
+  }
+  topList.slice(0, 50).forEach((p, i) => {
+    const row = document.createElement('div');
+    row.className = 'top-row';
+    if (i === 0) row.classList.add('gold');
+    else if (i === 1) row.classList.add('silver');
+    else if (i === 2) row.classList.add('bronze');
+    if (p.nickname === myNick) row.classList.add('me');
+    const medal = i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : '#' + (i + 1);
+    const wins = p.wins || 0, losses = p.losses || 0;
+    const wl = (wins + losses) > 0 ? ' · ' + wins + '/' + losses : '';
+    row.innerHTML =
+      '<div class="top-rank">' + medal + '</div>' +
+      '<div class="top-name">' + (p.nickname || '???') + wl + '</div>' +
+      '<div class="top-tr">🏆 ' + (p.trophies || 0) + '</div>';
+    list.appendChild(row);
+  });
+  const card = $('topMyCard');
+  if (nickname){
+    const pos = topList.findIndex(x => x.nickname === myNick);
+    card.style.display = 'block';
+    card.textContent = 'Ты: ' + (pos >= 0 ? '#' + (pos + 1) : '—') + '   ·   🏆 ' + profile.trophies + '   ·   💾 ' + profile.kk;
+  } else {
+    card.style.display = 'none';
+  }
+}
 
 /* ===== ЗВУК ===== */
 let audioCtx = null;
@@ -524,6 +695,72 @@ function updateSoundBtn(){ const b = $('soundBtn'); if (b) b.textContent = profi
 $('soundBtn').addEventListener('click', () => { initAudio(); toggleSound(); });
 document.addEventListener('touchstart', initAudio, {once:true});
 document.addEventListener('mousedown', initAudio, {once:true});
+
+/* ===== МУЗЫКА ===== */
+const MUSIC_URL = 'https://raw.githubusercontent.com/gnsledovatel/Music-for-ds/main/ds%20music%20alpha.mp3';
+let musicEl = null;
+let musicStarted = false;
+let musicTried = false;
+
+function initMusic(){
+  if (musicEl) return;
+  try {
+    musicEl = new Audio(MUSIC_URL);
+    musicEl.loop = true;
+    musicEl.volume = 0.35;
+    musicEl.preload = 'auto';
+    musicEl.addEventListener('error', () => { console.warn('[music] load error'); });
+    musicEl.addEventListener('canplaythrough', () => { updateMusicBtn(); });
+  } catch(e){ console.warn('[music] init fail', e); }
+}
+function tryStartMusic(){
+  if (!profile.music) return;
+  initMusic();
+  if (!musicEl || musicStarted) return;
+  musicTried = true;
+  musicEl.play().then(() => {
+    musicStarted = true;
+    updateMusicBtn();
+  }).catch(err => {
+    console.warn('[music] autoplay blocked:', err.message);
+    musicTried = false;
+  });
+}
+function toggleMusic(){
+  initMusic();
+  if (!musicEl) return;
+  profile.music = !profile.music;
+  saveProfile();
+  if (profile.music){
+    musicEl.play().then(() => { musicStarted = true; updateMusicBtn(); }).catch(()=>{});
+  } else {
+    musicEl.pause();
+    musicStarted = false;
+  }
+  updateMusicBtn();
+}
+function updateMusicBtn(){
+  const b = $('musicBtn');
+  if (!b) return;
+  b.textContent = profile.music ? '🎵' : '🔇';
+  b.classList.toggle('playing', !!(profile.music && musicStarted));
+}
+function updateMusicVolume(inGame){
+  if (!musicEl) return;
+  musicEl.volume = inGame ? 0.18 : 0.35;
+}
+$('musicBtn').addEventListener('click', (e) => { e.stopPropagation(); toggleMusic(); });
+
+function firstMusicKick(){
+  if (!musicTried) tryStartMusic();
+  document.removeEventListener('touchstart', firstMusicKick);
+  document.removeEventListener('mousedown', firstMusicKick);
+  document.removeEventListener('keydown', firstMusicKick);
+}
+document.addEventListener('touchstart', firstMusicKick, {once:true});
+document.addEventListener('mousedown', firstMusicKick, {once:true});
+document.addEventListener('keydown', firstMusicKick, {once:true});
+setTimeout(() => { tryStartMusic(); updateMusicBtn(); }, 400);
 
 /* ===== КАРТЫ ===== */
 const MAPS = [
@@ -580,19 +817,11 @@ const SUPER_NAMES = { heal:'Исцеление', spikes:'Шипы', laser:'Ла�
 /* ===== РИСОВАНИЕ ===== */
 function roundRect(ctx, x, y, w, h, r){ ctx.beginPath(); ctx.moveTo(x+r, y); ctx.arcTo(x+w, y, x+w, y+h, r); ctx.arcTo(x+w, y+h, x, y+h, r); ctx.arcTo(x, y+h, x, y, r); ctx.arcTo(x, y, x+w, y, r); ctx.closePath(); }
 function shade(hex, amt){ if (!hex) return '#888'; if (hex.startsWith('hsl')) return hex; if (hex.startsWith('rgb')) return hex; const n = parseInt(hex.slice(1), 16); let r = (n>>16)+amt, g = ((n>>8)&0xff)+amt, b = (n&0xff)+amt; r = Math.max(0, Math.min(255, r)); g = Math.max(0, Math.min(255, g)); b = Math.max(0, Math.min(255, b)); return '#' + ((r<<16)|(g<<8)|b).toString(16).padStart(6,'0'); }
-function applySkin(baseColor, skinId, t){
-  const tint = getSkinTint(skinId, t);
-  if (!tint) return baseColor;
-  return tint;
-}
 function drawFighterShape(ctx, fighter, x, y, size, angle, isDead, walkPhase, skinId){
   const tint = skinId !== undefined && skinId !== 0 ? getSkinTint(skinId, performance.now()) : null;
   ctx.save(); ctx.translate(x, y);
   ctx.fillStyle = 'rgba(0,0,0,.55)'; ctx.beginPath(); ctx.ellipse(0, size*0.32, size*0.6, size*0.24, 0, 0, Math.PI*2); ctx.fill();
-  if (tint){
-    ctx.shadowColor = tint;
-    ctx.shadowBlur = size * 0.35;
-  }
+  if (tint){ ctx.shadowColor = tint; ctx.shadowBlur = size * 0.35; }
   ctx.rotate(angle + Math.PI/2);
   if (isDead) ctx.globalAlpha = 0.3;
   const wobble = walkPhase ? Math.sin(walkPhase) * 0.05 : 0;
@@ -640,11 +869,7 @@ function drawGhost(ctx, s, c){ ctx.globalAlpha *= 0.85; const g = ctx.createRadi
 function drawPortrait(canvas, fighter, skinId){ const ctx = canvas.getContext('2d'); const dpr = Math.min(devicePixelRatio, 1.5); const size = canvas.clientWidth || 100; canvas.width = size*dpr; canvas.height = size*dpr; ctx.setTransform(1,0,0,1,0,0); ctx.scale(dpr, dpr); ctx.clearRect(0, 0, size, size); drawFighterShape(ctx, fighter, size/2, size/2, size*0.85, -Math.PI/2, false, 0, skinId); }
 
 /* ===== КАТ-СЦЕНА ===== */
-let csToken = 0;
-let csSkipAll = null;
-let csEnded = false;
-let csTimers = [];
-let csWatchdog = null;
+let csToken = 0; let csSkipAll = null; let csEnded = false; let csTimers = []; let csWatchdog = null;
 function csSet(fn, ms){ const id = setTimeout(fn, ms); csTimers.push(id); return id; }
 function csClearTimers(){ csTimers.forEach(clearTimeout); csTimers = []; }
 function wait(ms){ const myToken = ++csToken; return new Promise(resolve => { const t = setTimeout(() => { if (myToken !== csToken) return resolve('skip'); csSkipAll = null; resolve('timeout'); }, ms); csSkipAll = () => { if (myToken !== csToken) return; clearTimeout(t); csToken++; csSkipAll = null; resolve('skip'); }; }); }
@@ -703,7 +928,7 @@ function endCutscene(){ if (csEnded) return; csEnded = true; if (csWatchdog){ cl
 /* ===== РАНГИ ===== */
 const RANKS = [ { t:0, name:'Дерево I', color:'#7cf86b' },{ t:10, name:'Дерево II', color:'#7cf86b' }, { t:25, name:'Дерево III', color:'#4ade80' },{ t:45, name:'Кристалл I', color:'#22c55e' }, { t:70, name:'Кристалл II', color:'#00e5ff' },{ t:100, name:'Кристалл III', color:'#00e5ff' }, { t:140, name:'Неон I', color:'#a855f7' },{ t:190, name:'Неон II', color:'#a855f7' }, { t:250, name:'Неон III', color:'#ec4899' },{ t:320, name:'Глитч', color:'#ff2e8a' }, { t:400, name:'Легенда', color:'#ffd54f' } ];
 function getRank(t){ let r = RANKS[0]; for (const rank of RANKS) if (t >= rank.t) r = rank; return r; }
-function updateProfileUI(){ try { $('kkCounter').textContent = '💾 ' + profile.kk; $('trophyCounter').textContent = '🏆 ' + profile.trophies; const r = getRank(profile.trophies); const rEl = $('rankLabel'); rEl.textContent = 'Ранг: ' + r.name; rEl.style.color = r.color; $('nickLabel').textContent = nickname || '—'; $('logoutBtn').style.display = token ? 'inline-block' : 'none'; updateSoundBtn(); } catch(e){ DBG.log('updateProfileUI err', e.message||String(e)); } }
+function updateProfileUI(){ try { $('kkCounter').textContent = '💾 ' + profile.kk; $('trophyCounter').textContent = '🏆 ' + profile.trophies; const r = getRank(profile.trophies); const rEl = $('rankLabel'); rEl.textContent = 'Ранг: ' + r.name; rEl.style.color = r.color; $('nickLabel').textContent = nickname || '—'; $('logoutBtn').style.display = token ? 'inline-block' : 'none'; updateSoundBtn(); updateMusicBtn(); } catch(e){ DBG.log('updateProfileUI err', e.message||String(e)); } }
 
 /* ===== МЕНЮ ===== */
 function switchMainTab(tabId){
@@ -767,7 +992,7 @@ function showBoxOpening(resultId, isNew, rarity, box){ const overlay = $('boxOpe
 /* ===== КОЛЛЕКЦИЯ / ПРОКАЧКА ===== */
 function refreshCollection(){ const grid = $('collectionGrid'); grid.innerHTML = ''; Object.keys(FIGHTERS).forEach(id => { const f = FIGHTERS[id]; const card = document.createElement('div'); card.className = 'col-card' + (f.side === 'enemy' ? ' enemySide' : '') + (isUnlocked(id) ? '' : ' locked'); const lvl = document.createElement('div'); lvl.className = 'lvl'; lvl.textContent = 'L' + getLevel(id); if (!isUnlocked(id)) lvl.style.display = 'none'; card.appendChild(lvl); const cv = document.createElement('canvas'); card.appendChild(cv); const nm = document.createElement('div'); nm.className = 'name'; nm.textContent = isUnlocked(id) ? f.name : '???'; card.appendChild(nm); if (!isUnlocked(id)){ const lock = document.createElement('div'); lock.className = 'lock'; lock.textContent = '🔒'; card.appendChild(lock); } card.addEventListener('click', () => openFighterCard(f.id)); grid.appendChild(card); setTimeout(() => drawPortrait(cv, f, getSkin(id)), 10); }); }
 function refreshUpgrade(){ const grid = $('upgradeGrid'); grid.innerHTML = ''; const ids = Object.keys(FIGHTERS).filter(id => isUnlocked(id)); if (ids.length === 0){ grid.innerHTML = '<div style="text-align:center;color:#9fd7ff;padding:20px;grid-column:1/-1;font-size:13px">Открой бойца в боксах</div>'; return; } ids.forEach(id => { const f = FIGHTERS[id]; const lvl = getLevel(f.id); const card = document.createElement('div'); card.className = 'col-card' + (f.side === 'enemy' ? ' enemySide' : ''); const lvlEl = document.createElement('div'); lvlEl.className = 'lvl'; lvlEl.textContent = 'L' + lvl; card.appendChild(lvlEl); const cv = document.createElement('canvas'); card.appendChild(cv); const nm = document.createElement('div'); nm.className = 'name'; nm.textContent = f.name; card.appendChild(nm); card.addEventListener('click', () => openFighterCard(f.id)); grid.appendChild(card); setTimeout(() => drawPortrait(cv, f, getSkin(id)), 10); }); }
-function goToMenu(){ $('menu').style.display = 'flex'; $('saveBtn').classList.add('show'); updateProfileUI(); try { switchMainTab('play'); } catch(e){ DBG.log('switchMainTab err', e.message||String(e)); } if (!token) showAuth(); if (token) startFriendsPolling(); }
+function goToMenu(){ $('menu').style.display = 'flex'; $('saveBtn').classList.add('show'); updateProfileUI(); try { switchMainTab('play'); } catch(e){ DBG.log('switchMainTab err', e.message||String(e)); } if (!token) showAuth(); if (token) startFriendsPolling(); tryStartMusic(); }
 
 /* ===== КАРТОЧКА БОЙЦА ===== */
 let currentCardFighter = null;
@@ -785,12 +1010,12 @@ function renderSkinRow(fighterId){
     sw.addEventListener('click', () => {
       setSkin(fighterId, i);
       renderSkinRow(fighterId);
-      const card = $('fcCanvas');
+      const cv = $('fcCanvas');
       const f = FIGHTERS[fighterId];
-      const c = card.getContext('2d');
+      const c = cv.getContext('2d');
       const dpr = Math.min(devicePixelRatio, 1.5);
       const size = 88;
-      card.width = size*dpr; card.height = size*dpr;
+      cv.width = size*dpr; cv.height = size*dpr;
       c.setTransform(1,0,0,1,0,0); c.scale(dpr, dpr); c.clearRect(0, 0, size, size);
       drawFighterShape(c, f, size/2, size/2, size*0.85, -Math.PI/2, false, 0, i);
       playSound('click');
@@ -848,10 +1073,7 @@ addEventListener('resize', resize); resize();
 let gameActive = false, side = null;
 let gameEnding = false;
 let allies = [], enemies = [], bullets = [], particles = [], floatingTexts = [], zones = [], obstacles = [];
-let trails = []; // шлейфы
-let shockwaves = []; // ударные волны
-let muzzleFlash = 0;
-let ambientParticles = []; // пылинки в воздухе
+let trails = []; let shockwaves = []; let muzzleFlash = 0; let ambientParticles = [];
 let keys = {}, yaw = 0, camera2D = { x: 0, z: 0 }, shakeAmount = 0, shakeX = 0, shakeY = 0;
 let ARENA = 40;
 const ZOOM = 24;
@@ -862,42 +1084,14 @@ const MAX_AMMO = 3, RELOAD_TIME = 2.0;
 let ammo = MAX_AMMO, ammoTimer = 0;
 let battleKK = 0, battleTrophies = 0, battleKills = 0, battleDeaths = 0, defenseWave = 0, damageBoost = 1.0;
 let playerPrevX = 0, playerPrevZ = 14;
-let safe = null;
-let safeHitFlash = 0;
-let godMode = false;
-let speedMul = 1;
-let damageMul = 1;
+let safe = null; let safeHitFlash = 0;
+let godMode = false; let speedMul = 1; let damageMul = 1;
 const touch = { move:{active:false,id:null,dx:0,dy:0,cx:0,cy:0,r:65}, attack:{active:false,id:null,dx:0,dy:0,cx:0,cy:0,r:65}, super:{active:false,id:null,dx:0,dy:0,cx:0,cy:0,r:65}, firing:false };
 const player = { x: 0, z: 14, hp: 100, maxHp: 100, fighter: null, walkPhase: 0, shield: 0, velX: 0, velZ: 0, respawnTimer: 0, dead: false, stats: null };
 function worldToScreen(wx, wz){ return { x: W/2 + (wx-camera2D.x)*ZOOM + shakeX, y: H*0.68 + (wz-camera2D.z)*ZOOM + shakeY }; }
-
-/* Ambient */
-function initAmbient(){
-  ambientParticles = [];
-  for (let i = 0; i < 80; i++){
-    ambientParticles.push({
-      x: (Math.random() - 0.5) * 60,
-      z: (Math.random() - 0.5) * 60,
-      vz: -0.3 - Math.random() * 0.5,
-      vx: (Math.random() - 0.5) * 0.3,
-      size: 0.6 + Math.random() * 1.4,
-      alpha: 0.15 + Math.random() * 0.35,
-      hue: Math.random()
-    });
-  }
-}
+function initAmbient(){ ambientParticles = []; for (let i = 0; i < 80; i++){ ambientParticles.push({ x: (Math.random() - 0.5) * 60, z: (Math.random() - 0.5) * 60, vz: -0.3 - Math.random() * 0.5, vx: (Math.random() - 0.5) * 0.3, size: 0.6 + Math.random() * 1.4, alpha: 0.15 + Math.random() * 0.35, hue: Math.random() }); } }
 initAmbient();
-function updateAmbient(dt){
-  for (const p of ambientParticles){
-    p.z += p.vz * dt;
-    p.x += p.vx * dt;
-    if (p.z < camera2D.z - 30) p.z = camera2D.z + 30;
-    if (p.z > camera2D.z + 30) p.z = camera2D.z - 30;
-    if (p.x < camera2D.x - 30) p.x = camera2D.x + 30;
-    if (p.x > camera2D.x + 30) p.x = camera2D.x - 30;
-  }
-}
-
+function updateAmbient(dt){ for (const p of ambientParticles){ p.z += p.vz * dt; p.x += p.vx * dt; if (p.z < camera2D.z - 30) p.z = camera2D.z + 30; if (p.z > camera2D.z + 30) p.z = camera2D.z - 30; if (p.x < camera2D.x - 30) p.x = camera2D.x + 30; if (p.x > camera2D.x + 30) p.x = camera2D.x - 30; } }
 function buildArenaCache(){
   const sizePx = Math.ceil(ARENA * ZOOM);
   arenaCanvas.width = sizePx; arenaCanvas.height = sizePx;
@@ -906,15 +1100,7 @@ function buildArenaCache(){
   const g = c.createRadialGradient(sizePx/2, sizePx/2, 0, sizePx/2, sizePx/2, sizePx/2);
   g.addColorStop(0, currentMap.bg); g.addColorStop(1, shade(currentMap.bg, -30));
   c.fillStyle = g; c.fillRect(0, 0, sizePx, sizePx);
-  // доп. слой: рельеф
-  for (let i = 0; i < 40; i++){
-    const rx = Math.random() * sizePx, ry = Math.random() * sizePx, rr = 20 + Math.random() * 80;
-    const rg = c.createRadialGradient(rx, ry, 0, rx, ry, rr);
-    rg.addColorStop(0, 'rgba(255,255,255,' + (0.02 + Math.random() * 0.03) + ')');
-    rg.addColorStop(1, 'rgba(0,0,0,0)');
-    c.fillStyle = rg;
-    c.beginPath(); c.arc(rx, ry, rr, 0, Math.PI*2); c.fill();
-  }
+  for (let i = 0; i < 40; i++){ const rx = Math.random() * sizePx, ry = Math.random() * sizePx, rr = 20 + Math.random() * 80; const rg = c.createRadialGradient(rx, ry, 0, rx, ry, rr); rg.addColorStop(0, 'rgba(255,255,255,' + (0.02 + Math.random() * 0.03) + ')'); rg.addColorStop(1, 'rgba(0,0,0,0)'); c.fillStyle = rg; c.beginPath(); c.arc(rx, ry, rr, 0, Math.PI*2); c.fill(); }
   c.strokeStyle = currentMap.grid; c.lineWidth = 1;
   const step = 4*ZOOM;
   for (let i = 0; i <= ARENA/4; i++){ c.beginPath(); c.moveTo(i*step, 0); c.lineTo(i*step, sizePx); c.stroke(); c.beginPath(); c.moveTo(0, i*step); c.lineTo(sizePx, i*step); c.stroke(); }
@@ -925,7 +1111,6 @@ function buildArenaCache(){
   for (const ob of obstacles){ const ox = (ob[0] + ARENA/2)*ZOOM, oy = (ob[1] + ARENA/2)*ZOOM, r = ob[2]*ZOOM; const og = c.createRadialGradient(ox, oy, 0, ox, oy, r); og.addColorStop(0, shade(currentMap.border, -40)); og.addColorStop(1, shade(currentMap.border, -80)); c.fillStyle = og; c.globalAlpha = 0.6; c.beginPath(); c.arc(ox, oy, r, 0, Math.PI*2); c.fill(); c.globalAlpha = 1; c.strokeStyle = currentMap.border; c.lineWidth = 3; c.stroke(); }
   arenaDirty = false;
 }
-
 function spawnCharacters(myFighter){
   const playerIsEnemy = (myFighter.side === 'enemy');
   const pStats = getFighterStats(myFighter);
@@ -971,29 +1156,7 @@ function spawnDefenseWave(){ const wave = defenseWave; const count = 3 + wave*2;
 function spawnParticles(x, z, color, count, speed){ for (let i = 0; i < count; i++){ const a = Math.random()*Math.PI*2, s = speed*(0.5+Math.random()); particles.push({ x, z, vx: Math.cos(a)*s, vz: Math.sin(a)*s, life: 0.4+Math.random()*0.3, maxLife: 0.7, color, size: 2+Math.random()*3 }); } }
 function spawnFloatingText(x, z, text, color){ floatingTexts.push({ x, z, text, color, life: 1.0, maxLife: 1.0 }); }
 function spawnShockwave(x, z, r, color){ shockwaves.push({ x, z, r0: 0.5, r1: r, life: 0.4, maxLife: 0.4, color }); }
-
-/* ===== МЕТАТЕЛЬ ===== */
-function spawnThrown(shooter, dx, dz, dmg, color, fromPlayer, fromAlly){
-  const speed = 12;
-  const dist = 14;
-  const travelTime = dist / speed;
-  bullets.push({
-    x: shooter.x, z: shooter.z,
-    dx, dz, speed,
-    fromPlayer, fromAlly, isSuper: false, isThrown: true,
-    baseDmg: dmg * 1.6,
-    radius: 10,
-    color: color,
-    kind: 'thrower',
-    life: travelTime,
-    explodeRadius: 2.6,
-    spin: 0,
-    startX: shooter.x, startZ: shooter.z,
-    peak: 2.2
-  });
-  muzzleFlash = 0.12;
-}
-
+function spawnThrown(shooter, dx, dz, dmg, color, fromPlayer, fromAlly){ const speed = 12; const dist = 14; const travelTime = dist / speed; bullets.push({ x: shooter.x, z: shooter.z, dx, dz, speed, fromPlayer, fromAlly, isSuper: false, isThrown: true, baseDmg: dmg * 1.6, radius: 10, color, kind: 'thrower', life: travelTime, explodeRadius: 2.6, spin: 0, startX: shooter.x, startZ: shooter.z, peak: 2.2, throwDist: dist }); muzzleFlash = 0.12; }
 function performAttack(shooter, dirX, dirZ, isEnemy, fromPlayer, fromAlly, baseDmg){
   const type = shooter.fighter.attack;
   const color = fromPlayer ? (side === 'enemy' ? '#00e5ff' : '#7cf86b') : (fromAlly ? '#7cf86b' : (side === 'enemy' ? '#7cf86b' : '#00e5ff'));
@@ -1013,15 +1176,7 @@ function performAttack(shooter, dirX, dirZ, isEnemy, fromPlayer, fromAlly, baseD
     default: spawnBullet(shooter, Math.sin(baseAngle), Math.cos(baseAngle), 30, baseDmg, 6, color, fromPlayer, fromAlly, null, 'single');
   }
 }
-function spawnBullet(shooter, dx, dz, speed, dmg, radius, color, fromPlayer, fromAlly, extra, kind){
-  let finalDmg = dmg;
-  if (fromPlayer) finalDmg *= damageMul;
-  const b = Object.assign({ x: shooter.x, z: shooter.z, dx, dz, speed, fromPlayer, fromAlly, isSuper: false, baseDmg: finalDmg, radius, color, kind: kind||'single', life: 2.5 }, extra||{});
-  bullets.push(b);
-  // muzzle flash
-  if (fromPlayer) muzzleFlash = 0.1;
-  spawnParticles(shooter.x + dx*1, shooter.z + dz*1, color, 2, 3);
-}
+function spawnBullet(shooter, dx, dz, speed, dmg, radius, color, fromPlayer, fromAlly, extra, kind){ let finalDmg = dmg; if (fromPlayer) finalDmg *= damageMul; bullets.push(Object.assign({ x: shooter.x, z: shooter.z, dx, dz, speed, fromPlayer, fromAlly, isSuper: false, baseDmg: finalDmg, radius, color, kind: kind||'single', life: 2.5 }, extra||{})); if (fromPlayer) muzzleFlash = 0.1; spawnParticles(shooter.x + dx*1, shooter.z + dz*1, color, 2, 3); }
 function getOptimalRange(unit){ const t = unit.fighter.attack; if (t==='long') return 14; if (t==='shotgun') return 5; if (t==='wave') return 8; if (t==='grenade') return 11; if (t==='pierce') return 10; if (t==='rapid') return 7; if (t==='homing') return 9; if (t==='thrower') return 12; return 9; }
 function findBestTarget(unit, isEnemy){ const candidates = []; if (isEnemy){ if (!player.dead && player.hp > 0) candidates.push({ ref: player, isPlayer: true }); for (const a of allies) if (a.hp > 0) candidates.push({ ref: a, isPlayer: false }); } else { for (const e of enemies) if (e.hp > 0) candidates.push({ ref: e, isPlayer: false }); } if (candidates.length === 0) return null; if (unit.target && unit.target.ref && unit.target.ref.hp > 0 && unit.ai.focusTimer > 0) return unit.target; let best = null, bestScore = 999; for (const c of candidates){ const d = Math.hypot(c.ref.x - unit.x, c.ref.z - unit.z); let score = d; if (c.isPlayer && d < 12) score -= 4; if (score < bestScore){ bestScore = score; best = c; } } if (!best) return null; unit.target = best; unit.ai.focusTimer = 3.0; return unit.target; }
 function checkIncomingBullet(unit){ for (const b of bullets){ if (b.fromPlayer || b.fromAlly) continue; const dx = unit.x - b.x, dz = unit.z - b.z; const dist = Math.hypot(dx, dz); if (dist > 8) continue; const dot = dx*b.dx + dz*b.dz; if (dot < 0) continue; const perp = Math.abs(dx*b.dz - dz*b.dx); if (perp < 1.2) return { b, dx, dz, dist }; } return null; }
@@ -1037,35 +1192,22 @@ function explodeGrenade(b){
 function updateBullets(dt){
   for (let i = bullets.length - 1; i >= 0; i--){
     const b = bullets[i];
-    // метатель: парабола
     if (b.isThrown){
-      const t = 1 - Math.max(0, b.life) / (14 / b.speed);
-      b.x = b.startX + b.dx * b.speed * (1 - Math.max(0, b.life)) ;
-      b.z = b.startZ + b.dz * b.speed * (1 - Math.max(0, b.life));
-      // перезапишем движение — пойдём через скорость напрямую
-      b.x = b.startX + b.dx * b.speed * ((14 / b.speed) - Math.max(0, b.life));
-      b.z = b.startZ + b.dz * b.speed * ((14 / b.speed) - Math.max(0, b.life));
+      const totalTime = b.throwDist / b.speed;
+      const elapsed = totalTime - Math.max(0, b.life);
+      b.x = b.startX + b.dx * b.speed * elapsed;
+      b.z = b.startZ + b.dz * b.speed * elapsed;
       b.spin += dt * 22;
       b.life -= dt;
       if (b.life <= 0){
-        // взрыв
         explodeGrenade(Object.assign({}, b, { x: b.x, z: b.z, explodeRadius: b.explodeRadius }));
         bullets.splice(i, 1);
         continue;
       }
-      // столкновение с сейфом
       if (safe && safe.hp > 0 && (b.fromPlayer || b.fromAlly)){
         const ds = Math.hypot(b.x - safe.x, b.z - safe.z);
-        if (ds < safe.r + b.radius/6){
-          safe.hp = Math.max(0, safe.hp - b.baseDmg);
-          safeHitFlash = 0.15;
-          spawnShockwave(b.x, b.z, 3, '#ffd54f');
-          bullets.splice(i, 1);
-          if (safe.hp <= 0){ bossDeathEffect(safe.x, safe.z); endGame(true); return; }
-          continue;
-        }
+        if (ds < safe.r + b.radius/6){ safe.hp = Math.max(0, safe.hp - b.baseDmg); safeHitFlash = 0.15; spawnShockwave(b.x, b.z, 3, '#ffd54f'); bullets.splice(i, 1); if (safe.hp <= 0){ bossDeathEffect(safe.x, safe.z); endGame(true); return; } continue; }
       }
-      // столкновение с врагами напрямую — тоже взрыв
       if (b.fromPlayer || b.fromAlly){
         let hitEnemy = false;
         for (const e of enemies){ if (e.hp <= 0) continue; if (Math.hypot(e.x-b.x, e.z-b.z) < b.radius/6 + 0.6){ hitEnemy = true; break; } }
@@ -1075,7 +1217,6 @@ function updateBullets(dt){
     }
     if (b.homing){ let target = null, bd = 999; const targets = (b.fromPlayer||b.fromAlly) ? enemies : (player.dead ? allies : [player].concat(allies)); for (const t of targets){ if (!t || t.hp <= 0 || t.dead) continue; const d = Math.hypot(t.x-b.x, t.z-b.z); if (d < bd){ bd = d; target = t; } } if (target){ const tx = target.x-b.x, tz = target.z-b.z; const tl = Math.hypot(tx, tz)||1; b.dx = b.dx*0.94 + (tx/tl)*0.06; b.dz = b.dz*0.94 + (tz/tl)*0.06; const nl = Math.hypot(b.dx, b.dz)||1; b.dx /= nl; b.dz /= nl; } }
     b.x += b.dx*b.speed*dt; b.z += b.dz*b.speed*dt; b.life -= dt;
-    // trail
     trails.push({ x: b.x, z: b.z, color: b.color, life: 0.35, maxLife: 0.35, size: b.radius * 0.9 });
     let dead = b.life <= 0;
     for (const ob of obstacles){ if (Math.hypot(b.x-ob[0], b.z-ob[1]) < ob[2]){ if (b.grenade) explodeGrenade(b); spawnShockwave(b.x, b.z, 1.2, b.color); dead = true; break; } }
@@ -1083,17 +1224,9 @@ function updateBullets(dt){
     const hitR = b.radius/6;
     if (safe && safe.hp > 0 && (b.fromPlayer || b.fromAlly) && !dead){
       const ds = Math.hypot(b.x - safe.x, b.z - safe.z);
-      if (ds < safe.r + hitR){
-        safe.hp = Math.max(0, safe.hp - b.baseDmg);
-        safeHitFlash = 0.15;
-        spawnParticles(b.x, b.z, '#ffd54f', 5, 6);
-        spawnShockwave(b.x, b.z, 1.2, '#ffd54f');
-        if (b.fromPlayer) addSuperCharge(b.baseDmg * 0.5);
-        if (safe.hp <= 0){ bossDeathEffect(safe.x, safe.z); endGame(true); return; }
-        if (!b.pierce) dead = true;
-      }
+      if (ds < safe.r + hitR){ safe.hp = Math.max(0, safe.hp - b.baseDmg); safeHitFlash = 0.15; spawnParticles(b.x, b.z, '#ffd54f', 5, 6); spawnShockwave(b.x, b.z, 1.2, '#ffd54f'); if (b.fromPlayer) addSuperCharge(b.baseDmg * 0.5); if (safe.hp <= 0){ bossDeathEffect(safe.x, safe.z); endGame(true); return; } if (!b.pierce) dead = true; }
     }
-    if (b.fromPlayer || b.fromAlly){ for (let j = 0; j < enemies.length; j++){ const e = enemies[j]; if (e.hp <= 0) continue; if (Math.hypot(e.x-b.x, e.z-b.z) < hitR){ if (b.grenade){ explodeGrenade(b); dead = true; break; } const oldHp = e.hp; e.hp = Math.max(0, e.hp-b.baseDmg); if (b.fromPlayer){ addSuperCharge(b.baseDmg); playSound('hit'); spawnFloatingText(e.x, e.z, '-' + Math.round(b.baseDmg), '#ffd54f'); } spawnShockwave(b.x, b.z, 1.0, b.color); if (e.hp <= 0){ battleKK += 10; battleTrophies += 2; battleKills++; if (e.isBoss){ bossDeathEffect(e.x, e.z); endGame(true); return; } } if (!b.pierce) dead = true; if (dead) break; } } }
+    if (b.fromPlayer || b.fromAlly){ for (let j = 0; j < enemies.length; j++){ const e = enemies[j]; if (e.hp <= 0) continue; if (Math.hypot(e.x-b.x, e.z-b.z) < hitR){ if (b.grenade){ explodeGrenade(b); dead = true; break; } e.hp = Math.max(0, e.hp-b.baseDmg); if (b.fromPlayer){ addSuperCharge(b.baseDmg); playSound('hit'); spawnFloatingText(e.x, e.z, '-' + Math.round(b.baseDmg), '#ffd54f'); } spawnShockwave(b.x, b.z, 1.0, b.color); if (e.hp <= 0){ battleKK += 10; battleTrophies += 2; battleKills++; if (e.isBoss){ bossDeathEffect(e.x, e.z); endGame(true); return; } } if (!b.pierce) dead = true; if (dead) break; } } }
     else { if (!player.dead && Math.hypot(player.x-b.x, player.z-b.z) < hitR){ if (b.grenade){ explodeGrenade(b); } else if (!godMode){ const d = b.baseDmg*(player.shield>0?0.3:1); player.hp = Math.max(0, player.hp-d); shakeAmount = 8; playSound('hit'); if (player.hp <= 0) killPlayer(); } dead = true; } else { for (let j = 0; j < allies.length; j++){ const a = allies[j]; if (a.hp <= 0) continue; if (Math.hypot(a.x-b.x, a.z-b.z) < hitR){ if (b.grenade) explodeGrenade(b); else a.hp = Math.max(0, a.hp-b.baseDmg); dead = true; break; } } } }
     if (dead){ spawnParticles(b.x, b.z, b.color, 3, 4); bullets.splice(i, 1); } }
   if (currentMode === MODES.classic){ if (enemies.every(e => e.hp <= 0) && gameActive) endGame(true); if (gameActive && player.dead && allies.length > 0 && allies.every(a => a.hp <= 0)) endGame(false); }
@@ -1204,7 +1337,6 @@ function render(){
   ctx.fillStyle = '#05070d'; ctx.fillRect(0, 0, W, H);
   if (!gameActive) return;
   drawArena();
-  // ambient пылинки
   ctx.save();
   for (const p of ambientParticles){
     const s = worldToScreen(p.x, p.z);
@@ -1214,9 +1346,7 @@ function render(){
     ctx.beginPath(); ctx.arc(s.x, s.y, p.size, 0, Math.PI*2); ctx.fill();
   }
   ctx.restore();
-  // зоны
   zones.forEach(z => { const p = worldToScreen(z.x, z.z); const r = z.r*ZOOM; ctx.save(); ctx.globalAlpha = Math.min(1, z.life/2)*0.4; const g = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, r); g.addColorStop(0, z.color); g.addColorStop(1, 'transparent'); ctx.fillStyle = g; ctx.beginPath(); ctx.arc(p.x, p.y, r, 0, Math.PI*2); ctx.fill(); ctx.restore(); });
-  // shockwaves
   for (const s of shockwaves){
     const p = worldToScreen(s.x, s.z);
     const t = 1 - s.life / s.maxLife;
@@ -1231,7 +1361,6 @@ function render(){
   }
   drawAim();
   if (safe && safe.hp > 0) drawSafe();
-  // trails
   for (const t of trails){
     const p = worldToScreen(t.x, t.z);
     const a = t.life / t.maxLife;
@@ -1263,7 +1392,6 @@ function render(){
   ctx.globalAlpha = 1;
   floatingTexts.forEach(t => { const p = worldToScreen(t.x, t.z); ctx.globalAlpha = t.life/t.maxLife; ctx.fillStyle = t.color; ctx.font = 'bold 22px sans-serif'; ctx.textAlign = 'center'; ctx.strokeStyle = '#000'; ctx.lineWidth = 4; ctx.strokeText(t.text, p.x, p.y); ctx.fillText(t.text, p.x, p.y); });
   ctx.globalAlpha = 1;
-  // muzzle flash
   if (muzzleFlash > 0 && !player.dead){
     const p = worldToScreen(player.x, player.z);
     const f = muzzleFlash / 0.12;
@@ -1281,15 +1409,15 @@ function drawArena(){ if (arenaDirty) buildArenaCache(); const halfPx = (ARENA/2
 function drawBullet(b){
   const p = worldToScreen(b.x, b.z);
   if (b.isThrown){
-    const height = Math.sin((1 - Math.max(0, b.life) / (14/b.speed)) * Math.PI) * b.peak * ZOOM;
+    const totalTime = b.throwDist / b.speed;
+    const elapsed = totalTime - Math.max(0, b.life);
+    const height = Math.sin((elapsed / totalTime) * Math.PI) * b.peak * ZOOM;
     const y = p.y - height;
-    // тень на земле
     ctx.save();
     ctx.globalAlpha = 0.35 * (1 - height / (b.peak*ZOOM));
     ctx.fillStyle = '#000';
     ctx.beginPath(); ctx.ellipse(p.x, p.y, b.radius*1.1, b.radius*0.5, 0, 0, Math.PI*2); ctx.fill();
     ctx.restore();
-    // шар
     ctx.save();
     const g = ctx.createRadialGradient(p.x - b.radius*0.4, y - b.radius*0.4, 0, p.x, y, b.radius);
     g.addColorStop(0, '#fff');
@@ -1300,7 +1428,6 @@ function drawBullet(b){
     ctx.shadowBlur = 18;
     ctx.beginPath(); ctx.arc(p.x, y, b.radius, 0, Math.PI*2); ctx.fill();
     ctx.shadowBlur = 0;
-    // шипы по вращению
     ctx.strokeStyle = shade(b.color, -40);
     ctx.lineWidth = 2;
     for (let i = 0; i < 4; i++){
@@ -1313,7 +1440,6 @@ function drawBullet(b){
     ctx.restore();
     return;
   }
-  // glow
   const g = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, b.radius * 3);
   g.addColorStop(0, b.color);
   g.addColorStop(0.5, b.color + '66');
@@ -1327,8 +1453,8 @@ function drawBullet(b){
 }
 let hudSkip = 0;
 function updateHUD(){ if ((hudSkip++ % 3) !== 0) return; const pIcon = (side === 'enemy') ? '💠 ' : '🌿 '; const eIcon = (side === 'enemy') ? '🌿 ' : '💠 '; $('hpPlayer').textContent = pIcon + Math.max(0, Math.round(player.hp)); const total = enemies.reduce((s, e) => s + Math.max(0, e.hp), 0); const alive = enemies.filter(e => e.hp > 0).length; $('hpEnemy').textContent = eIcon + Math.round(total) + (enemies.length > 1 ? ' (' + alive + ')' : ''); if (currentMode === MODES.heist && safe){ $('hpEnemy').textContent = '🔒 ' + Math.round(safe.hp) + ' / ' + SAFE_MAX_HP + ' (' + alive + ')'; } if (currentMode === MODES.deathmatch){ $('hudTimer').textContent = 'K:' + battleKills + '/' + DM_KILLS_TO_WIN; $('hudWave').textContent = 'D:' + battleDeaths; } else if (currentMode === MODES.defense){ $('hudWave').textContent = 'ВОЛНА ' + defenseWave + '/' + DEFENSE_WAVES; $('hudTimer').textContent = ''; } else if (currentMode === MODES.heist){ $('hudWave').textContent = '🔒 ВЗЛОМ СЕЙФА'; $('hudTimer').textContent = 'K:' + battleKills; } else { $('hudTimer').textContent = ''; $('hudWave').textContent = ''; } }
-function startGame(myFighter){ side = myFighter.side; ARENA = currentMap.size; gameEnding = false; $('victoryScreen').classList.remove('show'); $('teamsBar').style.display = 'flex'; $('hud').style.display = 'flex'; $('leftZone').style.display = 'block'; $('attackZone').style.display = 'block'; $('superZone').style.display = 'block'; $('leave').style.display = 'block'; $('soundBtn').style.display = 'block'; $('ammoBox').style.display = 'flex'; $('joyL').style.display = 'block'; $('joyAttack').style.display = 'block'; $('joySuper').style.display = 'block'; $('respawnOverlay').style.display = 'none'; bullets = []; particles = []; floatingTexts = []; zones = []; trails = []; shockwaves = []; safe = null; safeHitFlash = 0; muzzleFlash = 0; yaw = 0; camera2D.x = 0; camera2D.z = ARENA/2 - 6; superCharge = 0; superActive = false; superTimer = 0; shakeAmount = 0; battleKK = 0; battleTrophies = 0; battleKills = 0; battleDeaths = 0; defenseWave = 0; damageBoost = INVADER_BUFF[currentMode.id] ? INVADER_BUFF[currentMode.id].dmg : 1.0; ammo = MAX_AMMO; ammoTimer = 0; playerPrevX = 0; playerPrevZ = ARENA/2 - 6; updateSuperUI(); updateAmmoUI(); spawnCharacters(myFighter); buildTeamsBar(); gameActive = true; updateHUD(); }
-function leaveToMenu(){ gameActive = false; gameEnding = false; $('victoryScreen').classList.remove('show'); ['teamsBar','hud','leftZone','attackZone','superZone','leave','soundBtn','ammoBox','joyL','joyAttack','joySuper','respawnOverlay'].forEach(id => { const el = $(id); if (el) el.style.display = 'none'; }); touch.move.active = false; touch.attack.active = false; touch.super.active = false; saveProfile(); updateProfileUI(); $('menu').style.display = 'flex'; switchMainTab('play'); }
+function startGame(myFighter){ side = myFighter.side; ARENA = currentMap.size; gameEnding = false; $('victoryScreen').classList.remove('show'); $('teamsBar').style.display = 'flex'; $('hud').style.display = 'flex'; $('leftZone').style.display = 'block'; $('attackZone').style.display = 'block'; $('superZone').style.display = 'block'; $('leave').style.display = 'block'; $('soundBtn').style.display = 'block'; $('ammoBox').style.display = 'flex'; $('joyL').style.display = 'block'; $('joyAttack').style.display = 'block'; $('joySuper').style.display = 'block'; $('respawnOverlay').style.display = 'none'; bullets = []; particles = []; floatingTexts = []; zones = []; trails = []; shockwaves = []; safe = null; safeHitFlash = 0; muzzleFlash = 0; yaw = 0; camera2D.x = 0; camera2D.z = ARENA/2 - 6; superCharge = 0; superActive = false; superTimer = 0; shakeAmount = 0; battleKK = 0; battleTrophies = 0; battleKills = 0; battleDeaths = 0; defenseWave = 0; damageBoost = INVADER_BUFF[currentMode.id] ? INVADER_BUFF[currentMode.id].dmg : 1.0; ammo = MAX_AMMO; ammoTimer = 0; playerPrevX = 0; playerPrevZ = ARENA/2 - 6; updateSuperUI(); updateAmmoUI(); spawnCharacters(myFighter); buildTeamsBar(); gameActive = true; updateHUD(); updateMusicVolume(true); tryStartMusic(); }
+function leaveToMenu(){ gameActive = false; gameEnding = false; $('victoryScreen').classList.remove('show'); ['teamsBar','hud','leftZone','attackZone','superZone','leave','soundBtn','ammoBox','joyL','joyAttack','joySuper','respawnOverlay'].forEach(id => { const el = $(id); if (el) el.style.display = 'none'; }); touch.move.active = false; touch.attack.active = false; touch.super.active = false; saveProfile(); updateProfileUI(); updateMusicVolume(false); $('menu').style.display = 'flex'; switchMainTab('play'); }
 $('leave').addEventListener('click', () => { if (!gameActive && !gameEnding) return; leaveToMenu(); });
 function endGame(win){ if (gameEnding) return; gameEnding = true; gameActive = false; playSound(win ? 'win' : 'lose'); let kkReward = battleKK, trophyReward = battleTrophies; if (win){ kkReward += 50; trophyReward += 10; } else { kkReward = Math.floor(kkReward/2); trophyReward = -5; } if (currentMode === MODES.deathmatch){ kkReward += battleKills*5; trophyReward += battleKills*3; } if (currentMode === MODES.defense){ kkReward += defenseWave*30; trophyReward += defenseWave*5; } if (currentMode === MODES.heist && win){ kkReward += 150; trophyReward += 25; } profile.kk += kkReward; profile.trophies = Math.max(0, profile.trophies + trophyReward); profile.games = (profile.games||0) + 1; profile.kills = (profile.kills||0) + battleKills; if (win) profile.wins = (profile.wins||0) + 1; else profile.losses = (profile.losses||0) + 1; saveProfile(); const vs = $('victoryScreen'); vs.classList.toggle('lose', !win); $('vsIcon').textContent = win ? '🏆' : '💀'; $('vsTitle').textContent = win ? 'ПОБЕДА!' : 'ПОРАЖЕНИЕ'; $('vsKk').textContent = (kkReward >= 0 ? '+' : '') + kkReward; $('vsTr').textContent = (trophyReward >= 0 ? '+' : '') + trophyReward; $('vsKills').textContent = 'Убийств: ' + battleKills + '   ·   Смертей: ' + battleDeaths; vs.classList.add('show'); }
 $('vsBtn').addEventListener('click', () => { $('victoryScreen').classList.remove('show'); leaveToMenu(); });
@@ -1358,7 +1484,7 @@ $('authBtn').addEventListener('click', async () => {
     const data = await r.json();
     if (!data.ok){ $('authErr').textContent = data.error || 'Ошибка'; $('authBtn').textContent = authMode==='login'?'ВОЙТИ':'СОЗДАТЬ АККАУНТ'; $('authBtn').disabled = false; return; }
     token = data.token; nickname = n; try { localStorage.setItem(TOKEN_KEY, token); localStorage.setItem(NICK_KEY, nickname); } catch(e){}
-    const pl = data.player; profile.kk = pl.kk; profile.trophies = pl.trophies; profile.wins = pl.wins||0; profile.losses = pl.losses||0; profile.kills = pl.kills||0; profile.games = pl.games||0; profile.unlocked = pl.unlocked || profile.unlocked; profile.levels = pl.levels || {}; profile.selected = pl.selected || profile.selected; profile.skins = pl.skins || profile.skins || {};
+    const pl = data.player; profile.kk = pl.kk; profile.trophies = pl.trophies; profile.wins = pl.wins||0; profile.losses = pl.losses||0; profile.kills = pl.kills||0; profile.games = pl.games||0; profile.unlocked = pl.unlocked || profile.unlocked; profile.levels = pl.levels || {}; profile.selected = pl.selected || profile.selected;
     try { localStorage.setItem(SAVE_KEY, JSON.stringify(profile)); } catch(e){}
     hideAuth(); updateProfileUI(); startFriendsPolling();
   } catch(e){ $('authErr').textContent = 'Ошибка сети'; }
@@ -1366,7 +1492,7 @@ $('authBtn').addEventListener('click', async () => {
 });
 $('authPass').addEventListener('keydown', e => { if (e.key === 'Enter') $('authBtn').click(); });
 $('nickLabel').addEventListener('click', () => { if (token) showAuth(); });
-$('logoutBtn').addEventListener('click', () => { if (!confirm('Выйти?')) return; token = ''; nickname = ''; friends = []; try { localStorage.removeItem(TOKEN_KEY); localStorage.removeItem(NICK_KEY); } catch(e){} stopFriendsPolling(); renderFriends(); updateProfileUI(); showAuth(); });
+$('logoutBtn').addEventListener('click', () => { if (!confirm('Выйти?')) return; token = ''; nickname = ''; friendsData = { friends: [], incoming: [], outgoing: [] }; try { localStorage.removeItem(TOKEN_KEY); localStorage.removeItem(NICK_KEY); } catch(e){} stopFriendsPolling(); renderFriends(); updateProfileUI(); showAuth(); });
 
 /* ===== DEV CONSOLE ===== */
 const DC_SECRET_WORDS = ['следователь', 'sledovatel'];
@@ -1387,7 +1513,7 @@ dcInputEl.addEventListener('keydown', e => { if (e.key === 'Enter'){ const cmd =
 function runCommand(raw){
   const parts = raw.split(/\s+/); const cmd = (parts[0] || '').toLowerCase(); const a1 = parts[1]; const a2 = parts[2];
   switch (cmd) {
-    case 'help': dcPrint(['╭─ КОМАНДЫ ─────────────────','│ help · kk N · trophy N','│ unlock all|<id> · lock all|<id>','│ level <id> <1-10> · max','│ god on|off · speed N · damage N','│ heal · super · safehp N','│ skin <id> <0-7> — сменить скин','│ win · lose · map <название>','│ mode classic|deathmatch|defense|heist','│ info · reset · export · import <json>','│ save · clear · close','╰──────────────────────────'].join('\n'), 'dc-info'); break;
+    case 'help': dcPrint(['╭─ КОМАНДЫ ─────────────────','│ help · kk N · trophy N','│ unlock all|<id> · lock all|<id>','│ level <id> <1-10> · max','│ god on|off · speed N · damage N','│ heal · super · safehp N','│ skin <id> <0-7> — сменить скин','│ music on|off — музыка','│ win · lose · map <название>','│ mode classic|deathmatch|defense|heist','│ info · reset · export · import <json>','│ save · clear · close','╰──────────────────────────'].join('\n'), 'dc-info'); break;
     case 'kk': { if (!a1){ dcPrint('KK: ' + profile.kk, 'dc-info'); break; } if (a1.startsWith('+')) profile.kk += parseInt(a1.slice(1),10)||0; else if (a1.startsWith('-')) profile.kk -= parseInt(a1.slice(1),10)||0; else profile.kk = parseInt(a1,10)||0; profile.kk = Math.max(0, profile.kk); saveProfile(); updateProfileUI(); dcPrint('✓ KK = ' + profile.kk, 'dc-ok'); break; }
     case 'trophy': case 'trophies': { if (!a1){ dcPrint('Трофеи: ' + profile.trophies, 'dc-info'); break; } if (a1.startsWith('+')) profile.trophies += parseInt(a1.slice(1),10)||0; else if (a1.startsWith('-')) profile.trophies -= parseInt(a1.slice(1),10)||0; else profile.trophies = parseInt(a1,10)||0; profile.trophies = Math.max(0, profile.trophies); saveProfile(); updateProfileUI(); dcPrint('✓ Трофеи = ' + profile.trophies, 'dc-ok'); break; }
     case 'unlock': { if (!a1){ dcPrint('unlock all | plant_N | inv_N', 'dc-err'); break; } if (a1 === 'all'){ Object.keys(FIGHTERS).forEach(id => profile.unlocked[id] = true); dcPrint('✓ Открыто всё (' + Object.keys(FIGHTERS).length + ')', 'dc-ok'); } else if (FIGHTERS[a1]){ profile.unlocked[a1] = true; dcPrint('✓ Открыт ' + FIGHTERS[a1].name, 'dc-ok'); } else { dcPrint('✗ Неизвестный боец', 'dc-err'); return; } saveProfile(); refreshPick(); refreshCollection(); break; }
@@ -1401,12 +1527,13 @@ function runCommand(raw){
     case 'super': { superCharge = SUPER_MAX; updateSuperUI(); dcPrint('✓ Ульта заряжена', 'dc-ok'); break; }
     case 'safehp': { const v = parseInt(a1,10); if (!safe){ dcPrint('✗ Нет сейфа', 'dc-err'); break; } if (isNaN(v)){ dcPrint('safe HP: ' + safe.hp + ' / ' + safe.maxHp, 'dc-info'); break; } safe.hp = Math.max(0, Math.min(safe.maxHp, v)); dcPrint('✓ safe.hp = ' + safe.hp, 'dc-ok'); if (safe.hp <= 0 && gameActive){ bossDeathEffect(safe.x, safe.z); endGame(true); } break; }
     case 'skin': { if (!FIGHTERS[a1] || isNaN(parseInt(a2,10))){ dcPrint('skin <id> <0-7>', 'dc-err'); break; } const idx = Math.max(0, Math.min(7, parseInt(a2,10))); profile.skins[a1] = idx; saveProfile(); dcPrint('✓ ' + FIGHTERS[a1].name + ' → скин ' + SKINS[idx].name, 'dc-ok'); break; }
+    case 'music': { if (a1 === 'on'){ profile.music = true; saveProfile(); tryStartMusic(); updateMusicBtn(); dcPrint('✓ Музыка ON', 'dc-ok'); } else if (a1 === 'off'){ profile.music = false; saveProfile(); if (musicEl) musicEl.pause(); musicStarted = false; updateMusicBtn(); dcPrint('✓ Музыка OFF', 'dc-ok'); } else dcPrint('music: ' + (profile.music ? 'on' : 'off'), 'dc-info'); break; }
     case 'win': { if (gameActive){ endGame(true); dcPrint('✓ Победа', 'dc-ok'); } else dcPrint('✗ Не в бою', 'dc-err'); break; }
     case 'lose': { if (gameActive){ endGame(false); dcPrint('✓ Поражение', 'dc-ok'); } else dcPrint('✗ Не в бою', 'dc-err'); break; }
     case 'map': { const name = parts.slice(1).join(' ').toLowerCase(); const found = MAPS.find(m => m.name.toLowerCase() === name || m.name.toLowerCase().includes(name)); if (!found){ dcPrint('Карты: ' + MAPS.map(m => m.name).join(', '), 'dc-info'); break; } currentMap = found; $('mapName').textContent = found.name; $('mapSize').textContent = found.size + '×' + found.size + ' • ' + found.theme; dcPrint('✓ Карта: ' + found.name, 'dc-ok'); break; }
     case 'mode': { if (a1 === 'classic'){ currentMode = MODES.classic; dcPrint('✓ Классика', 'dc-ok'); } else if (a1 === 'deathmatch'){ currentMode = MODES.deathmatch; dcPrint('✓ Мясорубка', 'dc-ok'); } else if (a1 === 'defense'){ currentMode = MODES.defense; dcPrint('✓ Оборона', 'dc-ok'); } else if (a1 === 'heist'){ currentMode = MODES.heist; dcPrint('✓ Взлом', 'dc-ok'); } else dcPrint('mode classic | deathmatch | defense | heist', 'dc-err'); break; }
-    case 'info': { dcPrint(JSON.stringify({ kk: profile.kk, trophies: profile.trophies, unlocked: Object.keys(profile.unlocked).filter(k => profile.unlocked[k]).length, total: Object.keys(FIGHTERS).length, skins: Object.keys(profile.skins || {}).length, nickname, godMode, speedMul, damageMul, map: currentMap.name, mode: currentMode.id, gameActive, safe: safe ? { hp: safe.hp, maxHp: safe.maxHp } : null }, null, 2), 'dc-info'); break; }
-    case 'reset': { if (!confirm('Сбросить профиль?')) { dcPrint('Отменено', 'dc-info'); break; } profile = { kk: 200, trophies: 0, wins: 0, losses: 0, kills: 0, games: 0, unlocked: { plant_0: true, plant_1: true, plant_2: true, inv_0: true }, levels: {}, selected: { plant: 'plant_0', enemy: 'inv_0' }, skins: {}, cs_seen: true, sound: true }; saveProfile({ toast: true }); updateProfileUI(); refreshPick(); refreshCollection(); refreshUpgrade(); dcPrint('✓ Профиль сброшен', 'dc-ok'); break; }
+    case 'info': { dcPrint(JSON.stringify({ kk: profile.kk, trophies: profile.trophies, unlocked: Object.keys(profile.unlocked).filter(k => profile.unlocked[k]).length, total: Object.keys(FIGHTERS).length, skins: Object.keys(profile.skins || {}).length, nickname, godMode, speedMul, damageMul, music: profile.music, map: currentMap.name, mode: currentMode.id, gameActive, safe: safe ? { hp: safe.hp, maxHp: safe.maxHp } : null }, null, 2), 'dc-info'); break; }
+    case 'reset': { if (!confirm('Сбросить профиль?')) { dcPrint('Отменено', 'dc-info'); break; } profile = { kk: 200, trophies: 0, wins: 0, losses: 0, kills: 0, games: 0, unlocked: { plant_0: true, plant_1: true, plant_2: true, inv_0: true }, levels: {}, selected: { plant: 'plant_0', enemy: 'inv_0' }, skins: {}, cs_seen: true, sound: true, music: profile.music }; saveProfile({ toast: true }); updateProfileUI(); refreshPick(); refreshCollection(); refreshUpgrade(); dcPrint('✓ Профиль сброшен', 'dc-ok'); break; }
     case 'export': { dcPrint(JSON.stringify(profile), 'dc-ok'); break; }
     case 'import': { const json = raw.slice(raw.indexOf(' ') + 1); try { Object.assign(profile, JSON.parse(json)); saveProfile({ toast: true }); updateProfileUI(); refreshPick(); refreshCollection(); dcPrint('✓ Импортировано', 'dc-ok'); } catch(e){ dcPrint('✗ Невалидный JSON', 'dc-err'); } break; }
     case 'save': { saveProfile({ toast: true }); dcPrint('✓ Сохранено', 'dc-ok'); break; }
