@@ -65,7 +65,7 @@ html,body{width:100%;height:100%;overflow:hidden;background:#000;font-family:-ap
 .screen{width:100%;max-width:440px;display:none;flex-direction:column;gap:8px;align-items:center}
 .screen.active{display:flex}
 .modeRow{width:100%;display:flex;gap:5px;flex-wrap:wrap}
-.modeBtn{flex:1;min-width:80px;padding:9px 4px;text-align:center;font-weight:900;font-size:clamp(9px,2.5vw,11px);border-radius:9px;cursor:pointer;border:2px solid transparent;background:rgba(255,255,255,.06);color:#9fd7ff;pointer-events:auto}
+.modeBtn{flex:1;min-width:70px;padding:9px 4px;text-align:center;font-weight:900;font-size:clamp(9px,2.5vw,11px);border-radius:9px;cursor:pointer;border:2px solid transparent;background:rgba(255,255,255,.06);color:#9fd7ff;pointer-events:auto}
 .modeBtn.active{background:linear-gradient(180deg,#1c3d1f,#0e2410);border-color:#7cf86b;color:#eaffea}
 .modeBtn .md{font-size:clamp(7px,2vw,9px);font-weight:700;opacity:.75;margin-top:2px}
 .mapInfo{width:100%;padding:8px 10px;background:rgba(0,0,0,.5);border:2px solid #00e5ff;border-radius:10px;display:flex;justify-content:space-between;align-items:center;gap:6px}
@@ -242,7 +242,6 @@ html,body{width:100%;height:100%;overflow:hidden;background:#000;font-family:-ap
 #saveBtn.show{display:block}
 #saveBtn:active{transform:scale(.92)}
 
-/* ===== DEV CONSOLE ===== */
 #devConsole{position:fixed;left:0;right:0;bottom:0;max-height:60vh;background:rgba(5,7,13,.96);border-top:2px solid #00e5ff;z-index:1000000;display:none;flex-direction:column;pointer-events:auto;box-shadow:0 -8px 30px rgba(0,229,255,.2)}
 #devConsole.show{display:flex}
 #dcHeader{display:flex;justify-content:space-between;align-items:center;padding:8px 12px;background:rgba(0,229,255,.1);border-bottom:1px solid rgba(0,229,255,.3);font-weight:900;font-size:12px;letter-spacing:2px;color:#00e5ff}
@@ -257,7 +256,6 @@ html,body{width:100%;height:100%;overflow:hidden;background:#000;font-family:-ap
 #dcInput{flex:1;background:transparent;border:none;outline:none;color:#eaffea;font:13px 'SF Mono',Menlo,Consolas,monospace;pointer-events:auto}
 #dcHint{font-size:10px;color:#475569;padding:4px 12px 8px;text-align:right}
 
-/* ===== МОДАЛКА РАЗБЛОКИРОВКИ DEV CONSOLE ===== */
 #devUnlock{position:fixed;inset:0;z-index:999998;display:none;align-items:center;justify-content:center;background:rgba(3,5,10,.9);pointer-events:auto;padding:20px}
 #devUnlock.show{display:flex}
 #devUnlock .du-box{width:100%;max-width:340px;background:linear-gradient(180deg,#0a1520,#05070d);border:2px solid #00e5ff;border-radius:14px;padding:20px;display:flex;flex-direction:column;gap:12px;box-shadow:0 0 40px rgba(0,229,255,.25)}
@@ -311,6 +309,7 @@ html,body{width:100%;height:100%;overflow:hidden;background:#000;font-family:-ap
         <div class="modeBtn active" id="modeClassic">КЛАССИКА<div class="md">растения vs захватчики</div></div>
         <div class="modeBtn" id="modeDeathmatch">МЯСОРУБКА<div class="md">все против всех</div></div>
         <div class="modeBtn" id="modeDefense">ОБОРОНА<div class="md">5 волн</div></div>
+        <div class="modeBtn" id="modeHeist">ВЗЛОМ<div class="md">3 на 3 · сейф</div></div>
       </div>
       <div class="mapInfo">
         <div><div class="mn" id="mapName">—</div><div class="ms" id="mapSize">—</div></div>
@@ -368,7 +367,6 @@ html,body{width:100%;height:100%;overflow:hidden;background:#000;font-family:-ap
   <button class="vs-btn" id="vsBtn">В МЕНЮ</button>
 </div>
 
-<!-- МОДАЛКА РАЗБЛОКИРОВКИ DEV CONSOLE -->
 <div id="devUnlock">
   <div class="du-box">
     <div class="du-title">🔒 СЕКРЕТНЫЙ КОД</div>
@@ -425,7 +423,6 @@ html,body{width:100%;height:100%;overflow:hidden;background:#000;font-family:-ap
 
 <script type="module">
 const DBG = { log: (...args) => { try { console.log('[DS]', ...args); } catch(e){} } };
-DBG.log('boot');
 window.addEventListener('error', e => { try { console.error('[DS] ERR:', e.message, e.filename, e.lineno); } catch(_){} });
 window.addEventListener('unhandledrejection', e => { try { console.error('[DS] REJ:', e.reason); } catch(_){} });
 
@@ -579,11 +576,12 @@ let currentMap = MAPS[0];
 function rollRandomMap(){ currentMap = MAPS[Math.floor(Math.random()*MAPS.length)]; $('mapName').textContent = currentMap.name; $('mapSize').textContent = currentMap.size + '×' + currentMap.size + ' • ' + currentMap.theme; }
 
 /* ===== РЕЖИМЫ ===== */
-const MODES = { classic:{ id:'classic', name:'КЛАССИКА' }, deathmatch:{ id:'deathmatch', name:'МЯСОРУБКА' }, defense:{ id:'defense', name:'ОБОРОНА' } };
+const MODES = { classic:{ id:'classic', name:'КЛАССИКА' }, deathmatch:{ id:'deathmatch', name:'МЯСОРУБКА' }, defense:{ id:'defense', name:'ОБОРОНА' }, heist:{ id:'heist', name:'ВЗЛОМ' } };
 let currentMode = MODES.classic;
-const INVADER_BUFF = { classic:{ hp:3.2, dmg:2.2, speed:1.35, fireRate:0.50 }, deathmatch:{ hp:1.0, dmg:1.0, speed:1.0, fireRate:1.00 }, defense:{ hp:1.8, dmg:1.5, speed:1.05, fireRate:0.85 } };
+const INVADER_BUFF = { classic:{ hp:3.2, dmg:2.2, speed:1.35, fireRate:0.50 }, deathmatch:{ hp:1.0, dmg:1.0, speed:1.0, fireRate:1.00 }, defense:{ hp:1.8, dmg:1.5, speed:1.05, fireRate:0.85 }, heist:{ hp:1.2, dmg:1.0, speed:1.0, fireRate:1.0 } };
 const DEFENSE_WAVES = 5;
 const DM_KILLS_TO_WIN = 20;
+const SAFE_MAX_HP = 2500;
 
 /* ===== БОЙЦЫ ===== */
 const PLANT_NAMES = ['КУСТ','КАКТУС','ЦВЕТОК','ДЕРЕВО','ГРИБ','ЯГОДА','БАМБУК','ЛИЛИЯ','РОЗА','ПАЛЬМА','ЛИАНА','ПАПОРОТНИК','МОХ','ТЮЛЬПАН','МАРГАРИТКА','ЛАВАНДА','СИРЕНЬ','ОРХИДЕЯ','ФИАЛКА','ЛОТОС','КЛЕВЕР','БОНСАЙ','АЛОЭ','МЯТА','БАЗИЛИК','РОМАШКА','ПИОН','ВАСИЛЁК','ЖАСМИН','МАГНОЛИЯ','БЕРЁЗА','ДУБ','КЛЁН','ЕЛЬ','СОСНА','ИВА','ОСИНА','КЕДР','ЛИПА','ТОПОЛЬ'];
@@ -791,9 +789,10 @@ $('mtBoxes').addEventListener('click', () => switchMainTab('boxes'));
 $('mtCollection').addEventListener('click', () => switchMainTab('collection'));
 $('mtUpgrade').addEventListener('click', () => switchMainTab('upgrade'));
 $('mtFriends').addEventListener('click', () => switchMainTab('friends'));
-$('modeClassic').addEventListener('click', () => { currentMode = MODES.classic; $('modeClassic').classList.add('active'); $('modeDeathmatch').classList.remove('active'); $('modeDefense').classList.remove('active'); });
-$('modeDeathmatch').addEventListener('click', () => { currentMode = MODES.deathmatch; $('modeDeathmatch').classList.add('active'); $('modeClassic').classList.remove('active'); $('modeDefense').classList.remove('active'); });
-$('modeDefense').addEventListener('click', () => { currentMode = MODES.defense; $('modeDefense').classList.add('active'); $('modeClassic').classList.remove('active'); $('modeDeathmatch').classList.remove('active'); });
+$('modeClassic').addEventListener('click', () => { currentMode = MODES.classic; $('modeClassic').classList.add('active'); $('modeDeathmatch').classList.remove('active'); $('modeDefense').classList.remove('active'); $('modeHeist').classList.remove('active'); });
+$('modeDeathmatch').addEventListener('click', () => { currentMode = MODES.deathmatch; $('modeDeathmatch').classList.add('active'); $('modeClassic').classList.remove('active'); $('modeDefense').classList.remove('active'); $('modeHeist').classList.remove('active'); });
+$('modeDefense').addEventListener('click', () => { currentMode = MODES.defense; $('modeDefense').classList.add('active'); $('modeClassic').classList.remove('active'); $('modeDeathmatch').classList.remove('active'); $('modeHeist').classList.remove('active'); });
+$('modeHeist').addEventListener('click', () => { currentMode = MODES.heist; $('modeHeist').classList.add('active'); $('modeClassic').classList.remove('active'); $('modeDeathmatch').classList.remove('active'); $('modeDefense').classList.remove('active'); });
 $('diceBtn').addEventListener('click', rollRandomMap);
 
 function refreshPick(){
@@ -991,7 +990,8 @@ const MAX_AMMO = 3, RELOAD_TIME = 2.0;
 let ammo = MAX_AMMO, ammoTimer = 0;
 let battleKK = 0, battleTrophies = 0, battleKills = 0, battleDeaths = 0, defenseWave = 0, damageBoost = 1.0;
 let playerPrevX = 0, playerPrevZ = 14;
-/* Dev-читы */
+let safe = null;
+let safeHitFlash = 0;
 let godMode = false;
 let speedMul = 1;
 let damageMul = 1;
@@ -1030,6 +1030,7 @@ function spawnCharacters(myFighter){
   player.hp = pStats.hp; player.maxHp = pStats.hp;
   player.walkPhase = 0; player.shield = 0; player.dead = false; player.respawnTimer = 0;
   allies = []; enemies = []; obstacles = currentMap.obstacles.map(o => [o[0], o[1], o[2]]);
+  safe = null;
   const buff = INVADER_BUFF[currentMode.id] || INVADER_BUFF.classic;
   const plantKeys = Object.keys(FIGHTERS).filter(k => FIGHTERS[k].side === 'plant');
   const enemyKeys = Object.keys(FIGHTERS).filter(k => FIGHTERS[k].side === 'enemy');
@@ -1049,6 +1050,34 @@ function spawnCharacters(myFighter){
     const sides = ['plant','enemy','plant','enemy'];
     for (let i = 0; i < 4; i++){ const sk = sides[i]; const keys2 = Object.keys(FIGHTERS).filter(k => FIGHTERS[k].side === sk); const f = FIGHTERS[keys2[Math.floor(Math.random()*keys2.length)]]; const angle = (i/4)*Math.PI*2; const dist = ARENA/2 - 5; enemies.push({ x: Math.cos(angle)*dist, z: Math.sin(angle)*dist, hp: 200, maxHp: 200, fighter: f, stats: { hp: 200, dmg: 15, speed: 6.5, fireRate: 0.6, level: 1 }, isBoss: false, ai: { cooldown: 1+Math.random()*2, moveTimer: 0, mdx: 0, mdz: 0, focusTimer: 0, dodgeTimer: 0 }, ammo: 3, ammoTimer: 0, walkPhase: Math.random()*10, target: null, velX: 0, velZ: 0 }); }
   } else if (currentMode === MODES.defense){ defenseWave = 1; spawnDefenseWave(); }
+  else if (currentMode === MODES.heist){
+    safe = null;
+    const allyKeys = playerIsEnemy ? enemyKeys : plantKeys;
+    const foeKeys  = playerIsEnemy ? plantKeys : enemyKeys;
+    const ag = [[-6, 14],[6, 14]];
+    for (let i = 0; i < 2; i++){
+      const f = FIGHTERS[allyKeys[Math.floor(Math.random()*allyKeys.length)]];
+      allies.push({
+        x: ag[i][0], z: ag[i][1], hp: 180, maxHp: 180, fighter: f,
+        stats: { hp: 180, dmg: 14, speed: 6.5, fireRate: 0.55, level: 1 },
+        ai: { cooldown: 0.8+Math.random()*1.5, moveTimer: 0, mdx: 0, mdz: 0, focusTimer: 0, dodgeTimer: 0 },
+        ammo: 3, ammoTimer: 0, walkPhase: Math.random()*10, target: null, velX: 0, velZ: 0
+      });
+    }
+    const eg = [[-7, -12],[7, -12],[0, -18]];
+    for (let i = 0; i < 3; i++){
+      const f = FIGHTERS[foeKeys[Math.floor(Math.random()*foeKeys.length)]];
+      const buffH = INVADER_BUFF.heist;
+      enemies.push({
+        x: eg[i][0], z: eg[i][1], hp: 220, maxHp: 220, fighter: f,
+        stats: { hp: 220, dmg: 16*buffH.dmg, speed: 6.5*buffH.speed, fireRate: 0.55*buffH.fireRate, level: 1 },
+        ai: { cooldown: 1+Math.random()*1.5, moveTimer: 0, mdx: 0, mdz: 0, focusTimer: 0, dodgeTimer: 0 },
+        ammo: 3, ammoTimer: 0, walkPhase: Math.random()*10, target: null, velX: 0, velZ: 0,
+        isSafeGuard: true
+      });
+    }
+    safe = { x: 0, z: -20, hp: SAFE_MAX_HP, maxHp: SAFE_MAX_HP, r: 2.2 };
+  }
   arenaDirty = true;
   buildArenaCache();
 }
@@ -1149,12 +1178,29 @@ function updateBullets(dt){
     for (const ob of obstacles){ if (Math.hypot(b.x-ob[0], b.z-ob[1]) < ob[2]){ if (b.grenade) explodeGrenade(b); dead = true; break; } }
     if (Math.abs(b.x) > ARENA/2 || Math.abs(b.z) > ARENA/2){ if (b.grenade) explodeGrenade(b); dead = true; }
     const hitR = b.radius/6;
+    // Попадание в сейф (только от игрока и союзников)
+    if (safe && safe.hp > 0 && (b.fromPlayer || b.fromAlly) && !dead){
+      const ds = Math.hypot(b.x - safe.x, b.z - safe.z);
+      if (ds < safe.r + hitR){
+        safe.hp = Math.max(0, safe.hp - b.baseDmg);
+        safeHitFlash = 0.15;
+        spawnParticles(b.x, b.z, '#ffd54f', 5, 6);
+        if (b.fromPlayer) addSuperCharge(b.baseDmg * 0.5);
+        if (safe.hp <= 0){
+          bossDeathEffect(safe.x, safe.z);
+          endGame(true);
+          return;
+        }
+        if (!b.pierce) dead = true;
+      }
+    }
     if (b.fromPlayer || b.fromAlly){ for (let j = 0; j < enemies.length; j++){ const e = enemies[j]; if (e.hp <= 0) continue; if (Math.hypot(e.x-b.x, e.z-b.z) < hitR){ if (b.grenade){ explodeGrenade(b); dead = true; break; } e.hp = Math.max(0, e.hp-b.baseDmg); if (b.fromPlayer){ addSuperCharge(b.baseDmg); playSound('hit'); } if (e.hp <= 0){ battleKK += 10; battleTrophies += 2; battleKills++; if (e.isBoss){ bossDeathEffect(e.x, e.z); endGame(true); return; } } if (!b.pierce) dead = true; if (dead) break; } } }
     else { if (!player.dead && Math.hypot(player.x-b.x, player.z-b.z) < hitR){ if (b.grenade){ explodeGrenade(b); } else if (!godMode){ const d = b.baseDmg*(player.shield>0?0.3:1); player.hp = Math.max(0, player.hp-d); shakeAmount = 6; playSound('hit'); if (player.hp <= 0) killPlayer(); } dead = true; } else { for (let j = 0; j < allies.length; j++){ const a = allies[j]; if (a.hp <= 0) continue; if (Math.hypot(a.x-b.x, a.z-b.z) < hitR){ if (b.grenade) explodeGrenade(b); else a.hp = Math.max(0, a.hp-b.baseDmg); dead = true; break; } } } }
     if (dead){ spawnParticles(b.x, b.z, b.color, 3, 4); bullets.splice(i, 1); } }
   if (currentMode === MODES.classic){ if (enemies.every(e => e.hp <= 0) && gameActive) endGame(true); if (gameActive && player.dead && allies.length > 0 && allies.every(a => a.hp <= 0)) endGame(false); }
   if (currentMode === MODES.deathmatch){ if (battleKills >= DM_KILLS_TO_WIN && gameActive) endGame(true); if (battleDeaths >= DM_KILLS_TO_WIN && gameActive) endGame(false); }
   if (currentMode === MODES.defense){ if (enemies.every(e => e.hp <= 0) && gameActive){ if (defenseWave >= DEFENSE_WAVES){ endGame(true); return; } defenseWave++; setTimeout(() => { if (gameActive) spawnDefenseWave(); updateHUD(); }, 1500); } if (gameActive && player.dead && allies.every(a => a.hp <= 0)) endGame(false); }
+  if (currentMode === MODES.heist){ if (safe && safe.hp <= 0 && gameActive) endGame(true); if (gameActive && player.dead && allies.length > 0 && allies.every(a => a.hp <= 0)) endGame(false); }
 }
 function bossDeathEffect(x, z){
   shakeAmount = 30;
@@ -1234,6 +1280,7 @@ function updateTeamsBar(){
 let superShootCD = 0;
 function update(dt){
   if (shakeAmount > 0) shakeAmount = Math.max(0, shakeAmount - dt*40);
+  if (safeHitFlash > 0) safeHitFlash = Math.max(0, safeHitFlash - dt);
   if (!gameActive) return;
   if (player.shield > 0) player.shield = Math.max(0, player.shield - dt);
   updateAmmo(dt);
@@ -1307,6 +1354,54 @@ function drawAim(){
   ctx.restore();
 }
 
+function drawSafe(){
+  const p = worldToScreen(safe.x, safe.z);
+  const size = safe.r * ZOOM * 1.4;
+  const half = size / 2;
+  const flash = safeHitFlash > 0;
+  ctx.save();
+  ctx.fillStyle = 'rgba(0,0,0,.55)';
+  ctx.beginPath(); ctx.ellipse(p.x, p.y + half*0.85, size*0.6, size*0.22, 0, 0, Math.PI*2); ctx.fill();
+  const g = ctx.createLinearGradient(p.x - half, p.y - half, p.x + half, p.y + half);
+  if (flash){ g.addColorStop(0, '#ffb300'); g.addColorStop(1, '#7a4a00'); }
+  else { g.addColorStop(0, '#4a5568'); g.addColorStop(1, '#1a202c'); }
+  ctx.fillStyle = g;
+  roundRect(ctx, p.x - half, p.y - half, size, size, size*0.12);
+  ctx.fill();
+  ctx.strokeStyle = flash ? '#ffd54f' : '#00e5ff';
+  ctx.lineWidth = 3;
+  ctx.shadowColor = flash ? '#ffd54f' : '#00e5ff';
+  ctx.shadowBlur = 18;
+  ctx.stroke();
+  ctx.shadowBlur = 0;
+  ctx.fillStyle = flash ? '#fff' : '#00e5ff';
+  ctx.beginPath(); ctx.arc(p.x, p.y - size*0.08, size*0.13, 0, Math.PI*2); ctx.fill();
+  ctx.fillRect(p.x - size*0.05, p.y - size*0.05, size*0.1, size*0.22);
+  ctx.fillStyle = '#05070d';
+  ctx.beginPath(); ctx.arc(p.x, p.y - size*0.08, size*0.05, 0, Math.PI*2); ctx.fill();
+  for (let i = 0; i < 4; i++){
+    const a = Math.PI/4 + i * Math.PI/2;
+    ctx.fillStyle = flash ? '#fff' : '#00e5ff';
+    ctx.beginPath();
+    ctx.arc(p.x + Math.cos(a) * size*0.35, p.y + Math.sin(a) * size*0.35, 2.5, 0, Math.PI*2);
+    ctx.fill();
+  }
+  const bw = size * 1.15, bh = 7;
+  const bx = p.x - bw/2, by = p.y - half - 18;
+  ctx.fillStyle = 'rgba(0,0,0,.85)';
+  roundRect(ctx, bx - 2, by - 2, bw + 4, bh + 4, 4); ctx.fill();
+  const pct = Math.max(0, safe.hp / safe.maxHp);
+  ctx.fillStyle = pct > 0.5 ? '#7cf86b' : (pct > 0.2 ? '#ffb300' : '#ff2e8a');
+  roundRect(ctx, bx, by, bw * pct, bh, 3); ctx.fill();
+  ctx.strokeStyle = '#00e5ff'; ctx.lineWidth = 1;
+  roundRect(ctx, bx, by, bw, bh, 3); ctx.stroke();
+  ctx.fillStyle = '#eaffea';
+  ctx.font = 'bold 11px sans-serif';
+  ctx.textAlign = 'center';
+  ctx.fillText('🔒 ' + Math.round(safe.hp), p.x, by - 6);
+  ctx.restore();
+}
+
 function render(){
   shakeX = (Math.random() - 0.5) * shakeAmount;
   shakeY = (Math.random() - 0.5) * shakeAmount;
@@ -1315,6 +1410,7 @@ function render(){
   drawArena();
   zones.forEach(z => { const p = worldToScreen(z.x, z.z); const r = z.r*ZOOM; ctx.save(); ctx.globalAlpha = Math.min(1, z.life/2)*0.4; const g = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, r); g.addColorStop(0, z.color); g.addColorStop(1, 'transparent'); ctx.fillStyle = g; ctx.beginPath(); ctx.arc(p.x, p.y, r, 0, Math.PI*2); ctx.fill(); ctx.restore(); });
   drawAim();
+  if (safe && safe.hp > 0) drawSafe();
   bullets.forEach(b => drawBullet(b));
   const all = [];
   if (!player.dead && player.hp > 0) all.push({ type:'player', ref: player });
@@ -1355,8 +1451,12 @@ function updateHUD(){
   const total = enemies.reduce((s, e) => s + Math.max(0, e.hp), 0);
   const alive = enemies.filter(e => e.hp > 0).length;
   $('hpEnemy').textContent = eIcon + Math.round(total) + (enemies.length > 1 ? ' (' + alive + ')' : '');
+  if (currentMode === MODES.heist && safe){
+    $('hpEnemy').textContent = '🔒 ' + Math.round(safe.hp) + ' / ' + SAFE_MAX_HP + ' (' + alive + ')';
+  }
   if (currentMode === MODES.deathmatch){ $('hudTimer').textContent = 'K:' + battleKills + '/' + DM_KILLS_TO_WIN; $('hudWave').textContent = 'D:' + battleDeaths; }
   else if (currentMode === MODES.defense){ $('hudWave').textContent = 'ВОЛНА ' + defenseWave + '/' + DEFENSE_WAVES; $('hudTimer').textContent = ''; }
+  else if (currentMode === MODES.heist){ $('hudWave').textContent = '🔒 ВЗЛОМ СЕЙФА'; $('hudTimer').textContent = 'K:' + battleKills; }
   else { $('hudTimer').textContent = ''; $('hudWave').textContent = ''; }
 }
 function startGame(myFighter){
@@ -1370,6 +1470,7 @@ function startGame(myFighter){
   $('joyL').style.display = 'block'; $('joyAttack').style.display = 'block'; $('joySuper').style.display = 'block';
   $('respawnOverlay').style.display = 'none';
   bullets = []; particles = []; floatingTexts = []; zones = [];
+  safe = null; safeHitFlash = 0;
   yaw = 0; camera2D.x = 0; camera2D.z = ARENA/2 - 6;
   superCharge = 0; superActive = false; superTimer = 0; shakeAmount = 0;
   battleKK = 0; battleTrophies = 0; battleKills = 0; battleDeaths = 0; defenseWave = 0;
@@ -1402,6 +1503,7 @@ function endGame(win){
   if (win){ kkReward += 50; trophyReward += 10; } else { kkReward = Math.floor(kkReward/2); trophyReward = -5; }
   if (currentMode === MODES.deathmatch){ kkReward += battleKills*5; trophyReward += battleKills*3; }
   if (currentMode === MODES.defense){ kkReward += defenseWave*30; trophyReward += defenseWave*5; }
+  if (currentMode === MODES.heist && win){ kkReward += 150; trophyReward += 25; }
   profile.kk += kkReward;
   profile.trophies = Math.max(0, profile.trophies + trophyReward);
   profile.games = (profile.games||0) + 1;
@@ -1487,14 +1589,8 @@ $('logoutBtn').addEventListener('click', () => {
   updateProfileUI(); showAuth();
 });
 
-/* ============================================================
-   DEV CONSOLE + СЕКРЕТНАЯ РАЗБЛОКИРОВКА
-   Открытие: 5 тапов по заголовку "Digital Style" в меню →
-   модалка с полем ввода → слово "следователь" или "sledovatel"
-   (без учёта регистра) → открывается дев-консоль.
-   ============================================================ */
+/* ===== DEV CONSOLE + СЕКРЕТНАЯ РАЗБЛОКИРОВКА ===== */
 const DC_SECRET_WORDS = ['следователь', 'sledovatel'];
-
 const dcEl = $('devConsole');
 const dcLogEl = $('dcLog');
 const dcInputEl = $('dcInput');
@@ -1503,7 +1599,6 @@ const duInputEl = $('duInput');
 const duErrEl = $('duErr');
 const duOkBtn = $('duOk');
 const duCancelBtn = $('duCancel');
-
 let dcHistory = [];
 let dcHistoryIdx = -1;
 
@@ -1514,49 +1609,22 @@ function dcPrint(msg, cls){
   dcLogEl.appendChild(span);
   dcLogEl.scrollTop = dcLogEl.scrollHeight;
 }
-function dcOpen(){
-  dcEl.classList.add('show');
-  dcInputEl.focus();
-  setTimeout(() => dcInputEl.focus(), 100);
-}
-function dcClose(){
-  dcEl.classList.remove('show');
-}
-function duOpen(){
-  duEl.classList.add('show');
-  duInputEl.value = '';
-  duErrEl.textContent = '';
-  setTimeout(() => duInputEl.focus(), 100);
-}
-function duClose(){
-  duEl.classList.remove('show');
-  duErrEl.textContent = '';
-}
+function dcOpen(){ dcEl.classList.add('show'); setTimeout(() => dcInputEl.focus(), 100); }
+function dcClose(){ dcEl.classList.remove('show'); }
+function duOpen(){ duEl.classList.add('show'); duInputEl.value = ''; duErrEl.textContent = ''; setTimeout(() => duInputEl.focus(), 100); }
+function duClose(){ duEl.classList.remove('show'); duErrEl.textContent = ''; }
 function duCheck(){
   const v = (duInputEl.value || '').trim().toLowerCase();
-  if (DC_SECRET_WORDS.includes(v)){
-    duClose();
-    dcOpen();
-    dcPrint('✓ Доступ разрешён. Введи help для списка команд.', 'dc-ok');
-  } else {
-    duErrEl.textContent = '✗ НЕВЕРНЫЙ КОД';
-    duInputEl.value = '';
-  }
+  if (DC_SECRET_WORDS.includes(v)){ duClose(); dcOpen(); dcPrint('✓ Доступ разрешён. Введи help для списка команд.', 'dc-ok'); }
+  else { duErrEl.textContent = '✗ НЕВЕРНЫЙ КОД'; duInputEl.value = ''; }
 }
-
-/* 5 тапов по заголовку */
 let titleTaps = 0; let titleTapTimer = null;
 $('menuTitle').addEventListener('click', () => {
   titleTaps++;
   if (titleTapTimer) clearTimeout(titleTapTimer);
   titleTapTimer = setTimeout(() => { titleTaps = 0; }, 1500);
-  if (titleTaps >= 5){
-    titleTaps = 0;
-    clearTimeout(titleTapTimer);
-    duOpen();
-  }
+  if (titleTaps >= 5){ titleTaps = 0; clearTimeout(titleTapTimer); duOpen(); }
 });
-
 duOkBtn.addEventListener('click', duCheck);
 duCancelBtn.addEventListener('click', duClose);
 duInputEl.addEventListener('keydown', e => { if (e.key === 'Enter') duCheck(); });
@@ -1565,24 +1633,13 @@ dcInputEl.addEventListener('keydown', e => {
   if (e.key === 'Enter'){
     const cmd = dcInputEl.value.trim();
     if (!cmd) return;
-    dcHistory.push(cmd);
-    dcHistoryIdx = dcHistory.length;
+    dcHistory.push(cmd); dcHistoryIdx = dcHistory.length;
     dcPrint('> ' + cmd, 'dc-cmd');
     dcInputEl.value = '';
     try { runCommand(cmd); } catch(err){ dcPrint('✗ ' + err.message, 'dc-err'); }
-  } else if (e.key === 'ArrowUp'){
-    if (dcHistory.length === 0) return;
-    dcHistoryIdx = Math.max(0, dcHistoryIdx - 1);
-    dcInputEl.value = dcHistory[dcHistoryIdx] || '';
-    e.preventDefault();
-  } else if (e.key === 'ArrowDown'){
-    if (dcHistory.length === 0) return;
-    dcHistoryIdx = Math.min(dcHistory.length, dcHistoryIdx + 1);
-    dcInputEl.value = dcHistory[dcHistoryIdx] || '';
-    e.preventDefault();
-  } else if (e.key === 'Escape'){
-    dcClose();
-  }
+  } else if (e.key === 'ArrowUp'){ if (dcHistory.length === 0) return; dcHistoryIdx = Math.max(0, dcHistoryIdx - 1); dcInputEl.value = dcHistory[dcHistoryIdx] || ''; e.preventDefault(); }
+  else if (e.key === 'ArrowDown'){ if (dcHistory.length === 0) return; dcHistoryIdx = Math.min(dcHistory.length, dcHistoryIdx + 1); dcInputEl.value = dcHistory[dcHistoryIdx] || ''; e.preventDefault(); }
+  else if (e.key === 'Escape'){ dcClose(); }
 });
 
 function runCommand(raw){
@@ -1590,7 +1647,6 @@ function runCommand(raw){
   const cmd = (parts[0] || '').toLowerCase();
   const a1 = parts[1];
   const a2 = parts[2];
-
   switch (cmd) {
     case 'help':
       dcPrint([
@@ -1607,9 +1663,10 @@ function runCommand(raw){
         '│ damage N             — множитель урона',
         '│ heal                 — полное HP',
         '│ super                — залить ульту',
+        '│ safehp N             — HP сейфа (в режиме взлом)',
         '│ win | lose           — завершить бой',
         '│ map <название>       — сменить карту',
-        '│ mode classic|deathmatch|defense',
+        '│ mode classic|deathmatch|defense|heist',
         '│ info                 — состояние',
         '│ reset                — сброс профиля',
         '│ export               — профиль в JSON',
@@ -1620,7 +1677,6 @@ function runCommand(raw){
         '╰────────────────────────────────────'
       ].join('\n'), 'dc-info');
       break;
-
     case 'kk': {
       if (!a1){ dcPrint('KK: ' + profile.kk, 'dc-info'); break; }
       if (a1.startsWith('+')) profile.kk += parseInt(a1.slice(1), 10) || 0;
@@ -1639,19 +1695,18 @@ function runCommand(raw){
       saveProfile(); updateProfileUI();
       dcPrint('✓ Трофеи = ' + profile.trophies, 'dc-ok'); break;
     }
-
     case 'unlock': {
-      if (!a1) { dcPrint('unlock all | plant_N | inv_N', 'dc-err'); break; }
-      if (a1 === 'all'){ Object.keys(FIGHTERS).forEach(id => profile.unlocked[id] = true); dcPrint('✓ Открыто всё (' + Object.keys(FIGHTERS).length + ')', 'dc-ok'); }
+      if (!a1){ dcPrint('unlock all | plant_N | inv_N', 'dc-err'); break; }
+      if (a1 === 'all'){ Object.keys(FIGHTERS).forEach(id => profile.unlocked[id] = true); dcPrint('✓ Открыто всё', 'dc-ok'); }
       else if (FIGHTERS[a1]){ profile.unlocked[a1] = true; dcPrint('✓ Открыт ' + FIGHTERS[a1].name, 'dc-ok'); }
-      else { dcPrint('✗ Неизвестный боец: ' + a1, 'dc-err'); return; }
+      else { dcPrint('✗ Неизвестный боец', 'dc-err'); return; }
       saveProfile(); refreshPick(); refreshCollection(); break;
     }
     case 'lock': {
-      if (!a1) { dcPrint('lock all | plant_N | inv_N', 'dc-err'); break; }
+      if (!a1){ dcPrint('lock all | plant_N | inv_N', 'dc-err'); break; }
       if (a1 === 'all'){ Object.keys(FIGHTERS).forEach(id => delete profile.unlocked[id]); dcPrint('✓ Всё заблокировано', 'dc-ok'); }
       else if (FIGHTERS[a1]){ delete profile.unlocked[a1]; dcPrint('✓ Заблокирован ' + FIGHTERS[a1].name, 'dc-ok'); }
-      else { dcPrint('✗ Неизвестный боец: ' + a1, 'dc-err'); return; }
+      else { dcPrint('✗ Неизвестный боец', 'dc-err'); return; }
       saveProfile(); refreshPick(); refreshCollection(); break;
     }
     case 'level': {
@@ -1674,32 +1729,21 @@ function runCommand(raw){
       else dcPrint('godMode: ' + godMode, 'dc-info');
       break;
     }
-    case 'speed': {
-      const v = parseFloat(a1);
-      if (isNaN(v) || v <= 0){ dcPrint('speed: ' + speedMul, 'dc-info'); break; }
-      speedMul = v; dcPrint('✓ speed = ' + speedMul, 'dc-ok'); break;
+    case 'speed': { const v = parseFloat(a1); if (isNaN(v) || v <= 0){ dcPrint('speed: ' + speedMul, 'dc-info'); break; } speedMul = v; dcPrint('✓ speed = ' + speedMul, 'dc-ok'); break; }
+    case 'damage': case 'dmg': { const v = parseFloat(a1); if (isNaN(v) || v <= 0){ dcPrint('damage: ' + damageMul, 'dc-info'); break; } damageMul = v; dcPrint('✓ damage = ' + damageMul, 'dc-ok'); break; }
+    case 'heal': { if (player && player.maxHp){ player.hp = player.maxHp; dcPrint('✓ HP восстановлено', 'dc-ok'); } else dcPrint('✗ Только в бою', 'dc-err'); break; }
+    case 'super': { superCharge = SUPER_MAX; updateSuperUI(); dcPrint('✓ Ульта заряжена', 'dc-ok'); break; }
+    case 'safehp': {
+      const v = parseInt(a1, 10);
+      if (!safe){ dcPrint('✗ Нет сейфа — включи режим heist и начни бой', 'dc-err'); break; }
+      if (isNaN(v)){ dcPrint('safe HP: ' + safe.hp + ' / ' + safe.maxHp, 'dc-info'); break; }
+      safe.hp = Math.max(0, Math.min(safe.maxHp, v));
+      dcPrint('✓ safe.hp = ' + safe.hp, 'dc-ok');
+      if (safe.hp <= 0 && gameActive){ bossDeathEffect(safe.x, safe.z); endGame(true); }
+      break;
     }
-    case 'damage': case 'dmg': {
-      const v = parseFloat(a1);
-      if (isNaN(v) || v <= 0){ dcPrint('damage: ' + damageMul, 'dc-info'); break; }
-      damageMul = v; dcPrint('✓ damage = ' + damageMul, 'dc-ok'); break;
-    }
-    case 'heal': {
-      if (player && player.maxHp){ player.hp = player.maxHp; dcPrint('✓ HP восстановлено', 'dc-ok'); }
-      else dcPrint('✗ Только в бою', 'dc-err'); break;
-    }
-    case 'super': {
-      superCharge = SUPER_MAX; updateSuperUI();
-      dcPrint('✓ Ульта заряжена', 'dc-ok'); break;
-    }
-    case 'win': {
-      if (gameActive){ endGame(true); dcPrint('✓ Победа', 'dc-ok'); }
-      else dcPrint('✗ Не в бою', 'dc-err'); break;
-    }
-    case 'lose': {
-      if (gameActive){ endGame(false); dcPrint('✓ Поражение', 'dc-ok'); }
-      else dcPrint('✗ Не в бою', 'dc-err'); break;
-    }
+    case 'win': { if (gameActive){ endGame(true); dcPrint('✓ Победа', 'dc-ok'); } else dcPrint('✗ Не в бою', 'dc-err'); break; }
+    case 'lose': { if (gameActive){ endGame(false); dcPrint('✓ Поражение', 'dc-ok'); } else dcPrint('✗ Не в бою', 'dc-err'); break; }
     case 'map': {
       const name = parts.slice(1).join(' ').toLowerCase();
       const found = MAPS.find(m => m.name.toLowerCase() === name || m.name.toLowerCase().includes(name));
@@ -1711,19 +1755,12 @@ function runCommand(raw){
       if (a1 === 'classic'){ currentMode = MODES.classic; dcPrint('✓ Классика', 'dc-ok'); }
       else if (a1 === 'deathmatch'){ currentMode = MODES.deathmatch; dcPrint('✓ Мясорубка', 'dc-ok'); }
       else if (a1 === 'defense'){ currentMode = MODES.defense; dcPrint('✓ Оборона', 'dc-ok'); }
-      else dcPrint('mode classic | deathmatch | defense', 'dc-err');
+      else if (a1 === 'heist'){ currentMode = MODES.heist; dcPrint('✓ Взлом', 'dc-ok'); }
+      else dcPrint('mode classic | deathmatch | defense | heist', 'dc-err');
       break;
     }
     case 'info': {
-      dcPrint(JSON.stringify({
-        kk: profile.kk, trophies: profile.trophies,
-        wins: profile.wins||0, losses: profile.losses||0,
-        unlockedCount: Object.keys(profile.unlocked).filter(k => profile.unlocked[k]).length,
-        totalFighters: Object.keys(FIGHTERS).length,
-        nickname, godMode, speedMul, damageMul,
-        map: currentMap.name, mode: currentMode.id,
-        gameActive
-      }, null, 2), 'dc-info');
+      dcPrint(JSON.stringify({ kk: profile.kk, trophies: profile.trophies, wins: profile.wins||0, losses: profile.losses||0, unlocked: Object.keys(profile.unlocked).filter(k => profile.unlocked[k]).length, total: Object.keys(FIGHTERS).length, nickname, godMode, speedMul, damageMul, map: currentMap.name, mode: currentMode.id, gameActive, safe: safe ? { hp: safe.hp, maxHp: safe.maxHp } : null }, null, 2), 'dc-info');
       break;
     }
     case 'reset': {
@@ -1732,34 +1769,17 @@ function runCommand(raw){
       saveProfile({ toast: true }); updateProfileUI(); refreshPick(); refreshCollection(); refreshUpgrade();
       dcPrint('✓ Профиль сброшен', 'dc-ok'); break;
     }
-    case 'export': {
-      const s = JSON.stringify(profile);
-      dcPrint('Профиль (скопируй):', 'dc-info');
-      dcPrint(s, 'dc-ok');
-      break;
-    }
+    case 'export': { dcPrint(JSON.stringify(profile), 'dc-ok'); break; }
     case 'import': {
       const json = raw.slice(raw.indexOf(' ') + 1);
-      try {
-        const obj = JSON.parse(json);
-        Object.assign(profile, obj);
-        saveProfile({ toast: true }); updateProfileUI(); refreshPick(); refreshCollection();
-        dcPrint('✓ Импортировано', 'dc-ok');
-      } catch(e){ dcPrint('✗ Невалидный JSON', 'dc-err'); }
+      try { Object.assign(profile, JSON.parse(json)); saveProfile({ toast: true }); updateProfileUI(); refreshPick(); refreshCollection(); dcPrint('✓ Импортировано', 'dc-ok'); }
+      catch(e){ dcPrint('✗ Невалидный JSON', 'dc-err'); }
       break;
     }
-    case 'save': {
-      saveProfile({ toast: true });
-      dcPrint('✓ Сохранено', 'dc-ok'); break;
-    }
-    case 'clear': {
-      dcLogEl.innerHTML = ''; break;
-    }
-    case 'close': {
-      dcClose(); break;
-    }
-    default:
-      dcPrint('✗ Неизвестная команда: ' + cmd + ' (help — список)', 'dc-err');
+    case 'save': { saveProfile({ toast: true }); dcPrint('✓ Сохранено', 'dc-ok'); break; }
+    case 'clear': { dcLogEl.innerHTML = ''; break; }
+    case 'close': { dcClose(); break; }
+    default: dcPrint('✗ Неизвестная команда: ' + cmd + ' (help — список)', 'dc-err');
   }
 }
 
